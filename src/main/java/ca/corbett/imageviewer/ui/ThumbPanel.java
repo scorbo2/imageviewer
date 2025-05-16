@@ -165,7 +165,6 @@ public class ThumbPanel extends JPanel {
         //  this.requestFocus();
         // }
         if (isSelected) {
-            //TODO theme Color selectedBg = Color.BLUE;
             Color selectedBg = LookAndFeelManager.getLafColor("textHighlight", Color.BLUE);
             setBackground(selectedBg);
             imagePanel.setBackground(selectedBg);

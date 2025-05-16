@@ -157,7 +157,6 @@ public final class ThumbContainerPanel extends JPanel {
      */
     private void initComponents() {
         setLayout(new WrapLayout());
-        //TODO theme setBackground(Color.DARK_GRAY);
 
         // Create the "load more" panel:
         loadMorePanel = new JPanel();

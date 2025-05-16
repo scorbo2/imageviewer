@@ -538,7 +538,6 @@ public final class MainWindow extends JFrame implements DirTreeListener {
         }
         dirTree.selectAndScrollTo(effectiveStartupDir); // okay if null
 
-        //TODO theme setImageBackgroundColor(prefs.getImagePanelBgColor());
         setImageBackgroundColor(UIManager.getDefaults().getColor("ColorPalette.primaryBackground"));
         setZoomFactorIncrement(prefs.getImagePanelZoomIncrement());
         setAutoBestFit(prefs.getImagePanelAutoBestFit());
