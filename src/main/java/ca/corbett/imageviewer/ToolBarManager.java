@@ -27,7 +27,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -166,32 +165,8 @@ public final class ToolBarManager {
     }
 
     /**
-     * Loads and returns an image icon resource, scaling up or down to the given size if needed.
-     *
-     * @param inStream The input stream containing the image.
-     * @param width    The desired width of the image.
-     * @param height   The desired height of the image.
-     * @return An image, loaded and scaled, or null if the resource was not found.
+     * Invoked internally to load an icon image from resources, scale it if needed, and return it.
      */
-    // TODO this shouldn't take an input stream! force callers to supply an image
-    // TODO and while you're at it go through all extension methods and make sure we're not doing goofy stuff with jar resources
-    private static BufferedImage loadIconResource(InputStream inStream, int width, int height) {
-        BufferedImage image = null;
-        try {
-            image = ImageUtil.loadImage(inStream);
-
-            // If the width or height don't match, scale it up or down as needed:
-            if (image.getWidth() != width || image.getHeight() != height) {
-                image = ImageUtil.generateThumbnailWithTransparency(image, width, height);
-            }
-        }
-        catch (IOException ioe) {
-            logger.log(Level.SEVERE, "Error loading image: " + ioe.getMessage(), ioe);
-        }
-
-        return image;
-    }
-
     private static BufferedImage loadIconImage(String resourceName) throws IOException {
         return ImageUtil.loadFromResource(MainWindow.class, "/ca/corbett/imageviewer/images/" + resourceName, iconSize,
                                           iconSize);
