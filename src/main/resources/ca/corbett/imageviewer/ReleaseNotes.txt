@@ -1,0 +1,144 @@
+ImageViewer Release Notes
+Author: Steve Corbett
+
+Version 2.1 [TODO] - Migrate to github/maven
+
+Version 2.0 [2023-12-31] - Ground-up rewrite with extension support
+  [IMGVIEW-89] - Add "Undo last move" option
+  [IMGVIEW-92] - Crop aspect ratio labels seem wrong
+  [IMGVIEW-100] - Two images with same base name confuses thumb panel
+  [IMGVIEW-106] - Create ExtensionManager
+  [IMGVIEW-107] - Remove TempImagePanel
+  [IMGVIEW-108] - Rewrite application preferences
+  [IMGVIEW-109] - Name conflict dialog needs to trim the filename
+  [IMGVIEW-110] - Add built-in extension for thumbnail caching
+  [IMGVIEW-111] - Extension point: menu additions
+  [IMGVIEW-112] - Extension point: toolbar buttons
+  [IMGVIEW-113] - Extension point: global shortcuts
+  [IMGVIEW-114] - Add built-in extension for image information
+  [IMGVIEW-115] - Extension point: LogConsole
+  [IMGVIEW-116] - Move deletion stats to built-in extension
+  [IMGVIEW-117] - Add ImageOperationHandler
+  [IMGVIEW-118] - Reload UI if extensions are enabled or disabled
+  [IMGVIEW-119] - Extract ResizeDialog to extension
+  [IMGVIEW-120] - Extract companion text file to extension
+  [IMGVIEW-121] - Extension versioning and deployment
+  [IMGVIEW-122] - Extract TransformDialog to extension
+  [IMGVIEW-123] - Extract CropDialog/SquareCropDialog into extensions
+  [IMGVIEW-124] - Bug: window size doesn't always save
+  [IMGVIEW-125] - Extract QuickAccess to an extension
+  [IMGVIEW-126] - Implement remaining image operations
+  [IMGVIEW-127] - Image converter extension
+  [IMGVIEW-128] - Make sure extensions handle key shortcuts properly
+  [IMGVIEW-129] - Extract FullScreen mode to an extension
+  [IMGVIEW-130] - Make ResizeDialog a little less confusing
+  [IMGVIEW-131] - Need a reload button
+  [IMGVIEW-132] - Add an option to preserve file date/time
+  [IMGVIEW-133] - CompanionFile extension is double-deleting files
+
+Version 1.3 [2023-11-11] - Maintenance release
+  [IMGVIEW-88] - CropDialog: show keyboard shortcut help
+  [IMGVIEW-90] - ResizeDialog: width/height chooser should be smarter
+  [IMGVIEW-93] - Add a crop dialog for SD embeddings
+  [IMGVIEW-94] - SquareCrop needs a better confirmation dialog
+  [IMGVIEW-95] - SquareCropDialog: add a minimum size warning
+  [IMGVIEW-96] - SquareCropDialog bounds issue
+  [IMGVIEW-97] - Show image text files if present
+  [IMGVIEW-98] - Copy/Move/Rename/Link associated files if present
+  [IMGVIEW-99] - Square crop dialog should handle transparent PNGs
+  [IMGVIEW-101] - SquareCropDialog needs an aspect ratio selector
+  [IMGVIEW-102] - SquareCropDialog should overwrite existing file
+  [IMGVIEW-103] - SquareCropDialog: add optional mask images
+  [IMGVIEW-104] - I want a "repeat last operation" button/shortcut
+  [IMGVIEW-105] - Need a step modifier on the square crop dialog
+
+Version 1.2 [2023-03-28] - LogConsole, animated GIFs, img transform
+  [IMGVIEW-62] - Splash screen seems to have vanished
+  [IMGVIEW-63] - Deletions aren't logged properly
+  [IMGVIEW-64] - Add animated GIF support
+  [IMGVIEW-65] - Upgrade to sc-util 1.7
+  [IMGVIEW-66] - GIF thumbnail errors should be a warning
+  [IMGVIEW-67] - Intermittent bug in moveSingleFile
+  [IMGVIEW-68] - Accept basic command line arguments
+  [IMGVIEW-69] - Bug: startup dir fails for some file names
+  [IMGVIEW-70] - Might be nice to have a rename option
+  [IMGVIEW-71] - Minor: deletion stats should show decimals
+  [IMGVIEW-72] - Minor: alien dialog should have a rename option
+  [IMGVIEW-73] - Thumbnail pregeneration can fail without message
+  [IMGVIEW-76] - New operations: copy and symlink
+  [IMGVIEW-77] - Name conflict resolution dialog allows bad renames
+  [IMGVIEW-78] - Introduce image cropping options
+  [IMGVIEW-79] - CropDialog needs a reset button
+  [IMGVIEW-80] - CropDialog: better keyboard support
+  [IMGVIEW-81] - ThumbLoaderThread somehow gets triggered twice
+  [IMGVIEW-82] - Need a main window keyboard shortcut for crop dialog
+  [IMGVIEW-83] - Memory leak in CropDialog
+  [IMGVIEW-84] - Add ResizeDialog
+  [IMGVIEW-85] - Improve status bar info
+  [IMGVIEW-86] - CropDialog: more crop increment options
+  [IMGVIEW-87] - Add a rotate/mirror dialog
+
+Version 1.1 [2022-05-10] - Thumbnail cache and fullscreen support
+  [IMGVIEW-37] - Install script "abort" function doesn't abort
+  [IMGVIEW-38] - Full screen mode
+  [IMGVIEW-39] - File chooser should remember last directory
+  [IMGVIEW-40] - Full screen mode doesn't work well on multi-monitors
+  [IMGVIEW-41] - Rename application to ImageViewer
+  [IMGVIEW-42] - Upgrade to sc-util 1.4
+  [IMGVIEW-43] - Clean up the db code
+  [IMGVIEW-44] - Better memory usage
+  [IMGVIEW-45] - Performance issue in quick move menu build
+  [IMGVIEW-46] - Upgrade to sc-util 1.6
+  [IMGVIEW-47] - Upgrade to latest install_script
+  [IMGVIEW-48] - Bring code up to new code standards
+  [IMGVIEW-49] - AlienDialog should ignore Darwin metadata
+  [IMGVIEW-50] - Improve logging throughout the app
+  [IMGVIEW-51] - Thumb handling should be much smarter
+  [IMGVIEW-52] - Need a thumbnail cache mechanism
+  [IMGVIEW-53] - Update PreferencesDialog to expose cache options
+  [IMGVIEW-54] - Change from Preferences to FileBasedProperties
+  [IMGVIEW-55] - Image move and delete should update cache
+  [IMGVIEW-56] - Add popup menu to full screen window
+  [IMGVIEW-57] - Update release notes for 1.1 release
+  [IMGVIEW-58] - Need a way to mass-pregenerate thumbnails
+  [IMGVIEW-59] - Ensure default logging.properties logs to file
+  [IMGVIEW-60] - Add "quick access" option on quick move menu
+  [IMGVIEW-61] - Popup menu not working in single display mode
+
+Version 1.0 [2017-12-03] - Initial version
+  [IMGVIEW-1] - Skeletal MainWindow
+  [IMGVIEW-2] - Skeletal filesystem view
+  [IMGVIEW-3] - Skeletal thumbnail view
+  [IMGVIEW-4] - Install/uninstall script
+  [IMGVIEW-5] - Create skeletal preferences dialog
+  [IMGVIEW-6] - Implement Quick Move
+  [IMGVIEW-7] - Implement simple selection within thumb panel
+  [IMGVIEW-8] - Clicking an empty directory doesn't clear ImagePanel
+  [IMGVIEW-9] - Possible memory leak
+  [IMGVIEW-10] - Global "next" and "back" buttons
+  [IMGVIEW-11] - Create toolbar
+  [IMGVIEW-12] - ImageContainerPanel is updating its own load offset
+  [IMGVIEW-13] - selecting thumb scrolls the container to wrong spot
+  [IMGVIEW-14] - Hitting cancel on load progress dialog does nothing
+  [IMGVIEW-15] - Add a way to detect/view/delete non-image files
+  [IMGVIEW-16] - Add sqlite support
+  [IMGVIEW-17] - Add a splash screen
+  [IMGVIEW-18] - Name conflict dialog
+  [IMGVIEW-19] - Implement image deletion
+  [IMGVIEW-20] - Need a way to remove a directory from the DirTree
+  [IMGVIEW-21] - Create a UI for viewing/clearing deletion stats
+  [IMGVIEW-22] - Thumbnail size changes not applied until restart
+  [IMGVIEW-23] - Image information dialog
+  [IMGVIEW-24] - Flatten the popup menu
+  [IMGVIEW-25] - Fix the About dialog
+  [IMGVIEW-26] - Keyboard shortcut problems
+  [IMGVIEW-27] - Proper logging
+  [IMGVIEW-28] - Deleting a directory is slow with no progress bar
+  [IMGVIEW-29] - Progress bar still not showing on delete directory?
+  [IMGVIEW-30] - Deletion stats not tracked on directory deletion
+  [IMGVIEW-31] - Progress bar in image load thread should be modal
+  [IMGVIEW-32] - "Delete All" should close the alien dialog
+  [IMGVIEW-33] - Canceling image load causes one image to go missing
+  [IMGVIEW-34] - Deletion stats dialog not refreshing on show
+  [IMGVIEW-35] - Create status bar
+  [IMGVIEW-36] - Should disable DirTree during delete operations
