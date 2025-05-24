@@ -1,9 +1,6 @@
 package ca.corbett.imageviewer;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.logging.LogManager;
 
 /**
  * Constants concerning the application name and version information,
@@ -69,35 +66,6 @@ public final class Version {
         // If it does not exist, stick it under APPLICATION_DIR:
         else {
             extensionsDir = new File(appHome, "extensions");
-        }
-
-        // LOG_PROPERTIES can be supplied as a system property:
-        if (System.getProperties().containsKey("java.util.logging.config.file")) {
-            // Do nothing. It will be used automatically.
-        }
-
-        // If it is not set, we'll assume it's in APPLICATION_HOME:
-        else {
-            File logProperties = new File(appHome, "logging.properties");
-            if (logProperties.exists() && logProperties.canRead()) {
-                try {
-                    LogManager.getLogManager().readConfiguration(new FileInputStream(logProperties));
-                }
-                catch (IOException ioe) {
-                    System.out.println("WARN: Unable to load log configuration from app dir: " + ioe.getMessage());
-                }
-            }
-
-            // Otherwise, load our built-in default from jar resources:
-            else {
-                try {
-                    LogManager.getLogManager().readConfiguration(
-                            Main.class.getResourceAsStream("/ca/corbett/imageviewer/logging.properties"));
-                }
-                catch (IOException ioe) {
-                    System.out.println("WARN: Unable to load log configuration from jar: " + ioe.getMessage());
-                }
-            }
         }
 
         // Create our directories if they do not exist:

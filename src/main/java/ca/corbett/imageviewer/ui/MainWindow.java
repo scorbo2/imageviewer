@@ -94,7 +94,6 @@ public final class MainWindow extends JFrame implements DirTreeListener {
      * Constructor is private to force singleton access.
      */
     private MainWindow() {
-        logger.info(Version.APPLICATION_NAME + " " + Version.VERSION + " initializing...");
     }
 
     /**
