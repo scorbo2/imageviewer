@@ -666,8 +666,8 @@ public final class ThumbContainerPanel extends JPanel {
         for (File f : aliens) {
 
             // Ask all our extensions if they recognize this file:
-            boolean isAlien = ImageViewerExtensionManager.getInstance().isFileAlien(f);
-            if (isAlien) {
+            boolean isCompanion = ImageViewerExtensionManager.getInstance().isCompanionFile(f);
+            if (!isCompanion) {
                 listToReturn.add(f);
             }
         }

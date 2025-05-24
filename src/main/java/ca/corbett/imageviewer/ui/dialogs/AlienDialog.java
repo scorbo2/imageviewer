@@ -42,7 +42,7 @@ import java.util.logging.Logger;
 public final class AlienDialog extends JDialog {
 
     private static final Logger logger = Logger.getLogger(AlienDialog.class.getName());
-    public static final String DARWIN_METADATA_FILENAME = ".00darwin-metadata";
+    public static final String DARWIN_METADATA_FILENAME = ".00darwin-metadata"; // TODO wtf is this doing here
 
     private MessageUtil messageUtil;
     private static AlienDialog instance;

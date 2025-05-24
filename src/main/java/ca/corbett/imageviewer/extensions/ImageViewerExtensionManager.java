@@ -336,20 +336,33 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     }
 
     /**
-     * Invoked when the application is trying to decide if a given non-image file is
-     * an "alien" or not (that is, not handled by this application). The default return
-     * is true. If any extension returns false, the file will not be treated as an alien.
+     * Invoked when the application is trying to decide what type of file it's looking
+     * at, and therefore what to do with it. ImageViewer works with three broad types of files:
+     * <ol>
+     *     <li><b>Images</b> - any file in a supported image format</li>
+     *     <li><b>Companion files</b> - not images, but files that nonetheless belong together
+     *     with an image. For example, a text file, json file, or xml file that describes
+     *     the image or contains additional information about the image. Extensions can
+     *     register support for companion files. Out of the box (i.e. without extensions),
+     *     ImageViewer does not recognize any file as a companion file.</li>
+     *     <li><b>Aliens</b> - an alien file is any file that is not positively identified
+     *     either as a supported image type or as a companion file.</li>
+     * </ol>
+     * If an extension wishes to consider a given File as a companion file, it can return
+     * true here. The default return is false, indicating that the extension does not recognize
+     * the given file as a companion. If all extensions return false, the file will be
+     * considered an alien file.
      *
-     * @param alienFile The suspected alien
-     * @return true if the extension does not recognize the file, or false otherwise.
+     * @param candidateFile The file in question.
+     * @return true if the extension recognizes the file, false otherwise (default false).
      */
-    public boolean isFileAlien(File alienFile) {
+    public boolean isCompanionFile(File candidateFile) {
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            if (!extension.isFileAlien(alienFile)) {
-                return false; // first extension that says no, we're done
+            if (extension.isCompanionFile(candidateFile)) {
+                return true; // first extension that says yes, we're done
             }
         }
-        return true;
+        return false;
     }
 
     /**
