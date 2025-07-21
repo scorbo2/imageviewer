@@ -2,6 +2,8 @@ ImageViewer Release Notes
 Author: Steve Corbett
 
 Version 2.1 [TODO] - Migrate to github/maven
+  Upgrade to swing-extras 2.3
+  Migrate project to github/maven
 
 Version 2.0 [2023-12-31] - Ground-up rewrite with extension support
   [IMGVIEW-89] - Add "Undo last move" option

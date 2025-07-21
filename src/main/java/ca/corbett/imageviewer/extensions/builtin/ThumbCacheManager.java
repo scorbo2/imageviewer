@@ -39,7 +39,7 @@ import java.util.logging.Logger;
  */
 final class ThumbCacheManager {
 
-    private static final File CACHE_DIR = new File(Version.APPLICATION_HOME, "thumbnails");
+    private static final File CACHE_DIR = new File(Version.SETTINGS_DIR, "thumbnails");
     private static final Logger logger = Logger.getLogger(ThumbCacheManager.class.getName());
 
     static {

@@ -114,7 +114,7 @@ public class Main {
 
         // If it is not set, we'll assume it's in APPLICATION_HOME:
         else {
-            File logProperties = new File(Version.APPLICATION_HOME, "logging.properties");
+            File logProperties = new File(Version.SETTINGS_DIR, "logging.properties");
             if (logProperties.exists() && logProperties.canRead()) {
                 try {
                     LogManager.getLogManager().readConfiguration(new FileInputStream(logProperties));

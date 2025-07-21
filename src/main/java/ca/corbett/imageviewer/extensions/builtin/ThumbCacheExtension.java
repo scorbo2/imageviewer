@@ -34,7 +34,7 @@ import java.util.logging.Logger;
 public class ThumbCacheExtension extends ImageViewerExtension {
 
     private static final Logger logger = Logger.getLogger(ThumbCacheExtension.class.getName());
-    private static final File CACHE_DIR = new File(Version.APPLICATION_HOME, "thumbnails");
+    private static final File CACHE_DIR = new File(Version.SETTINGS_DIR, "thumbnails");
 
     private final AppExtensionInfo extInfo;
     private MessageUtil messageUtil;
@@ -50,7 +50,7 @@ public class ThumbCacheExtension extends ImageViewerExtension {
                                             + "reduce load time in directories that "
                                             + "have already been visited.\n\n"
                                             + "Note: no upper limit on cache size. Thumbnails will be stored in the "
-                                            + Version.APPLICATION_HOME.getAbsolutePath() + "/thumbnails directory.")
+                                            + Version.SETTINGS_DIR.getAbsolutePath() + "/thumbnails directory.")
                 .setReleaseNotes("1.0 - extracted from ImageViewer 1.3")
                 .build();
     }

@@ -82,7 +82,7 @@ public final class QuickMoveManager {
         }
 
         logger.info("Initializing QuickMove database");
-        dbFile = new File(Version.APPLICATION_HOME, QM_FILENAME);
+        dbFile = new File(Version.SETTINGS_DIR, QM_FILENAME);
         boolean qmFilePresent = dbFile.exists();
         conn = getConnection(dbFile);
 

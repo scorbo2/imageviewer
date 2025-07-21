@@ -57,7 +57,7 @@ public class StatisticsExtension extends ImageViewerExtension {
                                             + "and can report on these statistics.")
                 .setReleaseNotes("1.0 - extracted from ImageViewer 1.3")
                 .build();
-        statsFile = new File(Version.APPLICATION_HOME, STATS_FILENAME);
+        statsFile = new File(Version.SETTINGS_DIR, STATS_FILENAME);
 
         // Make sure our classpath contains what we need:
         dbAvailable = true;

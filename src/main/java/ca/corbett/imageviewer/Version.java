@@ -1,5 +1,7 @@
 package ca.corbett.imageviewer;
 
+import ca.corbett.extras.about.AboutInfo;
+
 import java.io.File;
 
 /**
@@ -14,6 +16,8 @@ public final class Version {
     private Version() {
     }
 
+    private static final AboutInfo aboutInfo;
+
     /** The major version. **/
     public static final int VERSION_MAJOR = 2;
 
@@ -26,57 +30,76 @@ public final class Version {
     /** The user-friendly name of this application. **/
     public static final String APPLICATION_NAME = "ImageViewer";
 
-    /**
-     * The fully qualified directory where user-specific settings and extensions are stored.
-     * This is typically ${user.home}/.${APPLICATION_NAME}/ but can be overridden
-     */
-    public static final File APPLICATION_HOME;
+    public static final String NAME = APPLICATION_NAME + " " + VERSION;
+    public static String COPYRIGHT = "Copyright © 2017-2025 Steve Corbett";
 
-    /** The directory where extension jars live. **/
+    /**
+     * The directory where ImageViewer was installed -
+     * caution, this might be null! We can't guess a
+     * value for this property, it has to be supplied
+     * by the launcher script, but the launcher script
+     * might have been modified by the user, or the user
+     * might have started the app without using the launcher.
+     * <p>
+     * The installer script for linux defaults this
+     * to /opt/ImageViewer, but the user can override that.
+     * </p>
+     */
+    public static final File INSTALL_DIR;
+
+    /**
+     * The directory where application configuration and
+     * log files can go. If not given to us explicitly by
+     * the launcher script, we default it a directory named
+     * .ImageViewer in the user's home directory.
+     */
+    public static final File SETTINGS_DIR;
+
+    /**
+     * The directory to scan for extension jars at startup.
+     * If not given to us explicitly by the launcher script,
+     * we default it to a directory called "extensions"
+     * inside of SETTINGS_DIR.
+     */
     public static final File EXTENSIONS_DIR;
 
     /** The file containing our saved application config. **/
     public static final File APP_CONFIG_FILE;
 
     /** The project Url. **/
-    public static String PROJECT_URL = "https://github.com/scorbo2/musicplayer";
+    public static String PROJECT_URL = "https://github.com/scorbo2/imageviewer";
 
     /** The project license. **/
     public static String LICENSE = "https://opensource.org/license/mit";
 
     static {
-        File appHome;
-        File extensionsDir;
+        aboutInfo = new AboutInfo();
+        aboutInfo.applicationName = NAME;
+        aboutInfo.applicationVersion = VERSION;
+        aboutInfo.copyright = COPYRIGHT;
+        aboutInfo.license = LICENSE;
+        aboutInfo.projectUrl = PROJECT_URL;
+        aboutInfo.showLogConsole = true;
+        aboutInfo.releaseNotesLocation = "/ca/corbett/imageviewer/ReleaseNotes.txt";
+        aboutInfo.logoImageLocation = "/ca/corbett/imageviewer/images/logo_wide.jpg";
+        aboutInfo.shortDescription = "Fast and extensible image viewer and sorter.";
 
-        // APPLICATION_HOME can be supplied as a system property:
-        if (System.getProperties().containsKey("ca.corbett.imageviewer.home")) {
-            appHome = new File(System.getProperty("ca.corbett.imageviewer.home"));
+        String installDir = System.getProperty("INSTALL_DIR", null);
+        INSTALL_DIR = installDir == null ? null : new File(installDir);
+
+        String appDir = System.getProperty("SETTINGS_DIR",
+                                           new File(System.getProperty("user.home"), "." + NAME).getAbsolutePath());
+        SETTINGS_DIR = new File(appDir);
+        if (!SETTINGS_DIR.exists()) {
+            SETTINGS_DIR.mkdirs();
         }
 
-        // If it is not set, we'll default it to inside the user's home directory:
-        else {
-            appHome = new File(System.getProperty("user.home"), "." + APPLICATION_NAME);
-        }
-
-        // EXTENSION_DIR can be supplied as a system property:
-        if (System.getProperties().containsKey("ca.corbett.imageviewer.extensions")) {
-            extensionsDir = new File(System.getProperty("ca.corbett.imageviewer.extensions"));
-        }
-
-        // If it does not exist, stick it under APPLICATION_DIR:
-        else {
-            extensionsDir = new File(appHome, "extensions");
-        }
-
-        // Create our directories if they do not exist:
-        APPLICATION_HOME = appHome;
-        EXTENSIONS_DIR = extensionsDir;
-        if (!APPLICATION_HOME.exists()) {
-            APPLICATION_HOME.mkdirs();
-        }
+        String extDir = System.getProperty("EXTENSIONS_DIR", new File(SETTINGS_DIR, "extensions").getAbsolutePath());
+        EXTENSIONS_DIR = new File(extDir);
         if (!EXTENSIONS_DIR.exists()) {
             EXTENSIONS_DIR.mkdirs();
         }
-        APP_CONFIG_FILE = new File(APPLICATION_HOME, APPLICATION_NAME + ".prefs");
+
+        APP_CONFIG_FILE = new File(SETTINGS_DIR, APPLICATION_NAME + ".prefs");
     }
 }
