@@ -42,7 +42,7 @@ public class ImageInfoExtension extends ImageViewerExtension {
     }
 
     @Override
-    public List<AbstractProperty> getConfigProperties() {
+    protected List<AbstractProperty> createConfigProperties() {
         return List.of();
     }
 

@@ -27,27 +27,10 @@ import java.util.List;
  * @author scorbo2
  * @since ImageViewer 2.0
  */
-public abstract class ImageViewerExtension implements AppExtension {
+public abstract class ImageViewerExtension extends AppExtension {
 
     public enum ExtraPanelPosition {
         Left, Top, Right, Bottom
-    }
-
-    /**
-     * Invoked when an extension is enabled or when the application is starting up.
-     * Extensions should ideally avoid long-running operations here, but some initialization
-     * is fine. This method is optional, and the default implementation here does nothing.
-     */
-    @Override
-    public void onActivate() {
-    }
-
-    /**
-     * Invoked when an extension is disabled or when the application is shutting down.
-     * This method is optional, and the default implementation here does nothing.
-     */
-    @Override
-    public void onDeactivate() {
     }
 
     /**

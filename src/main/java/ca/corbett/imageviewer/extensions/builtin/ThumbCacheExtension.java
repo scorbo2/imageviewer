@@ -61,7 +61,7 @@ public class ThumbCacheExtension extends ImageViewerExtension {
     }
 
     @Override
-    public List<AbstractProperty> getConfigProperties() {
+    protected List<AbstractProperty> createConfigProperties() {
         return List.of(new LabelProperty("Thumbnails.Caching.label", "Thumbnail caching extension is active."));
     }
 

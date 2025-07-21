@@ -44,7 +44,7 @@ public class RepeatUndoExtension extends ImageViewerExtension {
     }
 
     @Override
-    public List<AbstractProperty> getConfigProperties() {
+    protected List<AbstractProperty> createConfigProperties() {
         return List.of();
     }
 
