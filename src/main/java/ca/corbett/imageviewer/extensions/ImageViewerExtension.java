@@ -236,6 +236,17 @@ public abstract class ImageViewerExtension extends AppExtension {
     }
 
     /**
+     * Given an image file, return a list of any companion files that the extension sees for that
+     * image file. The default return is an empty list, indicating the image has no companions.
+     *
+     * @param imageFile Any image file.
+     * @return A List of zero or more companion files that should be moved/copied/linked with the image.
+     */
+    public List<File> getCompanionFiles(File imageFile) {
+        return List.of();
+    }
+
+    /**
      * Invoked when the application is building the main ImagePanel display - there are four
      * extra components that can go around the main image panel, indicated by the
      * ExtraPanelPosition value of TOP, RIGHT, BOTTOM, or LEFT. The first extension that returns

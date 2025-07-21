@@ -366,6 +366,22 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     }
 
     /**
+     * Given an image file, return a list of any companion files that our extensions see for that
+     * image file. The resulting list may be empty if no extensions see any companion files for
+     * the given image.
+     *
+     * @param imageFile Any image file.
+     * @return A List of zero or more companion files that should be moved/copied/linked with the image.
+     */
+    public List<File> getCompanionFiles(File imageFile) {
+        List<File> companions = new ArrayList<>();
+        for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
+            companions.addAll(extension.getCompanionFiles(imageFile));
+        }
+        return companions;
+    }
+
+    /**
      * Invoked when the application is building the main ImagePanel display - there are four
      * extra components that can go around the main image panel, indicated by the
      * ExtraPanelPosition value of TOP, RIGHT, BOTTOM, or LEFT. The first extension that returns

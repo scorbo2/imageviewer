@@ -174,6 +174,9 @@ public final class ImageOperationHandler {
             lastOperation.addCreatedFile(destFile);
         }
 
+        // Make note of any companion files that our extensions want to accompany this image file:
+        List<File> companions = ImageViewerExtensionManager.getInstance().getCompanionFiles(srcFile);
+
         try {
             // Make a note of the date/time on this file in case we're moving or copying it:
             BasicFileAttributes view = Files.getFileAttributeView(srcFile.toPath(), BasicFileAttributeView.class)
@@ -187,6 +190,10 @@ public final class ImageOperationHandler {
             }
             logger.log(Level.INFO, "{0}: {1} -> {2}",
                        new Object[]{opName, srcFile.getAbsolutePath(), destFile.getAbsolutePath()});
+            for (File f : companions) {
+                logger.log(Level.INFO, "{0} (companion): {1} -> {2}",
+                           new Object[]{opName, f.getAbsolutePath(), new File(destDir, f.getName())});
+            }
 
             // Notify extensions of what's about to happen:
             ImageViewerExtensionManager.getInstance().preImageOperation(operation, srcFile, destFile);
@@ -194,11 +201,17 @@ public final class ImageOperationHandler {
             switch (operation) {
                 case MOVE: {
                     FileUtils.moveFile(srcFile, destFile);
+                    for (File f : companions) {
+                        FileUtils.moveFile(f, new File(destDir, f.getName()));
+                    }
                 }
                 break;
 
                 case COPY: {
                     FileUtils.copyFile(srcFile, destFile);
+                    for (File f : companions) {
+                        FileUtils.copyFile(f, new File(destDir, f.getName()));
+                    }
                 }
                 break;
 
@@ -206,6 +219,12 @@ public final class ImageOperationHandler {
                     Path target = FileSystems.getDefault().getPath(srcFile.getAbsolutePath());
                     Path link = FileSystems.getDefault().getPath(destFile.getAbsolutePath());
                     java.nio.file.Files.createSymbolicLink(link, target);
+
+                    for (File f : companions) {
+                        target = FileSystems.getDefault().getPath(f.getAbsolutePath());
+                        link = FileSystems.getDefault().getPath(new File(destDir, f.getName()).getAbsolutePath());
+                        java.nio.file.Files.createSymbolicLink(link, target);
+                    }
                 }
                 break;
             }
@@ -914,11 +933,11 @@ public final class ImageOperationHandler {
 
         switch (lastOperation.getType()) {
             case MOVE:
-                confirmMsg = affectedFiles.size() + " files which were moved\n  from dir: " + sourceDir.getAbsolutePath() + "\n  to dir: " + targetDir.getAbsolutePath() + "\nwill be moved back.";
+                confirmMsg = affectedFiles.size() + " images which were moved\n  from dir: " + sourceDir.getAbsolutePath() + "\n  to dir: " + targetDir.getAbsolutePath() + "\nwill be moved back.";
                 break;
 
             case COPY:
-                confirmMsg = affectedFiles.size() + " files which were copied\n  from dir: " + sourceDir.getAbsolutePath() + "\n  to dir: " + targetDir.getAbsolutePath() + "\nwill be deleted.";
+                confirmMsg = affectedFiles.size() + " images which were copied\n  from dir: " + sourceDir.getAbsolutePath() + "\n  to dir: " + targetDir.getAbsolutePath() + "\nwill be deleted.";
                 break;
 
             case SYMLINK:
@@ -934,7 +953,7 @@ public final class ImageOperationHandler {
 
         // Grammar check:
         if (affectedFiles.size() == 1) {
-            confirmMsg = confirmMsg.replace("files which were", "file which was");
+            confirmMsg = confirmMsg.replace("images which were", "image which was");
             confirmMsg = confirmMsg.replace("symlinks which were", "symlink which was");
         }
 
@@ -982,10 +1001,17 @@ public final class ImageOperationHandler {
                                 break;
                         }
                     }
+
+                    // Make note of any companion files that our extensions want to accompany this image file:
+                    List<File> companions = ImageViewerExtensionManager.getInstance().getCompanionFiles(file);
+
                     try {
                         ImageViewerExtensionManager.getInstance()
                                                    .preImageOperation(ImageOperation.Type.MOVE, file, destFile);
                         FileUtils.moveFile(file, destFile);
+                        for (File f : companions) {
+                            FileUtils.moveFile(f, new File(destFile.getParentFile(), f.getName()));
+                        }
                         ImageViewerExtensionManager.getInstance()
                                                    .postImageOperation(ImageOperation.Type.MOVE, destFile);
                     }
@@ -1000,7 +1026,11 @@ public final class ImageOperationHandler {
             case COPY:
                 for (File file : affectedFiles) {
                     ImageViewerExtensionManager.getInstance().preImageOperation(ImageOperation.Type.DELETE, file, null);
+                    List<File> companions = ImageViewerExtensionManager.getInstance().getCompanionFiles(file);
                     FileUtils.deleteQuietly(file);
+                    for (File f : companions) {
+                        FileUtils.deleteQuietly(f);
+                    }
                     ImageViewerExtensionManager.getInstance().postImageOperation(ImageOperation.Type.DELETE, file);
                 }
                 break;
@@ -1008,7 +1038,11 @@ public final class ImageOperationHandler {
             case SYMLINK:
                 try {
                     for (File file : affectedFiles) {
+                        List<File> companions = ImageViewerExtensionManager.getInstance().getCompanionFiles(file);
                         Files.deleteIfExists(Paths.get(file.getAbsolutePath()));
+                        for (File f : companions) {
+                            Files.deleteIfExists(Paths.get(f.getAbsolutePath()));
+                        }
                     }
                 }
                 catch (IOException ioe) {
@@ -1017,7 +1051,7 @@ public final class ImageOperationHandler {
         }
 
         MainWindow.getInstance().reloadCurrentDirectory();
-        getMessageUtil().info("The operation has been undone.");
+        getMessageUtil().info("The last operation has been undone.");
     }
 
     private static MessageUtil getMessageUtil() {
