@@ -233,6 +233,9 @@ public final class ImageOperationHandler {
             if (AppConfig.getInstance().isPreserveDateTimeEnabled()
                     && (operation == ImageOperation.Type.MOVE || operation == ImageOperation.Type.COPY)) {
                 Files.setLastModifiedTime(destFile.toPath(), srcFileCreationTime);
+                for (File f : companions) {
+                    Files.setLastModifiedTime(new File(destDir, f.getName()).toPath(), srcFileCreationTime);
+                }
             }
 
             // Notify extensions of what just happened:
