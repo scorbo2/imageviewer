@@ -9,6 +9,7 @@ import ca.corbett.imageviewer.ui.actions.ImageOperationAction;
 import ca.corbett.imageviewer.ui.dialogs.NameConflictDialog;
 import ca.corbett.imageviewer.ui.threads.DeleteImageThread;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.JOptionPane;
 import java.io.File;
@@ -665,9 +666,31 @@ public final class ImageOperationHandler {
             return;
         }
 
+        // See if our extensions have any companion files for this image:
+        List<File> companions = ImageViewerExtensionManager.getInstance().getCompanionFiles(srcFile);
+
         logger.log(Level.INFO, "renameImage: {0} -> {1}", new Object[]{srcFile.getAbsolutePath(), newName});
         ImageViewerExtensionManager.getInstance().preImageOperation(ImageOperation.Type.MOVE, srcFile, newFile);
+
+        // Rename the image:
         srcFile.renameTo(newFile);
+
+        // Rename any companion files:
+        for (File f : companions) {
+            File renamedCompanion = new File(srcFile.getParentFile(),
+                                             FilenameUtils.getBaseName(newFile.getName())
+                                                     + "."
+                                                     + FilenameUtils.getExtension(f.getName()));
+            if (renamedCompanion.exists()) {
+                logger.log(Level.WARNING, "renameImage: companion file {0} already exists. Skipping.",
+                           new Object[]{renamedCompanion.getAbsolutePath()});
+            }
+            else {
+                logger.log(Level.INFO, "renameImage (companion): {0} -> {1}",
+                           new Object[]{f.getAbsolutePath(), renamedCompanion.getAbsolutePath()});
+                f.renameTo(new File(srcFile.getParentFile(), renamedCompanion.getName()));
+            }
+        }
         ImageViewerExtensionManager.getInstance().postImageOperation(ImageOperation.Type.MOVE, newFile);
 
         MainWindow.getInstance().selectedImageRenamed(newFile);
