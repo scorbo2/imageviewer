@@ -8,18 +8,26 @@ import ca.corbett.forms.validators.ValidationResult;
 import ca.corbett.imageviewer.ImageOperationHandler;
 import ca.corbett.imageviewer.ui.MainWindow;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.border.BevelBorder;
+import javax.swing.text.JTextComponent;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
 
 /**
@@ -40,9 +48,23 @@ public final class RenameDialog extends JDialog {
         setSize(440, 160);
         setResizable(true);
         setLocationRelativeTo(MainWindow.getInstance());
-        setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         initComponents();
         textField.getFieldComponent().requestFocus();
+
+        // Set up the Escape key binding
+        ActionMap am = getRootPane().getActionMap();
+        InputMap im = getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        Object windowCloseKey = new Object();
+        KeyStroke windowCloseStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        Action windowCloseAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose(); // Close the dialog
+            }
+        };
+        im.put(windowCloseStroke, windowCloseKey);
+        am.put(windowCloseKey, windowCloseAction);
     }
 
     private void doRename() {
@@ -62,6 +84,17 @@ public final class RenameDialog extends JDialog {
 
         textField = new TextField("New name:", 20, 1, false);
         textField.setText(file.getName());
+
+        // Pre-select the file base name but not the extension:
+        JTextComponent textComponent = (JTextComponent)textField.getFieldComponent();
+        if (!file.getName().contains(".")) {
+            textComponent.selectAll();
+        }
+        else {
+            textComponent.setSelectionStart(0);
+            textComponent.setSelectionEnd(file.getName().lastIndexOf('.'));
+        }
+
         ((JTextField)textField.getFieldComponent()).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

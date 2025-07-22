@@ -10,6 +10,7 @@ import java.io.File;
 
 /**
  * Handles renaming of the currently selected image in MainWindow, if there is one.
+ * Wired up with F2 as a keyboard shortcut, or you can find it in the main menu.
  *
  * @author scorbo2
  * @since ImageViewer 2.0
