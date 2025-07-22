@@ -34,7 +34,8 @@ public final class LogConsoleManager {
         theme.setStyle("copySingleFile", createStyle("copySingleFile", true, Color.CYAN, false));
         theme.setStyle("linkSingleFile", createStyle("linkSingleFile", true, Color.CYAN, false));
         theme.setStyle("moveDirectory", createStyle("moveDirectory", true, Color.CYAN, false));
-        theme.setStyle("deleteImage", createStyle("createImage", true, Color.RED, true));
+        theme.setStyle("renameImage", createStyle("renameImage", true, Color.CYAN, true));
+        theme.setStyle("deleteImage", createStyle("deleteImage", true, Color.RED, true));
         theme.setStyle("deleteDirectory", createStyle("deleteDirectory", true, Color.RED, true));
 
         // Add any provided by extensions:

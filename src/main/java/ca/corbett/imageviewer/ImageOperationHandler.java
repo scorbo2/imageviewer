@@ -710,15 +710,22 @@ public final class ImageOperationHandler {
             return;
         }
 
+        // See if our extensions have any companion files for this image:
+        List<File> companions = ImageViewerExtensionManager.getInstance().getCompanionFiles(srcFile);
+
         // Notify extensions that we're about to delete this file:
         ImageViewerExtensionManager.getInstance().preImageOperation(ImageOperation.Type.DELETE, srcFile, null);
 
         // Delete the image:
         logger.log(Level.INFO, "deleteImage: {0}", srcFile.getAbsolutePath());
         if (!srcFile.delete()) {
-            getMessageUtil().error("Move error",
+            getMessageUtil().error("Delete error",
                                    "Error deleting " + srcFile.getAbsolutePath() + " - check permissions.");
             return;
+        }
+        for (File f : companions) {
+            logger.log(Level.INFO, "deleteImage (companion): {0}", f.getAbsolutePath());
+            f.delete();
         }
 
         // Notify extensions that we deleted the file (this is debatable since srcFile no longer exists, but eh.

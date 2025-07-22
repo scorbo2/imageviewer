@@ -103,6 +103,10 @@ public final class DeleteImageThread implements Runnable {
                                                    .preImageOperation(ImageOperation.Type.DELETE, file, null);
                         long elapsedTimeLog = System.currentTimeMillis() - startTime;
                         startTime = System.currentTimeMillis();
+
+                        // Make note of any companion files that our extensions want to accompany this image file:
+                        List<File> companions = ImageViewerExtensionManager.getInstance().getCompanionFiles(file);
+
                         logger.log(Level.INFO, "deleteImage: {0}", file.getAbsolutePath());
                         okay = okay && file.delete();
                         if (okay) {
@@ -113,6 +117,12 @@ public final class DeleteImageThread implements Runnable {
                             ImageViewerExtensionManager.getInstance()
                                                        .postImageOperation(ImageOperation.Type.DELETE, file);
                         }
+
+                        for (File f : companions) {
+                            logger.log(Level.INFO, "deleteImage (companion): {0}", file.getAbsolutePath());
+                            f.delete();
+                        }
+
                         long elapsedTimeDelete = System.currentTimeMillis() - startTime;
                         currentProgress++;
                         monitor.setProgress(currentProgress);
