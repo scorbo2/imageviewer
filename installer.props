@@ -1,0 +1,25 @@
+# This is for the make-installer script to autogenerate our installer package.
+# ALL PATHS ARE RELATIVE TO PROJECT ROOT
+# It's assumed you've run a mvn package first...
+
+# Currently we are limited to "tarball" (.tar.gz)
+# In future, may support RPM or DEB package generation.
+FORMAT="tarball"
+
+# Application name/version will also be used for the jar file name.
+APPLICATION="ImageViewer"
+VERSION="2.1"
+
+# An optional project URL to put into a README:
+PROJECT_URL="https://github.com/scorbo2/imageviewer"
+
+# Extra memory settings like Xmx and Xms can be specified here:
+JAVAMEM=
+
+# The application jar file:
+JAR="target/imageviewer-${VERSION}.jar"
+
+# Space-separated list of files and dirs to include:
+TO_COPY="target/lib"
+TO_COPY="${TO_COPY} src/main/resources/ca/corbett/images/ReleaseNotes.txt"
+TO_COPY="${TO_COPY} src/main/resources/ca/corbett/images/images/logo.png"
