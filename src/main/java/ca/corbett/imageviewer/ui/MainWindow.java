@@ -687,7 +687,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
 
     @Override
     public void selectionChanged(DirTree source, File selectedDir) {
-        setTitle(Version.APPLICATION_NAME + selectedDir.getAbsolutePath());
+        setTitle(Version.NAME + " - " + selectedDir.getAbsolutePath());
         thumbContainerPanel.setDirectory(selectedDir);
     }
 
