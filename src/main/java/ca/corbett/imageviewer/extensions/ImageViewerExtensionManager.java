@@ -19,7 +19,9 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -374,11 +376,17 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
      * @return A List of zero or more companion files that should be moved/copied/linked with the image.
      */
     public List<File> getCompanionFiles(File imageFile) {
-        List<File> companions = new ArrayList<>();
+        // It's conceivable that more than one extension could claim the same
+        // companion file, which could result in duplicates in the list.
+        // So, we'll use a Set instead of a List while building it up
+        // to screen those duplicates out. Otherwise, we would have problems
+        // in file move operations, where the handler would try to move
+        // the same companion file more than once, which obviously won't work.
+        Set<File> companions = new HashSet<>();
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
             companions.addAll(extension.getCompanionFiles(imageFile));
         }
-        return companions;
+        return new ArrayList<>(companions);
     }
 
     /**
