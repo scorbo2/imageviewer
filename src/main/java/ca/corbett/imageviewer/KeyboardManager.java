@@ -2,6 +2,7 @@ package ca.corbett.imageviewer;
 
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
+import ca.corbett.imageviewer.ui.actions.RenameAction;
 
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
@@ -55,6 +56,11 @@ public final class KeyboardManager {
                         // Delete key to delete current image:
                         case KeyEvent.VK_DELETE:
                             ImageOperationHandler.deleteImage();
+                            break;
+
+                        // F2 to rename current image:
+                        case KeyEvent.VK_F2:
+                            new RenameAction().actionPerformed(null);
                             break;
 
                         default:
