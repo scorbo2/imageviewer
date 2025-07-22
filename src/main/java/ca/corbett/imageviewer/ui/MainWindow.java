@@ -1,6 +1,5 @@
 package ca.corbett.imageviewer.ui;
 
-import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.MessageUtil;
 import ca.corbett.extras.dirtree.DirTree;
 import ca.corbett.extras.dirtree.DirTreeListener;
@@ -18,6 +17,7 @@ import ca.corbett.imageviewer.ToolBarManager;
 import ca.corbett.imageviewer.Version;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
+import ca.corbett.imageviewer.ui.actions.ReloadUIAction;
 import org.apache.commons.io.FileUtils;
 
 import javax.swing.ImageIcon;
@@ -62,7 +62,7 @@ import java.util.logging.Logger;
  * @author scorbett
  * @since 2017-11-08
  */
-public final class MainWindow extends JFrame implements DirTreeListener {
+public final class MainWindow extends JFrame implements DirTreeListener, UIReloadable {
 
     private static final Logger logger = Logger.getLogger(MainWindow.class.getName());
 
@@ -158,6 +158,8 @@ public final class MainWindow extends JFrame implements DirTreeListener {
 
             // Custom LogConsole theme:
             LogConsoleManager.setCustomTheme();
+
+            ReloadUIAction.getInstance().registerReloadable(instance);
         }
 
         return instance;
@@ -571,9 +573,8 @@ public final class MainWindow extends JFrame implements DirTreeListener {
      * will be reloaded. This is intended to be invoked after an extension is modified
      * or disabled at runtime (at any point after the initial load of MainWindow).
      */
+    @Override
     public void reloadUI() {
-        // Change the look and feel:
-        LookAndFeelManager.switchLaf(AppConfig.getInstance().getLookAndFeelClassname());
 
         // Nuke the toolbar and rebuild it from scratch:
         remove(toolBar);

@@ -15,8 +15,7 @@ public class PreferencesAction extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (AppConfig.getInstance().showPropertiesDialog(MainWindow.getInstance())) {
-            MainWindow.getInstance().reloadUI(); // TODO this should be an action and not in MainWindow
+            ReloadUIAction.getInstance().actionPerformed(e);
         }
     }
-
 }
