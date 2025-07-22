@@ -16,7 +16,7 @@ public final class Version {
     private Version() {
     }
 
-    private static final AboutInfo aboutInfo;
+    public static final AboutInfo aboutInfo;
 
     /** The major version. **/
     public static final int VERSION_MAJOR = 2;
@@ -74,7 +74,7 @@ public final class Version {
 
     static {
         aboutInfo = new AboutInfo();
-        aboutInfo.applicationName = NAME;
+        aboutInfo.applicationName = APPLICATION_NAME;
         aboutInfo.applicationVersion = VERSION;
         aboutInfo.copyright = COPYRIGHT;
         aboutInfo.license = LICENSE;
