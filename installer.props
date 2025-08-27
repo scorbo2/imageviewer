@@ -8,7 +8,7 @@ FORMAT="tarball"
 
 # Application name/version will also be used for the jar file name.
 APPLICATION="ImageViewer"
-VERSION="2.1"
+VERSION="2.2"
 
 # An optional project URL to put into a README:
 PROJECT_URL="https://github.com/scorbo2/imageviewer"

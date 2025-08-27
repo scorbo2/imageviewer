@@ -1,6 +1,9 @@
 ImageViewer Release Notes
 Author: Steve Corbett
 
+Version 2.2 [TODO] - Maintenance release
+  #1 - Upgrade to swing-extras 2.4
+
 Version 2.1 [2025-07-22] - Migrate to github/maven
   Upgrade to swing-extras 2.3
   Migrate project to github/maven

@@ -19,7 +19,7 @@ git clone https://github.com/scorbo2/imageviewer.git
 cd imageviewer
 mvn package
 cd target
-java -jar imageviewer-2.1.jar
+java -jar imageviewer-2.2.jar
 ```
 
 If you have [install-scripts](https://github.com/scorbo2/install-scripts) installed, you can also
