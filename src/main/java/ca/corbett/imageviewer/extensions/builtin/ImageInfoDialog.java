@@ -1,6 +1,8 @@
 package ca.corbett.imageviewer.extensions.builtin;
 
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.Margins;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.imageviewer.ui.ImageInstance;
 
@@ -57,12 +59,11 @@ class ImageInfoDialog extends JDialog {
         String imgSize = imgWidth + "x" + imgHeight;
         String imgDate = image.getFileDatePrintable(new SimpleDateFormat("yyyy-MM-dd h:mm:ssa"));
 
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_CENTER);
-        formPanel.addFormField(createLabelField("Name:", fileName, 24));
-        formPanel.addFormField(createLabelField("Size:", fileSize + ", " + imgSize));
-        formPanel.addFormField(createLabelField("Date:", imgDate));
+        FormPanel formPanel = new FormPanel(Alignment.TOP_CENTER);
+        formPanel.add(createLabelField("Name:", fileName, 24));
+        formPanel.add(createLabelField("Size:", fileSize + ", " + imgSize));
+        formPanel.add(createLabelField("Date:", imgDate));
 
-        formPanel.render();
         return formPanel;
     }
 
@@ -72,9 +73,9 @@ class ImageInfoDialog extends JDialog {
 
     private LabelField createLabelField(String label, String text, int topMargin) {
         LabelField theLabel = new LabelField(label, text);
-        Font headerFont = theLabel.getFieldLabelFont().deriveFont(Font.BOLD, 12);
+        Font headerFont = LabelField.getDefaultFont().deriveFont(Font.BOLD, 12);
         theLabel.setFieldLabelFont(headerFont);
-        theLabel.setMargins(topMargin, 32, 2, 10, 4);
+        theLabel.setMargins(new Margins(32, topMargin, 10, 2, 4));
         return theLabel;
     }
 

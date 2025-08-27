@@ -1,8 +1,9 @@
 package ca.corbett.imageviewer.ui.dialogs;
 
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
-import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.ShortTextField;
 import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.ValidationResult;
 import ca.corbett.imageviewer.ImageOperationHandler;
@@ -40,7 +41,7 @@ public final class RenameDialog extends JDialog {
 
     private final File file;
     private FormPanel formPanel;
-    private TextField textField;
+    private ShortTextField textField;
 
     public RenameDialog(File file) {
         super(MainWindow.getInstance(), "Rename image");
@@ -76,13 +77,14 @@ public final class RenameDialog extends JDialog {
 
     private void initComponents() {
         setLayout(new BorderLayout());
-        formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        formPanel = new FormPanel(Alignment.TOP_LEFT);
 
         LabelField label = new LabelField("Rename image:");
-        label.setFont(label.getFieldLabelFont().deriveFont(Font.BOLD, 16f));
-        formPanel.addFormField(label);
+        label.setFont(LabelField.getDefaultFont().deriveFont(Font.BOLD, 16f));
+        formPanel.add(label);
 
-        textField = new TextField("New name:", 20, 1, false);
+        textField = new ShortTextField("New name:", 20);
+        textField.setAllowBlank(false);
         textField.setText(file.getName());
 
         // Pre-select the file base name but not the extension:
@@ -102,25 +104,23 @@ public final class RenameDialog extends JDialog {
             }
 
         });
-        textField.addFieldValidator(new FieldValidator(textField) {
+        textField.addFieldValidator(new FieldValidator<ShortTextField>() {
             @Override
-            public ValidationResult validate() {
+            public ValidationResult validate(ShortTextField fieldToValidate) {
                 if (filenameContainsInvalidCharacters()) {
-                    return new ValidationResult(false, "New name contains invalid characters.");
+                    return ValidationResult.invalid("New name contains invalid characters.");
                 }
                 if (filenameInUse()) {
-                    return new ValidationResult(false, "New name is already in use.");
+                    return ValidationResult.invalid("New name is already in use.");
                 }
                 if (extensionHasChanged()) {
-                    return new ValidationResult(false, "New name must match old file extension.");
+                    return ValidationResult.invalid("New name must match old file extension.");
                 }
-                return new ValidationResult();
+                return ValidationResult.valid();
             }
 
         });
-        formPanel.addFormField(textField);
-
-        formPanel.render();
+        formPanel.add(textField);
         add(formPanel, BorderLayout.CENTER);
         add(buildButtonPanel(), BorderLayout.SOUTH);
     }
