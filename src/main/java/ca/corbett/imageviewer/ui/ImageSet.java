@@ -11,6 +11,7 @@ import java.util.Optional;
  * To be used with ImageSetPanel.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ * @since ImageViewer 2.2
  */
 public class ImageSet {
 
@@ -55,7 +56,7 @@ public class ImageSet {
         }
 
         // Otherwise, recursively search that root node until we have the target:
-        return findImageSet(rootNode, Arrays.stream(nodes).skip(1).toArray(String[]::new));
+        return Optional.of(findImageSet(rootNode, Arrays.stream(nodes).skip(1).toArray(String[]::new)));
     }
 
     public String getName() {
@@ -70,7 +71,15 @@ public class ImageSet {
         childSets.add(set);
     }
 
-    private static Optional<ImageSet> findImageSet(ImageSet rootNode, String[] nodes) {
+    /**
+     * Recursively searches the given rootNode using the given nodes array as a path element.
+     * For example, given a root node named "root" and a nodes array of {"1","2","3"}, this
+     * method will find or create a child node of "1" inside the given root node, a grandchild
+     * node of "2" inside of "1", and a great-grandchild node of "3" inside of "2". The return
+     * value is the last leaf node (in the example above, node "3" would be returned). All parent
+     * nodes of the returned node will have been created if necessary.
+     */
+    private static ImageSet findImageSet(ImageSet rootNode, String[] nodes) {
         ImageSet nextNode = null;
         for (ImageSet candidate : rootNode.getChildSets()) {
             if (candidate.getName().equalsIgnoreCase(nodes[0])) {
@@ -84,7 +93,7 @@ public class ImageSet {
 
         // If there are no more path elements, this is the final leaf node:
         if (nodes.length == 1) {
-            return Optional.of(nextNode);
+            return nextNode;
         }
 
         // Otherwise, recurse further:
