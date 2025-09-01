@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * The starting point for ImageViewer extensions. Extend this adapter class and place the
- * resulting class file with dependencies in a jar file, and stick that in the dependencies
+ * resulting class file with dependencies in a jar file, and stick that in the extensions
  * directory, either in the app install location, or in the user settings dir.
  * There, it can be detected and picked up by ImageViewer.
  *
