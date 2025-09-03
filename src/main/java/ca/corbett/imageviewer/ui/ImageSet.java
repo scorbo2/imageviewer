@@ -4,7 +4,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Represents a list which can contain either other ImageSets or individual image files.
@@ -18,11 +20,13 @@ public class ImageSet {
     public static char PATH_DELIMITER = '/';
     protected static final List<ImageSet> rootNodes = new ArrayList<>();
 
+    private final UUID id;
     private final List<ImageSet> childSets = new ArrayList<>();
     private final List<File> images = new ArrayList<>();
     private final String name;
 
     protected ImageSet(String name) {
+        this.id = UUID.randomUUID();
         this.name = name;
     }
 
@@ -57,6 +61,10 @@ public class ImageSet {
 
         // Otherwise, recursively search that root node until we have the target:
         return Optional.of(findImageSet(rootNode, Arrays.stream(nodes).skip(1).toArray(String[]::new)));
+    }
+
+    public UUID getId() {
+        return id;
     }
 
     public String getName() {
@@ -142,5 +150,16 @@ public class ImageSet {
         }
 
         return parts.toArray(new String[0]);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof ImageSet imageSet)) { return false; }
+        return Objects.equals(id, imageSet.id) && Objects.equals(name, imageSet.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name);
     }
 }
