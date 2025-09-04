@@ -1,4 +1,4 @@
-package ca.corbett.imageviewer.ui;
+package ca.corbett.imageviewer.ui.imagesets;
 
 import java.io.File;
 import java.util.ArrayList;

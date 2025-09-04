@@ -18,6 +18,7 @@ import ca.corbett.imageviewer.Version;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.actions.ReloadUIAction;
+import ca.corbett.imageviewer.ui.imagesets.ImageSetPanel;
 import org.apache.commons.io.FileUtils;
 
 import javax.swing.ImageIcon;
@@ -30,6 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -77,7 +79,9 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
     private JToolBar toolBar;
     private JPopupMenu imagePanelPopupMenu;
 
+    private JTabbedPane imgSrcTabPane;
     private DirTree dirTree;
+    private ImageSetPanel imageSetPanel;
     private ThumbContainerPanel thumbContainerPanel;
     private JPanel mainWrapperPanel;
     private ImagePanel imagePanel;
@@ -304,6 +308,12 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
         dirTree.setPreferredSize(new Dimension(180, 200));
         dirTree.addDirTreeListener(this);
 
+        imageSetPanel = new ImageSetPanel();
+
+        imgSrcTabPane = new JTabbedPane();
+        imgSrcTabPane.addTab("File system", dirTree);
+        imgSrcTabPane.addTab("Image sets", imageSetPanel);
+
         thumbContainerPanel = ThumbContainerPanel.createThumbContainer();
         thumbContainerPanel.setMinimumSize(new Dimension(180, 100));
         thumbContainerPanel.addListener(new ThumbContainerPanelListener() {
@@ -386,9 +396,9 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
         }
         mainWrapperPanel.add(imagePanel, BorderLayout.CENTER);
 
-        sideSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, dirTree, thumbScrollPane);
+        sideSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, imgSrcTabPane, thumbScrollPane);
         mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sideSplitPane, mainWrapperPanel);
-        mainSplitPane.setOneTouchExpandable(true);
+        //TODO this behaves horribly in certain look and feels: mainSplitPane.setOneTouchExpandable(true);
 
         setLayout(new BorderLayout());
         add(mainSplitPane, BorderLayout.CENTER);
