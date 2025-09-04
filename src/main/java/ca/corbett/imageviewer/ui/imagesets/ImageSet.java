@@ -1,5 +1,6 @@
 package ca.corbett.imageviewer.ui.imagesets;
 
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,19 +16,32 @@ import java.util.UUID;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 2.2
  */
-public class ImageSet {
+public class ImageSet extends DefaultMutableTreeNode {
 
     public static char PATH_DELIMITER = '/';
     protected static final List<ImageSet> rootNodes = new ArrayList<>();
 
     private final UUID id;
     private final List<ImageSet> childSets = new ArrayList<>();
-    private final List<File> images = new ArrayList<>();
+    private final List<String> imageFiles = new ArrayList<>();
     private final String name;
 
-    protected ImageSet(String name) {
+    public ImageSet(String name) {
+        super(name);
         this.id = UUID.randomUUID();
         this.name = name;
+    }
+
+    public List<File> getImageFiles() {
+        List<File> list = new ArrayList<>();
+        for (String imageFile : imageFiles) {
+            list.add(new File(imageFile));
+        }
+        return list;
+    }
+
+    public void addImageFile(File imageFile) {
+        imageFiles.add(imageFile.getAbsolutePath());
     }
 
     /**
@@ -161,5 +175,11 @@ public class ImageSet {
     @Override
     public int hashCode() {
         return Objects.hash(id, name);
+    }
+
+    public static List<ImageSet> getRootNodes() {
+        List<ImageSet> list = new ArrayList<>();
+        list.add(new ImageSet("Favorites"));
+        return list;
     }
 }

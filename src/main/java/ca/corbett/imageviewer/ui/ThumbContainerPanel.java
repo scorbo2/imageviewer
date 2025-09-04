@@ -4,6 +4,7 @@ import ca.corbett.extras.io.FileSystemUtil;
 import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.dialogs.AlienDialog;
+import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 import ca.corbett.imageviewer.ui.layout.WrapLayout;
 import ca.corbett.imageviewer.ui.threads.ThumbLoaderThread;
 
@@ -290,6 +291,13 @@ public final class ThumbContainerPanel extends JPanel {
         currentDir = dir;
         setImageList(FileSystemUtil.findFiles(dir, false, imageExtensions));
         alienFileList = findAlienFiles(dir);
+    }
+
+    // TODO experimental
+    public void setImageSet(ImageSet imageSet) {
+        //TODO what does currentDir get set to here? Maybe nothing?
+        setImageList(imageSet.getImageFiles());
+        //TODO do we worry about alien files in an image set? likely not, how would they get in there...
     }
 
     /**

@@ -18,6 +18,7 @@ import ca.corbett.imageviewer.Version;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.actions.ReloadUIAction;
+import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 import ca.corbett.imageviewer.ui.imagesets.ImageSetPanel;
 import org.apache.commons.io.FileUtils;
 
@@ -699,6 +700,11 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
     public void selectionChanged(DirTree source, File selectedDir) {
         setTitle(Version.NAME + " - " + selectedDir.getAbsolutePath());
         thumbContainerPanel.setDirectory(selectedDir);
+    }
+
+    // TODO temp remove me or replace me with actual listener event from the ImageSetPanel
+    public void setImageSet(ImageSet set) {
+        thumbContainerPanel.setImageSet(set);
     }
 
     @Override
