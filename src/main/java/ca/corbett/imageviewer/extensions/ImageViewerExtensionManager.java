@@ -8,6 +8,7 @@ import ca.corbett.imageviewer.ImageOperation;
 import ca.corbett.imageviewer.Version;
 import ca.corbett.imageviewer.ui.ImageInstance;
 import ca.corbett.imageviewer.ui.ThumbPanel;
+import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -335,6 +336,18 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
             extension.thumbPanelRenamed(thumbPanel, newFile);
         }
+    }
+
+    /**
+     * Invoked when the application is populating the Image Sets tree. Extensions can supply
+     * their own root node(s) if they offer functionality related to Image Sets.
+     */
+    public List<ImageSet> getImageSetRootNodes() {
+        List<ImageSet> rootNodes = new ArrayList<>();
+        for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
+            rootNodes.addAll(extension.getImageSetRootNodes());
+        }
+        return rootNodes;
     }
 
     /**

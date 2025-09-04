@@ -6,6 +6,7 @@ import ca.corbett.extras.logging.LogConsoleStyle;
 import ca.corbett.imageviewer.ImageOperation;
 import ca.corbett.imageviewer.ui.ImageInstance;
 import ca.corbett.imageviewer.ui.ThumbPanel;
+import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -243,6 +244,15 @@ public abstract class ImageViewerExtension extends AppExtension {
      * @return A List of zero or more companion files that should be moved/copied/linked with the image.
      */
     public List<File> getCompanionFiles(File imageFile) {
+        return List.of();
+    }
+
+    /**
+     * Returns a List of 0 or more root nodes for the Image Set tree. If the extension wishes
+     * to offer custom Image Set operations, the extension can return its own root node(s) for
+     * that purpose. The default return is an empty list.
+     */
+    public List<ImageSet> getImageSetRootNodes() {
         return List.of();
     }
 
