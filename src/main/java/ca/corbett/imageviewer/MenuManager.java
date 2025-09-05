@@ -4,6 +4,7 @@ import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.actions.AboutAction;
 import ca.corbett.imageviewer.ui.actions.ExitAction;
+import ca.corbett.imageviewer.ui.actions.FavoritesCreateListAction;
 import ca.corbett.imageviewer.ui.actions.ImageOperationAction;
 import ca.corbett.imageviewer.ui.actions.LogConsoleAction;
 import ca.corbett.imageviewer.ui.actions.ManageExtensionsAction;
@@ -412,6 +413,7 @@ public final class MenuManager {
         for (ImageSet topLevelNode : topLevelNodes) {
             buildFavoriteMenuRecursive(topLevelNode, topLevelNode, menu);
         }
+        menu.add(new JMenuItem(new FavoritesCreateListAction()));
         return menu;
     }
 
@@ -476,11 +478,6 @@ public final class MenuManager {
                     menu.add(new JMenuItem(childSet.getName())); // TODO this should be an action
                 }
             }
-        }
-
-        // If we're at the root level, also add an option to create a new list:
-        if (node == rootNode) {
-            menu.add(new JMenuItem("Create new list...")); // TODO this should be an action
         }
     }
 }
