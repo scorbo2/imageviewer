@@ -637,6 +637,10 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
         return dirTree.getCurrentDir();
     }
 
+    public ImageSetPanel getImageSetPanel() {
+        return imageSetPanel;
+    }
+
     /**
      * Deletes the currently selected image, if there is one selected.
      * This is shorthand for ImageOperationHandler.deleteImage(), which does the same thing.

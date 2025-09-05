@@ -1,6 +1,7 @@
 package ca.corbett.imageviewer;
 
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
+import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.actions.AboutAction;
 import ca.corbett.imageviewer.ui.actions.ExitAction;
 import ca.corbett.imageviewer.ui.actions.ImageOperationAction;
@@ -12,6 +13,7 @@ import ca.corbett.imageviewer.ui.actions.PreviousImageAction;
 import ca.corbett.imageviewer.ui.actions.QuickMoveEditAction;
 import ca.corbett.imageviewer.ui.actions.ReloadAction;
 import ca.corbett.imageviewer.ui.actions.RenameAction;
+import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -40,6 +42,7 @@ public final class MenuManager {
     private static final String MENU_LABEL_LINK_ONE = "Link this image...";
     private static final String MENU_LABEL_LINK_ALL = "Link all images in this directory...";
     private static final String MENU_LABEL_LINK_DIR = "Link this directory...";
+    private static final String MENU_LABEL_FAVORITE = "Add to favorites...";
 
     private static JMenuBar menuBar;
     private static JMenu fileMenu;
@@ -98,6 +101,7 @@ public final class MenuManager {
         }
 
         imagePanelPopupMenu.addSeparator();
+        imagePanelPopupMenu.add(buildFavoritesMenu());
         imagePanelPopupMenu.add(new JMenuItem(new RenameAction()));
 
         // Add any menu items from our extensions, if any:
@@ -400,6 +404,18 @@ public final class MenuManager {
     }
 
     /**
+     * Interrogates the current list of ImageSets to build out an "add to favorites" menu.
+     */
+    public static JMenu buildFavoritesMenu() {
+        JMenu menu = new JMenu(MENU_LABEL_FAVORITE);
+        List<ImageSet> topLevelNodes = MainWindow.getInstance().getImageSetPanel().getFavorites();
+        for (ImageSet topLevelNode : topLevelNodes) {
+            buildFavoriteMenuRecursive(topLevelNode, topLevelNode, menu);
+        }
+        return menu;
+    }
+
+    /**
      * Builds menu items related to image deletion and returns them in a list that can be
      * inserted into a JMenu or JPopupMenu.
      *
@@ -445,7 +461,26 @@ public final class MenuManager {
                 menu.add(new JMenuItem(new ImageOperationAction("To directory...", imageOp)));
             }
         }
-
     }
 
+    private static void buildFavoriteMenuRecursive(ImageSet rootNode, ImageSet node, JMenu menu) {
+        if (node != null && node.getChildCount() > 0) {
+            for (int i = 0; i < node.getChildCount(); i++) {
+                ImageSet childSet = (ImageSet)node.getChildAt(i);
+                if (childSet.getChildCount() > 0) {
+                    JMenu subMenu = new JMenu(childSet.getName());
+                    buildFavoriteMenuRecursive(rootNode, childSet, subMenu);
+                    menu.add(subMenu);
+                }
+                else {
+                    menu.add(new JMenuItem(childSet.getName())); // TODO this should be an action
+                }
+            }
+        }
+
+        // If we're at the root level, also add an option to create a new list:
+        if (node == rootNode) {
+            menu.add(new JMenuItem("Create new list...")); // TODO this should be an action
+        }
+    }
 }

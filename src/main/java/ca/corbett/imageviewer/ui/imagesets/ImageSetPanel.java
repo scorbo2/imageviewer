@@ -15,6 +15,7 @@ import javax.swing.tree.TreeCellRenderer;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ImageSetPanel extends JPanel {
@@ -47,6 +48,17 @@ public class ImageSetPanel extends JPanel {
         setLayout(new BorderLayout());
         add(buildToolbar(), BorderLayout.NORTH);
         add(new JScrollPane(tree), BorderLayout.CENTER);
+    }
+
+    /**
+     * Returns the top-level favorites nodes, which may have child nodes and grandchild nodes and so on.
+     */
+    public List<ImageSet> getFavorites() {
+        List<ImageSet> topLevelNodes = new ArrayList<>();
+        for (int i = 0; i < rootNode.getChildCount(); i++) {
+            topLevelNodes.add((ImageSet)rootNode.getChildAt(i));
+        }
+        return topLevelNodes;
     }
 
     public void addToFavorites(ImageSet imageSet) {
