@@ -89,13 +89,39 @@ public class ImageSetPanel extends JPanel {
         return null;
     }
 
+    public boolean favoriteSetExists(String path) {
+        String[] nodes = parsePathNodes(path);
+        if (nodes.length == 0) {
+            return false;
+        }
+
+        // Find the first path node:
+        ImageSet firstPathNode = null;
+        for (ImageSet candidate : getFavorites()) {
+            if (candidate.getName().equalsIgnoreCase(nodes[0])) {
+                firstPathNode = candidate;
+                break;
+            }
+        }
+        if (firstPathNode == null) {
+            return false; // not found
+        }
+
+        // If there was no sub-path, we're done:
+        if (nodes.length == 1) {
+            return true;
+        }
+
+        // Otherwise, recursively search that path node until we have the target:
+        return pathExistsInNode(firstPathNode, Arrays.stream(nodes).skip(1).toArray(String[]::new));
+    }
 
     /**
      * Finds or creates an ImageSet with the given name.
      * You can use PATH_DELIMITER to create a nested path, like "parent/child/grandchild".
      * Or use a non-delimited string to just create/search for a top level ImageSet.
      */
-    public Optional<ImageSet> getFavoritesSet(String name) {
+    public Optional<ImageSet> findOrCreateFavoritesSet(String name) {
         String[] nodes = parsePathNodes(name);
         if (nodes.length == 0) {
             return Optional.empty();
@@ -120,7 +146,29 @@ public class ImageSetPanel extends JPanel {
         }
 
         // Otherwise, recursively search that root node until we have the target:
-        return Optional.of(findImageSet(rootNode, Arrays.stream(nodes).skip(1).toArray(String[]::new)));
+        return Optional.of(findOrCreateImageSetInNode(rootNode, Arrays.stream(nodes).skip(1).toArray(String[]::new)));
+    }
+
+    private boolean pathExistsInNode(ImageSet rootNode, String[] path) {
+        ImageSet nextNode = null;
+        for (int i = 0; i < rootNode.getChildCount(); i++) {
+            ImageSet candidate = (ImageSet)rootNode.getChildAt(i);
+            if (candidate.getName().equalsIgnoreCase(path[0])) {
+                nextNode = candidate;
+            }
+        }
+        if (nextNode == null) {
+            return false;
+        }
+
+        // If there are no more path elements, this is the final leaf node:
+        if (path.length == 1) {
+            return true;
+        }
+
+        // Otherwise, recurse further:
+        return pathExistsInNode(nextNode, Arrays.stream(path).skip(1).toArray(String[]::new));
+
     }
 
     /**
@@ -131,7 +179,7 @@ public class ImageSetPanel extends JPanel {
      * value is the last leaf node (in the example above, node "3" would be returned). All parent
      * nodes of the returned node will have been created if necessary.
      */
-    private ImageSet findImageSet(ImageSet rootNode, String[] nodes) {
+    private ImageSet findOrCreateImageSetInNode(ImageSet rootNode, String[] nodes) {
         ImageSet nextNode = null;
         for (int i = 0; i < rootNode.getChildCount(); i++) {
             ImageSet candidate = (ImageSet)rootNode.getChildAt(i);
@@ -150,7 +198,7 @@ public class ImageSetPanel extends JPanel {
         }
 
         // Otherwise, recurse further:
-        return findImageSet(nextNode, Arrays.stream(nodes).skip(1).toArray(String[]::new));
+        return findOrCreateImageSetInNode(nextNode, Arrays.stream(nodes).skip(1).toArray(String[]::new));
     }
 
     /**

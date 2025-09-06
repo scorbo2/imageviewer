@@ -1,11 +1,12 @@
 package ca.corbett.imageviewer.ui.imagesets;
 
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
+import java.util.logging.Logger;
 
 /**
  * Represents a list which can contain either other ImageSets or individual image files.
@@ -16,16 +17,14 @@ import java.util.UUID;
  */
 public class ImageSet extends DefaultMutableTreeNode {
 
-    protected static final List<ImageSet> rootNodes = new ArrayList<>();
+    private static final Logger log = Logger.getLogger(ImageSet.class.getName());
 
-    private final UUID id;
-    private final List<ImageSet> childSets = new ArrayList<>();
+    // TODO ordering should be customizable...
     private final List<String> imageFiles = new ArrayList<>();
     private final String name;
 
     public ImageSet(String name) {
         super(name);
-        this.id = UUID.randomUUID();
         this.name = name;
     }
 
@@ -37,27 +36,52 @@ public class ImageSet extends DefaultMutableTreeNode {
         return list;
     }
 
-    public void addImageFile(File imageFile) {
+    public boolean addImageFile(File imageFile) {
+        if (imageFile == null) {
+            log.warning("Ignoring attempt to add null image to image set.");
+            return false;
+        }
+        if (imageFiles.contains(imageFile.getAbsolutePath())) {
+            log.warning("Ignoring attempt to add duplicate image to image set: " + imageFile.getAbsolutePath());
+            return false;
+        }
         imageFiles.add(imageFile.getAbsolutePath());
-    }
-
-    public UUID getId() {
-        return id;
+        return true;
     }
 
     public String getName() {
         return name;
     }
 
+    /**
+     * Returns the fully-qualified path and name of this node as a formatted string using the PATH_DELIMITER
+     * constant in ImageSetPanel.
+     */
+    public String getPathString() {
+        TreeNode[] treePath = getPath();
+        StringBuilder sb = new StringBuilder();
+        for (TreeNode node : treePath) {
+            if (node instanceof ImageSet imageSet) {
+                sb.append(imageSet.getName());
+
+                if (imageSet != this) {
+                    sb.append(ImageSetPanel.PATH_DELIMITER);
+                }
+            }
+        }
+
+        return sb.toString();
+    }
+
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof ImageSet imageSet)) { return false; }
-        return Objects.equals(id, imageSet.id) && Objects.equals(name, imageSet.name);
+        return Objects.equals(getPathString(), imageSet.getPathString()) && Objects.equals(name, imageSet.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name);
+        return Objects.hash(getPathString(), name);
     }
 
     public static List<ImageSet> getRootNodes() {

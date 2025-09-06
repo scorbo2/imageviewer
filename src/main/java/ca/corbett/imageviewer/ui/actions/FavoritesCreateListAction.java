@@ -26,10 +26,12 @@ public class FavoritesCreateListAction extends AbstractAction {
         File file = currentImage.getImageFile();
         String name = JOptionPane.showInputDialog(MainWindow.getInstance(), "Enter name for new list:");
         if (name != null) {
-            Optional<ImageSet> imageSetOptional = MainWindow.getInstance().getImageSetPanel().getFavoritesSet(name);
+            Optional<ImageSet> imageSetOptional = MainWindow.getInstance().getImageSetPanel()
+                                                            .findOrCreateFavoritesSet(name);
             if (imageSetOptional.isPresent()) {
-                imageSetOptional.get().addImageFile(file);
-                ReloadUIAction.getInstance().actionPerformed(actionEvent); // TODO like this???
+                if (imageSetOptional.get().addImageFile(file)) {
+                    ReloadUIAction.getInstance().actionPerformed(actionEvent); // TODO overkill
+                }
             }
         }
     }

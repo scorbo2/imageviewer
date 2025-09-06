@@ -112,7 +112,7 @@ class ImageSetPanelTest {
     }
 
     @Test
-    public void findImageSet_withGarbageInput_returnsEmpty() {
+    public void findOrCreateImageSet_InNode_withGarbageInput_returnsEmpty() {
         //GIVEN input with garbage values:
         String[] garbageInput = {
                 "",
@@ -126,7 +126,7 @@ class ImageSetPanelTest {
 
         //WHEN we try to get an ImageSet out of it:
         for (String input : garbageInput) {
-            Optional<ImageSet> result = imageSetPanel.getFavoritesSet(input);
+            Optional<ImageSet> result = imageSetPanel.findOrCreateFavoritesSet(input);
 
             // THEN we should get nothing:
             assertFalse(result.isPresent());
@@ -134,7 +134,7 @@ class ImageSetPanelTest {
     }
 
     @Test
-    public void findImageSet_withValidInput_shouldCreateNodes() {
+    public void findOrCreateImageSet_InNode_withValidInput_shouldCreateNodes() {
         //GIVEN input with a single element:
         String[] singleElementInput = {
                 "hello",
@@ -146,7 +146,7 @@ class ImageSetPanelTest {
 
         // WHEN we try to get an ImageSet out of it:
         for (String input : singleElementInput) {
-            Optional<ImageSet> result = imageSetPanel.getFavoritesSet(input);
+            Optional<ImageSet> result = imageSetPanel.findOrCreateFavoritesSet(input);
 
             // THEN we should get a valid node with the expected name:
             assertTrue(result.isPresent());
@@ -155,7 +155,7 @@ class ImageSetPanelTest {
     }
 
     @Test
-    public void findImageSet_withMultiPath_shouldCreatePath() {
+    public void findOrCreateImageSet_InNode_withMultiPath_shouldCreatePath() {
         //GIVEN input that describes a path:
         String[] multiElementInput = {
                 "hello/there",
@@ -166,19 +166,53 @@ class ImageSetPanelTest {
 
         // WHEN we try to get an ImageSet out of it:
         for (String input : multiElementInput) {
-            Optional<ImageSet> result = imageSetPanel.getFavoritesSet(input);
+            Optional<ImageSet> result = imageSetPanel.findOrCreateFavoritesSet(input);
 
             // THEN we should get the leaf node:
             assertTrue(result.isPresent());
             assertEquals("there", result.get().getName());
 
             // AND the root node should be present:
-            assertEquals(1, ImageSet.rootNodes.size());
-            assertEquals("hello", ImageSet.rootNodes.get(0).getName());
+            assertEquals(1, imageSetPanel.getFavoritesRoot().getChildCount());
 
             // AND that root node should have the leaf as a child:
-            assertEquals(1, imageSetPanel.getFavoritesRoot().getChildCount());
-            assertEquals("there", ((ImageSet)imageSetPanel.getFavoritesRoot().getChildAt(0)).getName());
+            assertEquals("hello", ((ImageSet)imageSetPanel.getFavoritesRoot().getChildAt(0)).getName());
         }
+    }
+
+    @Test
+    public void favoriteSetExists_withNoData_shouldReturnFalse() {
+        // GIVEN input with no data:
+
+        // WHEN we check for the existence of paths:
+        boolean path1Exists = imageSetPanel.favoriteSetExists("hello/there");
+        boolean path2Exists = imageSetPanel.favoriteSetExists("Favorites");
+        boolean path3Exists = imageSetPanel.favoriteSetExists("a/b/c/d/e");
+
+        // THEN they should report false:
+        assertFalse(path1Exists);
+        assertFalse(path2Exists);
+        assertFalse(path3Exists);
+    }
+
+    @Test
+    public void favoriteSetExists_withValidPath_shouldReturnTrue() {
+        // GIVEN a hierarchical setup:
+        ImageSet node1 = new ImageSet("node1");
+        ImageSet node2 = new ImageSet("node2");
+        ImageSet node3 = new ImageSet("node3");
+        node1.add(node2);
+        node2.add(node3);
+        imageSetPanel.addToFavorites(node1);
+
+        // WHEN we query for the existence of it:
+        boolean path1Exists = imageSetPanel.favoriteSetExists("node1/node2/node3");
+        boolean path2Exists = imageSetPanel.favoriteSetExists("node1//node2//node3"); // should ignore extras
+        boolean path3Exists = imageSetPanel.favoriteSetExists("//////node1/node2/////node3/////");
+
+        // THEN all should be true:
+        assertTrue(path1Exists);
+        assertTrue(path2Exists);
+        assertTrue(path3Exists);
     }
 }

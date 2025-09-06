@@ -4,6 +4,7 @@ import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.actions.AboutAction;
 import ca.corbett.imageviewer.ui.actions.ExitAction;
+import ca.corbett.imageviewer.ui.actions.FavoritesAddToListAction;
 import ca.corbett.imageviewer.ui.actions.FavoritesCreateListAction;
 import ca.corbett.imageviewer.ui.actions.ImageOperationAction;
 import ca.corbett.imageviewer.ui.actions.LogConsoleAction;
@@ -411,7 +412,7 @@ public final class MenuManager {
         JMenu menu = new JMenu(MENU_LABEL_FAVORITE);
         List<ImageSet> topLevelNodes = MainWindow.getInstance().getImageSetPanel().getFavorites();
         for (ImageSet topLevelNode : topLevelNodes) {
-            buildFavoriteMenuRecursive(topLevelNode, topLevelNode, menu);
+            buildFavoriteMenuRecursive(topLevelNode, menu);
         }
         menu.add(new JMenuItem(new FavoritesCreateListAction()));
         return menu;
@@ -465,19 +466,16 @@ public final class MenuManager {
         }
     }
 
-    private static void buildFavoriteMenuRecursive(ImageSet rootNode, ImageSet node, JMenu menu) {
+    private static void buildFavoriteMenuRecursive(ImageSet node, JMenu menu) {
         if (node != null && node.getChildCount() > 0) {
+            JMenu subMenu = new JMenu(node.getName());
+            menu.add(subMenu);
             for (int i = 0; i < node.getChildCount(); i++) {
-                ImageSet childSet = (ImageSet)node.getChildAt(i);
-                if (childSet.getChildCount() > 0) {
-                    JMenu subMenu = new JMenu(childSet.getName());
-                    buildFavoriteMenuRecursive(rootNode, childSet, subMenu);
-                    menu.add(subMenu);
-                }
-                else {
-                    menu.add(new JMenuItem(childSet.getName())); // TODO this should be an action
-                }
+                buildFavoriteMenuRecursive((ImageSet)node.getChildAt(i), subMenu);
             }
+        }
+        else if (node != null) {
+            menu.add(new FavoritesAddToListAction(node));
         }
     }
 }
