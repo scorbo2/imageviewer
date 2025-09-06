@@ -12,6 +12,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreePath;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.io.File;
@@ -52,6 +53,24 @@ public class ImageSetPanel extends JPanel {
         setLayout(new BorderLayout());
         add(buildToolbar(), BorderLayout.NORTH);
         add(new JScrollPane(tree), BorderLayout.CENTER);
+    }
+
+    /**
+     * Returns the selected ImageSet, or null if nothing is selected.
+     */
+    public ImageSet getSelectedImageSet() {
+        TreePath path = tree.getSelectionPath();
+        if (path == null || path.getLastPathComponent() == null) {
+            // nothing selected
+            return null;
+        }
+
+        // If whatever was selected is somehow not an ImageSet, we're done:
+        if (!(path.getLastPathComponent() instanceof ImageSet)) {
+            return null;
+        }
+
+        return (ImageSet)path.getLastPathComponent();
     }
 
     /**

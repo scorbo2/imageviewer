@@ -36,6 +36,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -314,6 +316,20 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
         imgSrcTabPane = new JTabbedPane();
         imgSrcTabPane.addTab("File system", dirTree);
         imgSrcTabPane.addTab("Image sets", imageSetPanel);
+        imgSrcTabPane.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent changeEvent) {
+                thumbContainerPanel.clear();
+                switch (imgSrcTabPane.getSelectedIndex()) {
+                    case 0:
+                        setDirectory(dirTree.getCurrentDir());
+                        break;
+                    case 1:
+                        setImageSet(imageSetPanel.getSelectedImageSet());
+                        break;
+                }
+            }
+        });
 
         thumbContainerPanel = ThumbContainerPanel.createThumbContainer();
         thumbContainerPanel.setMinimumSize(new Dimension(180, 100));
@@ -702,13 +718,27 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
 
     @Override
     public void selectionChanged(DirTree source, File selectedDir) {
-        setTitle(Version.NAME + " - " + selectedDir.getAbsolutePath());
-        thumbContainerPanel.setDirectory(selectedDir);
+        setDirectory(selectedDir);
     }
 
-    // TODO temp remove me or replace me with actual listener event from the ImageSetPanel
+    public void setDirectory(File selectedDir) {
+        if (selectedDir == null) {
+            setTitle(Version.NAME);
+        }
+        else {
+            setTitle(Version.NAME + " - " + selectedDir.getAbsolutePath());
+        }
+        thumbContainerPanel.setDirectory(selectedDir); // handles nulls
+    }
+
     public void setImageSet(ImageSet set) {
-        thumbContainerPanel.setImageSet(set);
+        if (set == null) {
+            setTitle(Version.NAME);
+        }
+        else {
+            setTitle(Version.NAME + " - " + set.getPathString());
+        }
+        thumbContainerPanel.setImageSet(set); // handles nulls
     }
 
     @Override

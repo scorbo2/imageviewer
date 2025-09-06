@@ -289,12 +289,20 @@ public final class ThumbContainerPanel extends JPanel {
      */
     public void setDirectory(File dir) {
         currentDir = dir;
+        if (dir == null) {
+            clear();
+            return;
+        }
         setImageList(FileSystemUtil.findFiles(dir, false, imageExtensions));
         alienFileList = findAlienFiles(dir);
     }
 
     // TODO experimental
     public void setImageSet(ImageSet imageSet) {
+        if (imageSet == null) {
+            clear();
+            return;
+        }
         //TODO what does currentDir get set to here? Maybe nothing?
         setImageList(imageSet.getImageFiles());
         //TODO do we worry about alien files in an image set? likely not, how would they get in there...
