@@ -199,11 +199,14 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
      * Gives all enabled extensions a chance to handle the given keyboard shortcut.
      *
      * @param e The KeyEvent in question.
+     * @return true if any extension reports that it handled the event
      */
-    public void handleKeyboardShortcut(KeyEvent e) {
+    public boolean handleKeyboardShortcut(KeyEvent e) {
+        boolean wasHandled = false;
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            extension.handleKeyboardShortcut(e); // we could stop if one returns true...
+            wasHandled = wasHandled || extension.handleKeyboardShortcut(e); // we could stop if one returns true...
         }
+        return wasHandled;
     }
 
     /**

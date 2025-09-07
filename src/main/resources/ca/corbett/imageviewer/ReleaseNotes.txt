@@ -2,6 +2,7 @@ ImageViewer Release Notes
 Author: Steve Corbett
 
 Version 2.2 [TODO] - Maintenance release
+  #12 - Make global keyboard support a bit smarter
   #2 - Add support for virtual directories (image sets)
   #1 - Upgrade to swing-extras 2.4
 
