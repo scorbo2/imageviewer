@@ -2,7 +2,9 @@ package ca.corbett.imageviewer.ui.imagesets;
 
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
+import ca.corbett.imageviewer.ui.actions.FavoritesEditListAction;
 
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
@@ -14,8 +16,8 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -268,21 +270,14 @@ public class ImageSetPanel extends JPanel {
     private JPanel buildToolbar() {
         JPanel toolbar = new JPanel();
         toolbar.setLayout(new FlowLayout(FlowLayout.LEFT));
+        // TODO give this button an icon instead of a text label, make it pretty
+        JButton button = new JButton(new FavoritesEditListAction("Edit"));
+        button.setPreferredSize(new Dimension(90, 23));
+        toolbar.add(button);
         return toolbar;
     }
 
     private void handleTreeSelectionChanged(TreeSelectionEvent event) {
-        if (event.getNewLeadSelectionPath() == null
-                || event.getNewLeadSelectionPath().getLastPathComponent() == null) {
-            // nothing selected
-            return;
-        }
-
-        ImageSet selectedNode = (ImageSet)event.getNewLeadSelectionPath().getLastPathComponent();
-        List<File> imageFiles = selectedNode.getImageFiles();
-        if (!imageFiles.isEmpty()) {
-            // TODO do something with this
-            MainWindow.getInstance().setImageSet(selectedNode);
-        }
+        MainWindow.getInstance().setImageSet(getSelectedImageSet()); // if null / nothing selected, this will clear it
     }
 }

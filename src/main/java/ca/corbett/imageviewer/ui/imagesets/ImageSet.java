@@ -36,6 +36,10 @@ public class ImageSet extends DefaultMutableTreeNode {
         return list;
     }
 
+    public void clearImages() {
+        imageFiles.clear();
+    }
+
     public boolean addImageFile(File imageFile) {
         if (imageFile == null) {
             log.warning("Ignoring attempt to add null image to image set.");
