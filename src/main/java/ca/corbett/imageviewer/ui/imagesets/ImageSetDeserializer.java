@@ -77,6 +77,8 @@ public class ImageSetDeserializer extends JsonDeserializer<ImageSet> {
             nodePath = nodePath.substring("Favorites".length());
         }
 
+        // TODO I hate how closely this code is coupled to the application code...
+        //      Need some refactoring here. The deserializer should know NOTHING about the favorites panel
         ImageSet imageSet = MainWindow.getInstance().getImageSetPanel().findOrCreateFavoritesSet(nodePath).orElse(null);
         if (imageSet == null) {
             throw new IOException("Unable to restore image set with path: "+nodePath);
