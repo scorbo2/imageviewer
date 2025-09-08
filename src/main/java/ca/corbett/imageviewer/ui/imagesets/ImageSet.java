@@ -1,5 +1,7 @@
 package ca.corbett.imageviewer.ui.imagesets;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import java.io.File;
@@ -21,6 +23,9 @@ public class ImageSet extends DefaultMutableTreeNode {
 
     private final List<String> imageFiles = new ArrayList<>();
     private final String name;
+
+    @JsonIgnore
+    private boolean isDirty; // TODO do something with this
 
     public ImageSet(String name) {
         super(name);
@@ -54,6 +59,14 @@ public class ImageSet extends DefaultMutableTreeNode {
 
     public String getName() {
         return name;
+    }
+
+    public boolean isDirty() {
+        return isDirty;
+    }
+
+    public void setIsDirty(boolean dirty) {
+        isDirty = dirty;
     }
 
     /**

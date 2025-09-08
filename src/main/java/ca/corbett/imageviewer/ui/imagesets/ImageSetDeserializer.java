@@ -87,7 +87,8 @@ public class ImageSetDeserializer extends JsonDeserializer<ImageSet> {
         //for (ImageSet child : childNodes) { // No! don't add them here as it is already done above by findOrCreate
         //    imageSet.add(child);
         //}
+        imageSet.setIsDirty(false);
 
-        return new ImageSet(name);
+        return imageSet;
     }
 }
