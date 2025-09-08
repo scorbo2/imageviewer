@@ -35,6 +35,9 @@ public class FavoritesLoadAction extends AbstractAction {
             //for (ImageSet set : favorites) {
             //    MainWindow.getInstance().getImageSetPanel().addToFavorites(set);
             //}
+
+            // TODO how do I force a refresh on the JTree?
+            //      if you switch tabs and come back, it looks good, but otherwise it doesn't show the loaded nodes...
         }
         catch (IOException e) {
             log.log(Level.SEVERE, "Error saving favorites tree: "+e.getMessage(), e);
