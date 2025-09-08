@@ -3,6 +3,8 @@ package ca.corbett.imageviewer.ui.imagesets;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.actions.FavoritesEditListAction;
+import ca.corbett.imageviewer.ui.actions.FavoritesLoadAction;
+import ca.corbett.imageviewer.ui.actions.FavoritesSaveAction;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -274,6 +276,15 @@ public class ImageSetPanel extends JPanel {
         JButton button = new JButton(new FavoritesEditListAction("Edit"));
         button.setPreferredSize(new Dimension(90, 23));
         toolbar.add(button);
+
+        button = new JButton(new FavoritesSaveAction("Save"));
+        button.setPreferredSize(new Dimension(90, 23));
+        toolbar.add(button);
+
+        button = new JButton(new FavoritesLoadAction("Load"));
+        button.setPreferredSize(new Dimension(90, 23));
+        toolbar.add(button);
+
         return toolbar;
     }
 

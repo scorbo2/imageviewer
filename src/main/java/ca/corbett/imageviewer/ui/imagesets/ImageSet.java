@@ -19,7 +19,6 @@ public class ImageSet extends DefaultMutableTreeNode {
 
     private static final Logger log = Logger.getLogger(ImageSet.class.getName());
 
-    // TODO ordering should be customizable...
     private final List<String> imageFiles = new ArrayList<>();
     private final String name;
 
