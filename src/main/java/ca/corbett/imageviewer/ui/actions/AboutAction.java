@@ -5,6 +5,7 @@ import ca.corbett.imageviewer.Version;
 import ca.corbett.imageviewer.ui.MainWindow;
 
 import javax.swing.AbstractAction;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 
 public class AboutAction extends AbstractAction {
@@ -15,6 +16,8 @@ public class AboutAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
-        new AboutDialog(MainWindow.getInstance(), Version.aboutInfo).setVisible(true);
+        AboutDialog dialog = new AboutDialog(MainWindow.getInstance(), Version.aboutInfo);
+        dialog.setSize(new Dimension(560, 640));
+        dialog.setVisible(true);
     }
 }
