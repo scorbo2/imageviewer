@@ -36,24 +36,14 @@ public class ImageSetLoadAction extends AbstractAction {
         //      should there be a prompt here to confirm discarding current tree?
 
         ObjectMapper mapper = new ObjectMapper();
-        //SimpleModule module = new SimpleModule();
-        //module.addDeserializer(ImageSet.class, new ImageSetDeserializer());
-        //mapper.registerModule(module);
         try {
             ImageSet[] favorites = mapper.readValue(saveDir, ImageSet[].class);
             for (ImageSet set : favorites) {
                 ImageSetManager.getInstance().addImageSet(set);
             }
 
-            // The deserializer adds the image sets for us... that's pretty tight coupling though TODO fix this
-            //for (ImageSet set : favorites) {
-            //    MainWindow.getInstance().getImageSetPanel().addToFavorites(set);
-            //}
-
-            // TODO how do I force a refresh on the JTree?
-            //      if you switch tabs and come back, it looks good, but otherwise it doesn't show the loaded nodes...
             MainWindow.getInstance().getImageSetPanel().resync();
-            MainWindow.getInstance().getImageSetPanel().refresh();
+            MainWindow.getInstance().getImageSetPanel().refresh(); // TODO resync/refresh/ui reload should be 1 call!
             ReloadUIAction.getInstance().actionPerformed(actionEvent); // TODO overkill? we must rebuild the menu...
         }
         catch (IOException e) {

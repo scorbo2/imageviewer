@@ -33,15 +33,10 @@ public class ImageSetSaveAction extends AbstractAction {
         // TODO move this to prefs
         File saveDir = new File("/home/scorbett/tmp/test.json");
 
-        // TODO this is a lot of initialization for the ObjectMapper...
-        //      can we centralize this somewhere so it can be reused elsewhere?
         DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
         prettyPrinter.indentArraysWith(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE);
         List<ImageSet> favorites = ImageSetManager.getInstance().getImageSets();
         ObjectMapper mapper = new ObjectMapper();
-        //SimpleModule module = new SimpleModule();
-        //module.addSerializer(ImageSet.class, new ImageSetSerializer());
-        //mapper.registerModule(module);
         try {
             mapper.writer(prettyPrinter).writeValue(saveDir, favorites);
         }
