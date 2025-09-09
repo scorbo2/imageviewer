@@ -9,10 +9,11 @@ class ImageSetTest {
     @Test
     public void getPathString_withEmptyPath_shouldReturnNameOnly() {
         // GIVEN a node with no path:
-        ImageSet imageSet = new ImageSet("test");
+        ImageSet imageSet = new ImageSet();
+        imageSet.setFullyQualifiedName("test");
 
         // WHEN we ask it for its path string:
-        String actual = imageSet.getPathString();
+        String actual = imageSet.getFullyQualifiedName();
 
         // THEN it should be empty:
         assertEquals("test", actual);
@@ -21,16 +22,17 @@ class ImageSetTest {
     @Test
     public void getPathString_withLongPath_shouldReturnFullyQualified() {
         // GIVEN a node with parents and grandparents:
-        ImageSet grandparent = new ImageSet("grandpappy");
-        ImageSet parent = new ImageSet("pa");
-        ImageSet child = new ImageSet("test");
-        grandparent.add(parent);
-        parent.add(child);
+        ImageSet grandparent = new ImageSet();
+        grandparent.setFullyQualifiedName("grandpappy");
+        ImageSet parent = new ImageSet();
+        parent.setFullyQualifiedName("grandpappy/pa");
+        ImageSet child = new ImageSet();
+        child.setFullyQualifiedName("grandpappy/pa/test");
 
         // WHEN we ask each node for its path string:
-        String grandparentActual = grandparent.getPathString();
-        String parentActual = parent.getPathString();
-        String childActual = child.getPathString();
+        String grandparentActual = grandparent.getFullyQualifiedName();
+        String parentActual = parent.getFullyQualifiedName();
+        String childActual = child.getFullyQualifiedName();
 
         // THEN each should be fully qualified:
         char delim = ImageSetPanel.PATH_DELIMITER;

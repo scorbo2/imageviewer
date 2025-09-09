@@ -3,16 +3,22 @@ package ca.corbett.imageviewer.ui.actions;
 import ca.corbett.imageviewer.ui.ImageInstance;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.imagesets.ImageSet;
+import ca.corbett.imageviewer.ui.imagesets.ImageSetManager;
 
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.util.Optional;
 
-public class FavoritesCreateListAction extends AbstractAction {
+/**
+ * An Action that can show a popup and create a new ImageSet with the user-supplied path and name.
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ * @since ImageViewer 2.2
+ */
+public class ImageSetCreateAction extends AbstractAction {
 
-    public FavoritesCreateListAction() {
+    public ImageSetCreateAction() {
         super("Create new list...");
     }
 
@@ -26,13 +32,12 @@ public class FavoritesCreateListAction extends AbstractAction {
         File file = currentImage.getImageFile();
         String name = JOptionPane.showInputDialog(MainWindow.getInstance(), "Enter name for new list:");
         if (name != null) {
-            Optional<ImageSet> imageSetOptional = MainWindow.getInstance().getImageSetPanel()
-                                                            .findOrCreateFavoritesSet(name);
-            if (imageSetOptional.isPresent()) {
-                if (imageSetOptional.get().addImageFile(file)) {
-                    ReloadUIAction.getInstance().actionPerformed(actionEvent); // TODO overkill
-                }
+            ImageSet imageSetOptional = ImageSetManager.getInstance().findOrCreateImageSet(name);
+            if (imageSetOptional.addImageFilePath(file.getAbsolutePath())) {
+                ReloadUIAction.getInstance().actionPerformed(actionEvent); // TODO overkill
             }
+            MainWindow.getInstance().getImageSetPanel().resync(); // todo resync... refresh... roll it into one
+            MainWindow.getInstance().getImageSetPanel().refresh();
         }
     }
 }

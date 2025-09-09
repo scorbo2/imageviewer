@@ -2,8 +2,16 @@ ImageViewer Release Notes
 Author: Steve Corbett
 
 Version 2.2 [TODO] - Maintenance release
+  #26 - Image set refactoring
   #20 - Cosmetic fix in AboutDialog
+  #19 - Image set dirty checking
+  #14 - Image sets terminology
+  #13 - Image sets persistence
   #12 - Make global keyboard support a bit smarter
+  #9 - Image set editor
+  #8 - Right click and add to image set
+  #7 - Context flipping between file system and image sets
+  #6 - Image sets tree
   #2 - Add support for virtual directories (image sets)
   #1 - Upgrade to swing-extras 2.4
 

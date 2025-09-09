@@ -28,7 +28,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.io.IOException;
 
 public class ImageSetEditDialog extends JDialog {
@@ -52,7 +51,7 @@ public class ImageSetEditDialog extends JDialog {
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
         formPanel.setBorderMargin(12);
         formPanel.add(LabelField.createBoldHeaderLabel("Edit image set"));
-        formPanel.add(new LabelField("Full name:", imageSet.getPathString()));
+        formPanel.add(new LabelField("Full name:", imageSet.getFullyQualifiedName()));
         formPanel.add(LabelField.createPlainHeaderLabel("Drag+drop or ctrl+up/ctrl+down to reorder, DEL to remove"));
         formPanel.add(buildListField());
 
@@ -65,8 +64,8 @@ public class ImageSetEditDialog extends JDialog {
 
     private FormField buildListField() {
         listModel = new DefaultListModel<>();
-        for (File f : imageSet.getImageFiles()) {
-            listModel.addElement(f.getAbsolutePath());
+        for (String path : imageSet.getImageFilePaths()) {
+            listModel.addElement(path);
         }
         JList<String> list = new JList<>(listModel);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -178,7 +177,7 @@ public class ImageSetEditDialog extends JDialog {
         if (wasOkayed) {
             imageSet.clearImages();
             for (int i = 0; i < listModel.getSize(); i++) {
-                imageSet.addImageFile(new File(listModel.getElementAt(i)));
+                imageSet.addImageFilePath(listModel.getElementAt(i));
             }
         }
         dispose();

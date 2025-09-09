@@ -8,11 +8,21 @@ import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 import java.io.File;
 
-public class FavoritesAddToListAction extends AbstractAction {
+/**
+ * Adds the currently showing image (if any) to a specific ImageSet.
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ * @since ImageViewer 2.2
+ */
+public class ImageSetAddAction extends AbstractAction {
 
     private final ImageSet imageSet;
 
-    public FavoritesAddToListAction(ImageSet set) {
+    /**
+     * Creates an ImageSetAddAction with the given ImageSet. Every time the action is invoked,
+     * the currently showing image (if any) will be added to this ImageSet if it is not already there.
+     */
+    public ImageSetAddAction(ImageSet set) {
         super(set.getName());
         this.imageSet = set;
     }
@@ -25,7 +35,7 @@ public class FavoritesAddToListAction extends AbstractAction {
             return;
         }
         File file = currentImage.getImageFile();
-        if (imageSet.addImageFile(file)) {
+        if (imageSet.addImageFilePath(file.getAbsolutePath())) {
             ReloadUIAction.getInstance().actionPerformed(actionEvent); // TODO overkill? we must rebuild the menu...
         }
     }

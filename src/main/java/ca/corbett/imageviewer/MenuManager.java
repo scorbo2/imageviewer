@@ -4,9 +4,9 @@ import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.actions.AboutAction;
 import ca.corbett.imageviewer.ui.actions.ExitAction;
-import ca.corbett.imageviewer.ui.actions.FavoritesAddToListAction;
-import ca.corbett.imageviewer.ui.actions.FavoritesCreateListAction;
 import ca.corbett.imageviewer.ui.actions.ImageOperationAction;
+import ca.corbett.imageviewer.ui.actions.ImageSetAddAction;
+import ca.corbett.imageviewer.ui.actions.ImageSetCreateAction;
 import ca.corbett.imageviewer.ui.actions.LogConsoleAction;
 import ca.corbett.imageviewer.ui.actions.ManageExtensionsAction;
 import ca.corbett.imageviewer.ui.actions.NextImageAction;
@@ -22,6 +22,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public final class MenuManager {
     private static final String MENU_LABEL_LINK_ONE = "Link this image...";
     private static final String MENU_LABEL_LINK_ALL = "Link all images in this directory...";
     private static final String MENU_LABEL_LINK_DIR = "Link this directory...";
-    private static final String MENU_LABEL_FAVORITE = "Add to favorites...";
+    private static final String MENU_LABEL_IMAGESET_ADD = "Add to image set...";
 
     private static JMenuBar menuBar;
     private static JMenu fileMenu;
@@ -103,7 +104,7 @@ public final class MenuManager {
         }
 
         imagePanelPopupMenu.addSeparator();
-        imagePanelPopupMenu.add(buildFavoritesMenu());
+        imagePanelPopupMenu.add(buildImageSetMenu());
         imagePanelPopupMenu.add(new JMenuItem(new RenameAction()));
 
         // Add any menu items from our extensions, if any:
@@ -406,15 +407,15 @@ public final class MenuManager {
     }
 
     /**
-     * Interrogates the current list of ImageSets to build out an "add to favorites" menu.
+     * Interrogates the current list of ImageSets to build out an "add to image set" menu.
      */
-    public static JMenu buildFavoritesMenu() {
-        JMenu menu = new JMenu(MENU_LABEL_FAVORITE);
-        List<ImageSet> topLevelNodes = MainWindow.getInstance().getImageSetPanel().getFavorites();
-        for (ImageSet topLevelNode : topLevelNodes) {
-            buildFavoriteMenuRecursive(topLevelNode, menu);
+    public static JMenu buildImageSetMenu() {
+        JMenu menu = new JMenu(MENU_LABEL_IMAGESET_ADD);
+        List<DefaultMutableTreeNode> topLevelNodes = MainWindow.getInstance().getImageSetPanel().getTopLevelNodes();
+        for (DefaultMutableTreeNode topLevelNode : topLevelNodes) {
+            buildImageSetMenuRecursive(topLevelNode, menu);
         }
-        menu.add(new JMenuItem(new FavoritesCreateListAction()));
+        menu.add(new JMenuItem(new ImageSetCreateAction()));
         return menu;
     }
 
@@ -466,16 +467,16 @@ public final class MenuManager {
         }
     }
 
-    private static void buildFavoriteMenuRecursive(ImageSet node, JMenu menu) {
+    private static void buildImageSetMenuRecursive(DefaultMutableTreeNode node, JMenu menu) {
         if (node != null && node.getChildCount() > 0) {
-            JMenu subMenu = new JMenu(node.getName());
+            JMenu subMenu = new JMenu(node.getUserObject().toString());
             menu.add(subMenu);
             for (int i = 0; i < node.getChildCount(); i++) {
-                buildFavoriteMenuRecursive((ImageSet)node.getChildAt(i), subMenu);
+                buildImageSetMenuRecursive((DefaultMutableTreeNode)node.getChildAt(i), subMenu);
             }
         }
-        else if (node != null) {
-            menu.add(new FavoritesAddToListAction(node));
+        else if (node != null && (node.getUserObject() instanceof ImageSet)) {
+            menu.add(new ImageSetAddAction((ImageSet)node.getUserObject()));
         }
     }
 }

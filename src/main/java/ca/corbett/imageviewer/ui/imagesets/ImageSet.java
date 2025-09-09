@@ -2,9 +2,6 @@ package ca.corbett.imageviewer.ui.imagesets;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -17,92 +14,122 @@ import java.util.logging.Logger;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 2.2
  */
-public class ImageSet extends DefaultMutableTreeNode {
+public class ImageSet {
 
     private static final Logger log = Logger.getLogger(ImageSet.class.getName());
 
-    private final List<String> imageFiles = new ArrayList<>();
-    private final String name;
+    private final List<String> imageFilePaths = new ArrayList<>();
+    private String fullyQualifiedName;
 
     @JsonIgnore
-    private boolean isDirty; // TODO do something with this
+    private String name;
 
-    public ImageSet(String name) {
-        super(name);
-        this.name = name;
+    @JsonIgnore
+    private String path;
+
+    private boolean isTransient;
+
+    @JsonIgnore
+    private boolean isDirty;
+
+    public ImageSet() {
+        isTransient = false;
     }
 
-    public List<File> getImageFiles() {
-        List<File> list = new ArrayList<>();
-        for (String imageFile : imageFiles) {
-            list.add(new File(imageFile));
-        }
-        return list;
+    public List<String> getImageFilePaths() {
+        return new ArrayList<>(imageFilePaths);
     }
 
     public void clearImages() {
-        imageFiles.clear();
+        imageFilePaths.clear();
+        isDirty = true;
     }
 
-    public boolean addImageFile(File imageFile) {
-        if (imageFile == null) {
+    public void setImageFilePaths(List<String> imageFilePaths) {
+        for (String imageFile : imageFilePaths) {
+            addImageFilePath(imageFile);
+        }
+    }
+
+    public boolean addImageFilePath(String imageFilePath) {
+        if (imageFilePath == null) {
             log.warning("Ignoring attempt to add null image to image set.");
             return false;
         }
-        if (imageFiles.contains(imageFile.getAbsolutePath())) {
-            log.warning("Ignoring attempt to add duplicate image to image set: " + imageFile.getAbsolutePath());
+        if (imageFilePaths.contains(imageFilePath)) {
+            log.warning("Ignoring attempt to add duplicate image to image set: " + imageFilePath);
             return false;
         }
-        imageFiles.add(imageFile.getAbsolutePath());
+        imageFilePaths.add(imageFilePath);
+        isDirty = true;
         return true;
     }
 
+    /**
+     * Returns just the name of this ImageSet, without regard to its path within the tree.
+     * See also getPath() and getFullyQualifiedName().
+     */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Returns the path of this ImageSet, which is the fully qualified name minus our name.
+     */
+    public String getPath() {
+        return path;
+    }
+
+    public boolean isTransient() {
+        return isTransient;
+    }
+
+    public void setTransient(boolean isTransient) {
+        this.isTransient = isTransient;
+        isDirty = true;
     }
 
     public boolean isDirty() {
         return isDirty;
     }
 
-    public void setIsDirty(boolean dirty) {
+    public void setDirty(boolean dirty) {
         isDirty = dirty;
     }
 
     /**
-     * Returns the fully-qualified path and name of this node as a formatted string using the PATH_DELIMITER
-     * constant in ImageSetPanel.
+     * Accepts the fully qualified path and name of this ImageSet.
+     * As a convenience, will parse out the name (last delimited item in
+     * the path string) and the path (all items before the last one).
+     * For example, setFullyQualifiedName("a/b/c") will set the fully
+     * qualified name to "/a/b/c", the name to "c", and the path to "/a/b/".
+     * Note that paths always start with the delimiter (though it's not
+     * a requirement to pass it in that way here - "a/b/c" and "/a/b/c"
+     * will yield the same results).
      */
-    public String getPathString() {
-        TreeNode[] treePath = getPath();
-        StringBuilder sb = new StringBuilder();
-        for (TreeNode node : treePath) {
-            if (node instanceof ImageSet imageSet) {
-                sb.append(imageSet.getName());
+    public void setFullyQualifiedName(String newName) {
+        this.fullyQualifiedName = ImageSetManager.parseFullyQualifiedName(newName);
+        this.path = ImageSetManager.parsePath(newName);
+        this.name = ImageSetManager.parseName(newName);
+    }
 
-                if (imageSet != this) {
-                    sb.append(ImageSetPanel.PATH_DELIMITER);
-                }
-            }
-        }
-
-        return sb.toString();
+    public String getFullyQualifiedName() {
+        return fullyQualifiedName;
     }
 
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof ImageSet imageSet)) { return false; }
-        return Objects.equals(getPathString(), imageSet.getPathString()) && Objects.equals(name, imageSet.name);
+        return Objects.equals(getFullyQualifiedName(), imageSet.getFullyQualifiedName());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getPathString(), name);
+        return Objects.hash(getFullyQualifiedName());
     }
 
-    public static List<ImageSet> getRootNodes() {
-        List<ImageSet> list = new ArrayList<>();
-        list.add(new ImageSet("Favorites"));
-        return list;
+    @Override
+    public String toString() {
+        return name; // Not fully qualified name! This will appear in the JTree as the node name.
     }
 }

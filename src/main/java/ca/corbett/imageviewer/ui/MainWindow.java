@@ -325,7 +325,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
                         setDirectory(dirTree.getCurrentDir());
                         break;
                     case 1:
-                        setImageSet(imageSetPanel.getSelectedImageSet());
+                        setImageSet(imageSetPanel.getSelectedImageSet().orElse(null));
                         break;
                 }
             }
@@ -736,7 +736,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
             setTitle(Version.NAME);
         }
         else {
-            setTitle(Version.NAME + " - " + set.getPathString());
+            setTitle(Version.NAME + " - " + set.getFullyQualifiedName());
         }
         thumbContainerPanel.setImageSet(set); // handles nulls
     }
