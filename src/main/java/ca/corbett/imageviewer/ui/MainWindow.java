@@ -71,6 +71,11 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
 
     private static final Logger logger = Logger.getLogger(MainWindow.class.getName());
 
+    public enum BrowseMode {
+        FILE_SYSTEM,
+        IMAGE_SET
+    }
+
     public static final int MIN_WIDTH = 640;
     public static final int MIN_HEIGHT = 480;
 
@@ -82,6 +87,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
     private JToolBar toolBar;
     private JPopupMenu imagePanelPopupMenu;
 
+    private BrowseMode browseMode;
     private JTabbedPane imgSrcTabPane;
     private DirTree dirTree;
     private ImageSetPanel imageSetPanel;
@@ -242,6 +248,32 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
         return fileChooser;
     }
 
+    public BrowseMode getBrowseMode() {
+        return browseMode;
+    }
+
+    public void setBrowseMode(BrowseMode mode) {
+        browseMode = mode;
+        switch (browseMode) {
+            case FILE_SYSTEM:
+                if (imgSrcTabPane.getSelectedIndex() != 0) {
+                    imgSrcTabPane.setSelectedIndex(0);
+                }
+                setDirectory(dirTree.getCurrentDir());
+                break;
+
+            case IMAGE_SET:
+                if (imgSrcTabPane.getSelectedIndex() != 1) {
+                    imgSrcTabPane.setSelectedIndex(1);
+                }
+                setImageSet(imageSetPanel.getSelectedImageSet().orElse(null));
+                break;
+        }
+
+        // TODO now update the menus for the new browse mode!
+        logger.info("Switching browse modes to " + mode);
+    }
+
     /**
      * Intended to be invoked if the quick move destination tree changes - this method will
      * rescan the tree and rebuild our menus, the main menu bar, the image panel popup menu,
@@ -313,6 +345,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
 
         imageSetPanel = new ImageSetPanel();
 
+        browseMode = BrowseMode.FILE_SYSTEM;
         imgSrcTabPane = new JTabbedPane();
         imgSrcTabPane.addTab("File system", dirTree);
         imgSrcTabPane.addTab("Image sets", imageSetPanel);
@@ -322,10 +355,10 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
                 thumbContainerPanel.clear();
                 switch (imgSrcTabPane.getSelectedIndex()) {
                     case 0:
-                        setDirectory(dirTree.getCurrentDir());
+                        setBrowseMode(BrowseMode.FILE_SYSTEM);
                         break;
                     case 1:
-                        setImageSet(imageSetPanel.getSelectedImageSet().orElse(null));
+                        setBrowseMode(BrowseMode.IMAGE_SET);
                         break;
                 }
             }
@@ -615,7 +648,16 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
         imagePanel.setPopupMenu(imagePanelPopupMenu);
         ImageViewerExtensionManager.getInstance().quickMoveTreeChanged();
 
-        reloadCurrentDirectory();
+        reload();
+    }
+
+    public void reload() {
+        if (browseMode == BrowseMode.FILE_SYSTEM) {
+            reloadCurrentDirectory();
+        }
+        else {
+            setImageSet(imageSetPanel.getSelectedImageSet().orElse(null));
+        }
     }
 
     public void reloadCurrentDirectory() {
@@ -722,6 +764,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
     }
 
     public void setDirectory(File selectedDir) {
+        browseMode = BrowseMode.FILE_SYSTEM;
         if (selectedDir == null) {
             setTitle(Version.NAME);
         }
@@ -729,6 +772,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
             setTitle(Version.NAME + " - " + selectedDir.getAbsolutePath());
         }
         thumbContainerPanel.setDirectory(selectedDir); // handles nulls
+        // TODO update menus based on new browse mode! or have a set
     }
 
     public void setImageSet(ImageSet set) {
