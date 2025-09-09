@@ -62,16 +62,12 @@ public class ImageSetPanel extends JPanel {
         return list;
     }
 
-    /**
-     * Returns the selected ImageSet.
-     */
-    public Optional<ImageSet> getSelectedImageSet() {
+    public Optional<DefaultMutableTreeNode> getSelectedNode() {
         TreePath path = tree.getSelectionPath();
         if (path == null || path.getLastPathComponent() == null) {
             // nothing selected
             return Optional.empty();
         }
-
 
         // If whatever was selected is somehow not an ImageSet, we're done:
         DefaultMutableTreeNode selected = (DefaultMutableTreeNode)path.getLastPathComponent();
@@ -79,11 +75,19 @@ public class ImageSetPanel extends JPanel {
             return Optional.empty();
         }
 
-        return Optional.of((ImageSet)selected.getUserObject());
+        return Optional.of(selected);
+    }
+
+    public Optional<ImageSet> getSelectedImageSet() {
+        DefaultMutableTreeNode selectedNode = getSelectedNode().orElse(null);
+        if (selectedNode != null && (selectedNode.getUserObject() instanceof ImageSet)) {
+            return Optional.of((ImageSet)selectedNode.getUserObject());
+        }
+        return Optional.empty();
     }
 
     public void resync() {
-        ImageSet selectedSet = getSelectedImageSet().orElse(null);
+        DefaultMutableTreeNode selectedNode = getSelectedNode().orElse(null);
 
         rootNode.removeAllChildren();
         List<ImageSet> imageSets = ImageSetManager.getInstance().getImageSets();
@@ -92,21 +96,24 @@ public class ImageSetPanel extends JPanel {
         }
         treeModel.reload();
 
-        if (selectedSet != null) {
-            // TODO select and scroll to this guy
+        // Re-select whatever was selected if there was a selection:
+        if (selectedNode != null) {
+            TreePath selectionPath = new TreePath(selectedNode.getPath()); // TODO this path is no longer valid
+            tree.scrollPathToVisible(selectionPath); // TODO so this code will fail
+            tree.setSelectionPath(selectionPath); // TODO we need therefore a findNodeByImageSet or selectByPath
         }
     }
 
-    public void addImageSet(ImageSet set) {
+    public DefaultMutableTreeNode addImageSet(ImageSet set) {
         String[] nodes = ImageSetManager.parsePathNodes(set.getFullyQualifiedName());
         if (nodes.length == 0) {
-            return;
+            return null;
         }
 
-        addImageSetInNode(rootNode, set, nodes);
+        return addImageSetInNode(rootNode, set, nodes);
     }
 
-    private void addImageSetInNode(DefaultMutableTreeNode rootNode, ImageSet set, String[] nodes) {
+    private DefaultMutableTreeNode addImageSetInNode(DefaultMutableTreeNode rootNode, ImageSet set, String[] nodes) {
         DefaultMutableTreeNode nextNode = null;
         for (int i = 0; i < rootNode.getChildCount(); i++) {
             DefaultMutableTreeNode candidate = (DefaultMutableTreeNode)rootNode.getChildAt(i);
@@ -124,15 +131,11 @@ public class ImageSetPanel extends JPanel {
         // If there was no sub-path, we're done:
         if (nodes.length == 1) {
             nextNode.setUserObject(set);
-            treeModel.reload();
-            TreePath selectionPath = new TreePath(nextNode.getPath());
-            tree.scrollPathToVisible(selectionPath);
-            tree.setSelectionPath(selectionPath);
-            return;
+            return nextNode;
         }
 
         // Otherwise, recursively search that root node until we have the target:
-        addImageSetInNode(nextNode, set, Arrays.stream(nodes).skip(1).toArray(String[]::new));
+        return addImageSetInNode(nextNode, set, Arrays.stream(nodes).skip(1).toArray(String[]::new));
     }
 
     /**
