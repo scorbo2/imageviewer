@@ -3,6 +3,7 @@ Author: Steve Corbett
 
 Version 2.2 [TODO] - Maintenance release
   #26 - Image set refactoring
+  #23 - Keyboard shortcuts for image source
   #20 - Cosmetic fix in AboutDialog
   #19 - Image set dirty checking
   #14 - Image sets terminology

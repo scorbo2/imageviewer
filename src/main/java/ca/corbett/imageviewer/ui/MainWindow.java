@@ -253,6 +253,11 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
     }
 
     public void setBrowseMode(BrowseMode mode) {
+        // Reject no-op requests:
+        if (mode == browseMode) {
+            return;
+        }
+
         browseMode = mode;
         switch (browseMode) {
             case FILE_SYSTEM:
