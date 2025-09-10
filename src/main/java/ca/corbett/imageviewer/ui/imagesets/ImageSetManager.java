@@ -48,6 +48,9 @@ public class ImageSetManager {
         // The result is true if we are dirty or if any of our image sets are dirty:
         boolean result = isDirty;
         for (ImageSet set : imageSets) {
+            if (set.isTransient()) {
+                continue; // don't include transient sets in the check
+            }
             result = result || set.isDirty();
         }
         return result;
@@ -87,7 +90,9 @@ public class ImageSetManager {
             imageSets.add(set);
         }
 
-        isDirty = true;
+        if (!set.isTransient()) {
+            isDirty = true;
+        }
     }
 
     public Optional<ImageSet> findImageSet(String fullyQualifiedName) {
@@ -126,12 +131,15 @@ public class ImageSetManager {
         log.info("Saving image sets to " + saveFile.getAbsolutePath());
         DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
         prettyPrinter.indentArraysWith(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE);
-        List<ImageSet> favorites = ImageSetManager.getInstance().getImageSets();
+        List<ImageSet> imageSetsToSave = ImageSetManager.getInstance().getImageSets()
+                                                        .stream()
+                                                        .filter(item -> !item.isTransient())
+                                                        .toList();
         ObjectMapper mapper = new ObjectMapper();
         try {
-            mapper.writer(prettyPrinter).writeValue(saveFile, favorites);
+            mapper.writer(prettyPrinter).writeValue(saveFile, imageSetsToSave);
             setDirty(false);
-            log.info("Saved " + imageSets.size() + " image sets.");
+            log.info("Saved " + imageSetsToSave.size() + " image sets.");
         }
         catch (IOException e) {
             log.log(Level.SEVERE, "ImageSetManager.save(): " + e.getMessage(), e);
