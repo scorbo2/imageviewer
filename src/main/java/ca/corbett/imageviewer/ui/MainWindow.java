@@ -19,6 +19,7 @@ import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.actions.ReloadUIAction;
 import ca.corbett.imageviewer.ui.imagesets.ImageSet;
+import ca.corbett.imageviewer.ui.imagesets.ImageSetManager;
 import ca.corbett.imageviewer.ui.imagesets.ImageSetPanel;
 import org.apache.commons.io.FileUtils;
 
@@ -151,6 +152,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
                     instance.saveUIState();
                     ImageViewerExtensionManager.getInstance().deactivateAll();
                     QuickMoveManager.getInstance().close();
+                    ImageSetManager.getInstance().save();
                     logger.info("Application windowClosing(): finished cleanup.");
                 }
 
@@ -164,6 +166,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
                     instance.saveUIState();
                     ImageViewerExtensionManager.getInstance().deactivateAll();
                     QuickMoveManager.getInstance().close();
+                    ImageSetManager.getInstance().save();
                     logger.info("Application windowClosed(): finished cleanup.");
                 }
 
@@ -171,6 +174,8 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
 
             // Custom LogConsole theme:
             LogConsoleManager.setCustomTheme();
+
+            ImageSetManager.getInstance().load();
 
             ReloadUIAction.getInstance().registerReloadable(instance);
         }

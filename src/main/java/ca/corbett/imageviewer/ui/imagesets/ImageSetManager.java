@@ -1,9 +1,19 @@
 package ca.corbett.imageviewer.ui.imagesets;
 
+import ca.corbett.imageviewer.AppConfig;
+import ca.corbett.imageviewer.ui.MainWindow;
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Manages loading and saving of ImageSets, and provides central management for the
@@ -14,13 +24,42 @@ import java.util.Optional;
  */
 public class ImageSetManager {
 
+    private static final Logger log = Logger.getLogger(ImageSetManager.class.getName());
+
     public final static char PATH_DELIMITER = '/';
 
     private static ImageSetManager instance;
     private List<ImageSet> imageSets;
+    private boolean isDirty;
 
     private ImageSetManager() {
         imageSets = new ArrayList<>();
+        isDirty = false;
+    }
+
+    public boolean isDirty() {
+        File saveFile = new File(AppConfig.getInstance().getImageSetSaveLocation(), "imageSets.json");
+        // If our save destination doesn't exist, the answer is yes with no further checking needed:
+        if (!saveFile.exists()) {
+            isDirty = true;
+            return true;
+        }
+
+        // The result is true if we are dirty or if any of our image sets are dirty:
+        boolean result = isDirty;
+        for (ImageSet set : imageSets) {
+            result = result || set.isDirty();
+        }
+        return result;
+    }
+
+    private void setDirty(boolean dirty) {
+        isDirty = dirty;
+        if (!dirty) {
+            for (ImageSet set : imageSets) {
+                set.setDirty(false);
+            }
+        }
     }
 
     public static ImageSetManager getInstance() {
@@ -33,16 +72,22 @@ public class ImageSetManager {
     public void addImageSet(ImageSet set) {
         // See if we already have this one:
         ImageSet existingSet = findImageSet(set.getFullyQualifiedName()).orElse(null);
+
+        // TODO think about this...
+        // If there's an existing set with that path, add all of this new set's images to that existing one.
+        // The imageset will weed out duplicates automatically.
         if (existingSet != null) {
             for (String imagePath : set.getImageFilePaths()) {
                 existingSet.addImageFilePath(imagePath);
             }
         }
 
-        // Otherwise, add it:
+        // If this set wasn't pre-existing, just add it.
         else {
             imageSets.add(set);
         }
+
+        isDirty = true;
     }
 
     public Optional<ImageSet> findImageSet(String fullyQualifiedName) {
@@ -60,6 +105,7 @@ public class ImageSetManager {
             ImageSet newSet = new ImageSet();
             newSet.setFullyQualifiedName(fullyQualifiedName);
             imageSets.add(newSet);
+            isDirty = true;
             return newSet;
         }
 
@@ -68,6 +114,52 @@ public class ImageSetManager {
 
     public List<ImageSet> getImageSets() {
         return imageSets.stream().sorted(Comparator.comparing(ImageSet::getFullyQualifiedName)).toList();
+    }
+
+    public void save() {
+        if (!isDirty()) {
+            log.info("Skipping image set save as no save is needed.");
+            return; // don't save if not needed
+        }
+
+        File saveFile = new File(AppConfig.getInstance().getImageSetSaveLocation(), "imageSets.json");
+        log.info("Saving image sets to " + saveFile.getAbsolutePath());
+        DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
+        prettyPrinter.indentArraysWith(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE);
+        List<ImageSet> favorites = ImageSetManager.getInstance().getImageSets();
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            mapper.writer(prettyPrinter).writeValue(saveFile, favorites);
+            setDirty(false);
+            log.info("Saved " + imageSets.size() + " image sets.");
+        }
+        catch (IOException e) {
+            log.log(Level.SEVERE, "ImageSetManager.save(): " + e.getMessage(), e);
+        }
+    }
+
+    public void load() {
+        File saveFile = new File(AppConfig.getInstance().getImageSetSaveLocation(), "imageSets.json");
+        log.info("Loading image sets from " + saveFile.getAbsolutePath());
+        if (!saveFile.exists()) {
+            log.info("No image sets to load.");
+            return; // not a fatal error - there simply are no favorites
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            ImageSet[] favorites = mapper.readValue(saveFile, ImageSet[].class);
+            for (ImageSet set : favorites) {
+                ImageSetManager.getInstance().addImageSet(set);
+            }
+
+            MainWindow.getInstance().getImageSetPanel().resync();
+            log.info("Loaded " + imageSets.size() + " saved image sets.");
+            // TODO reload menus... but DON'T do a full ReloadUIAction.getInstance().actionPerformed(actionEvent);
+            setDirty(false);
+        }
+        catch (IOException e) {
+            log.log(Level.SEVERE, "Error saving image sets: " + e.getMessage(), e);
+        }
     }
 
     public static String parseFullyQualifiedName(String input) {
