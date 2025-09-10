@@ -149,6 +149,17 @@ public class ImageSetManager {
         try {
             ImageSet[] favorites = mapper.readValue(saveFile, ImageSet[].class);
             for (ImageSet set : favorites) {
+                // Dead image handling:
+                for (String filePath : set.getImageFilePaths()) {
+                    if (!new File(filePath).exists()) {
+                        log.warning("Image set load: skipping non-existing file "
+                                            + filePath
+                                            + " in set "
+                                            + set.getFullyQualifiedName());
+                        set.removeImageFilePath(filePath);
+                    }
+                }
+
                 ImageSetManager.getInstance().addImageSet(set);
             }
 

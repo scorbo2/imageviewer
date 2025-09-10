@@ -51,6 +51,10 @@ public class ImageSet {
         }
     }
 
+    public void removeImageFilePath(String pathToRemove) {
+        imageFilePaths.remove(pathToRemove);
+    }
+
     public boolean addImageFilePath(String imageFilePath) {
         if (imageFilePath == null) {
             log.warning("Ignoring attempt to add null image to image set.");
