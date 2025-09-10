@@ -9,6 +9,8 @@ Version 2.2 [TODO] - Maintenance release
   #14 - Image sets terminology
   #13 - Image sets persistence
   #12 - Make global keyboard support a bit smarter
+  #11 - Image set persistence dir must be configurable
+  #10 - Handle dead images in image set load
   #9 - Image set editor
   #8 - Right click and add to image set
   #7 - Context flipping between file system and image sets
