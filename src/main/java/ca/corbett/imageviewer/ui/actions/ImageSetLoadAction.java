@@ -43,8 +43,7 @@ public class ImageSetLoadAction extends AbstractAction {
             }
 
             MainWindow.getInstance().getImageSetPanel().resync();
-            MainWindow.getInstance().getImageSetPanel().refresh(); // TODO resync/refresh/ui reload should be 1 call!
-            ReloadUIAction.getInstance().actionPerformed(actionEvent); // TODO overkill? we must rebuild the menu...
+            // TODO reload menus... but DON'T do a full ReloadUIAction.getInstance().actionPerformed(actionEvent);
         }
         catch (IOException e) {
             log.log(Level.SEVERE, "Error saving image sets: " + e.getMessage(), e);

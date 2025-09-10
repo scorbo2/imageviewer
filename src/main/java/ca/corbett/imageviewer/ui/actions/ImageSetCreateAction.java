@@ -34,10 +34,9 @@ public class ImageSetCreateAction extends AbstractAction {
         if (name != null) {
             ImageSet imageSetOptional = ImageSetManager.getInstance().findOrCreateImageSet(name);
             if (imageSetOptional.addImageFilePath(file.getAbsolutePath())) {
-                ReloadUIAction.getInstance().actionPerformed(actionEvent); // TODO overkill
+                ReloadUIAction.getInstance().actionPerformed(actionEvent); // TODO overkill... just reload menus
             }
-            MainWindow.getInstance().getImageSetPanel().resync(); // todo resync... refresh... roll it into one
-            MainWindow.getInstance().getImageSetPanel().refresh();
+            MainWindow.getInstance().getImageSetPanel().resync();
         }
     }
 }

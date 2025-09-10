@@ -15,7 +15,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -86,6 +85,43 @@ public class ImageSetPanel extends JPanel {
         return Optional.empty();
     }
 
+    public void selectAndScrollTo(ImageSet set) {
+        String[] pathNodes = ImageSetManager.parsePathNodes(set.getFullyQualifiedName());
+        if (pathNodes.length == 0) {
+            return;
+        }
+
+        DefaultMutableTreeNode nodeToSelect = findChildNode(rootNode, pathNodes);
+        if (nodeToSelect == null) {
+            return;
+        }
+
+        TreePath path = new TreePath(nodeToSelect.getPath());
+        tree.scrollPathToVisible(path);
+        tree.setSelectionPath(path);
+    }
+
+    private DefaultMutableTreeNode findChildNode(DefaultMutableTreeNode parentNode, String[] nodes) {
+        DefaultMutableTreeNode nextNode = null;
+        for (int i = 0; i < parentNode.getChildCount(); i++) {
+            DefaultMutableTreeNode candidate = (DefaultMutableTreeNode)parentNode.getChildAt(i);
+            if (nodes[0].equalsIgnoreCase(candidate.getUserObject().toString())) {
+                nextNode = candidate;
+                break;
+            }
+        }
+
+        if (nextNode == null) {
+            return null;
+        }
+
+        if (nodes.length == 1) {
+            return nextNode;
+        }
+
+        return findChildNode(nextNode, Arrays.stream(nodes).skip(1).toArray(String[]::new));
+    }
+
     public void resync() {
         DefaultMutableTreeNode selectedNode = getSelectedNode().orElse(null);
 
@@ -97,10 +133,8 @@ public class ImageSetPanel extends JPanel {
         treeModel.reload();
 
         // Re-select whatever was selected if there was a selection:
-        if (selectedNode != null) {
-            TreePath selectionPath = new TreePath(selectedNode.getPath()); // TODO this path is no longer valid
-            tree.scrollPathToVisible(selectionPath); // TODO so this code will fail
-            tree.setSelectionPath(selectionPath); // TODO we need therefore a findNodeByImageSet or selectByPath
+        if (selectedNode != null && (selectedNode.getUserObject() instanceof ImageSet)) {
+            selectAndScrollTo((ImageSet)selectedNode.getUserObject());
         }
     }
 
@@ -136,15 +170,6 @@ public class ImageSetPanel extends JPanel {
 
         // Otherwise, recursively search that root node until we have the target:
         return addImageSetInNode(nextNode, set, Arrays.stream(nodes).skip(1).toArray(String[]::new));
-    }
-
-    /**
-     * Wonky swing nonsense - adding/removing nodes doesn't update the tree until you tell it explicitly
-     * about the changes.
-     */
-    public void refresh() {
-        treeModel.nodeStructureChanged((TreeNode)treeModel.getRoot());
-        // TODO can't we just do treeModel.reload() here? is that the same thing?
     }
 
     private JPanel buildToolbar() {
