@@ -14,6 +14,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
@@ -469,4 +470,16 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
         }
     }
 
+    /**
+     * Returns a combined list of all JPanels returned by all extensions to be displayed as
+     * tabs in the main image tab panel. If no extension returns anything, the main image
+     * tab panel is hidden.
+     */
+    public List<JPanel> getImageTabPanels() {
+        List<JPanel> list = new ArrayList<>();
+        for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
+            list.addAll(extension.getImageTabPanels());
+        }
+        return list;
+    }
 }

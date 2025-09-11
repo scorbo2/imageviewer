@@ -12,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
@@ -299,6 +300,16 @@ public abstract class ImageViewerExtension extends AppExtension {
      * @param selectedImage An ImageInstance containing the new image, if there is one.
      */
     public void imageSelected(ImageInstance selectedImage) {
+    }
+
+    /**
+     * Extensions may return zero or more JPanel instances which will be added as tabs
+     * to the main image tab panel. The default return here is an empty list. If no
+     * extension returns anything from this method, the main image tab panel is hidden.
+     * Note: use setName() on your panel to give the resulting tab a meaningful name.
+     */
+    public List<JPanel> getImageTabPanels() {
+        return List.of();
     }
 
 }

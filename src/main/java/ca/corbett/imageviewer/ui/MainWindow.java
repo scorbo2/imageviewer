@@ -394,12 +394,12 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
                         BufferedImage image = ImageUtil.loadImage(pn.getFile());
                         imagePanel.setImage(image);
                     }
-                    ImageViewerExtensionManager.getInstance().imageSelected(getSelectedImage());
                 }
                 catch (IOException ioe) {
                     getMessageUtil().error("Image load error", "Unable to load image.", ioe);
                 }
                 imagePanel.setExtraAttribute("srcFile", pn.getFile());
+                ImageViewerExtensionManager.getInstance().imageSelected(getSelectedImage());
                 updateStatusBar();
             }
 
@@ -407,6 +407,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
             public void selectionCleared(ThumbContainerPanel source) {
                 imagePanel.setImage(null);
                 imagePanel.setExtraAttribute("srcFile", null);
+                ImageViewerExtensionManager.getInstance().imageSelected(getSelectedImage());
                 updateStatusBar();
             }
 
@@ -454,7 +455,25 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
         if (southComponent != null) {
             mainWrapperPanel.add(southComponent, BorderLayout.SOUTH);
         }
-        mainWrapperPanel.add(imagePanel, BorderLayout.CENTER);
+
+        // Add a JTabbedPane to wrap the main image panel if any extension offers additional tabs:
+        List<JPanel> imageTabs = ImageViewerExtensionManager.getInstance().getImageTabPanels();
+        if (!imageTabs.isEmpty()) {
+            JTabbedPane tabPane = new JTabbedPane();
+            tabPane.addTab("Image", imagePanel);
+            int tabNumber = 1;
+            for (JPanel tabPanel : imageTabs) {
+                String name = tabPanel.getName() == null ? "Tab " + tabNumber : tabPanel.getName();
+                tabPane.add(name, tabPanel);
+                tabNumber++;
+            }
+            mainWrapperPanel.add(tabPane, BorderLayout.CENTER);
+        }
+
+        // If no extension supplies any image tabs, then don't show a tab pane:
+        else {
+            mainWrapperPanel.add(imagePanel, BorderLayout.CENTER);
+        }
 
         sideSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, imgSrcTabPane, thumbScrollPane);
         mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sideSplitPane, mainWrapperPanel);

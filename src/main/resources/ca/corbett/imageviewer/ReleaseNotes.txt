@@ -16,6 +16,7 @@ Version 2.2 [TODO] - Maintenance release
   #8 - Right click and add to image set
   #7 - Context flipping between file system and image sets
   #6 - Image sets tree
+  #3 - Add extension support for image tabs
   #2 - Add support for virtual directories (image sets)
   #1 - Upgrade to swing-extras 2.4
 
