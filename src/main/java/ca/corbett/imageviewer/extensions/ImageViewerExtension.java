@@ -5,6 +5,7 @@ import ca.corbett.extras.dirtree.DirTree;
 import ca.corbett.extras.logging.LogConsoleStyle;
 import ca.corbett.imageviewer.ImageOperation;
 import ca.corbett.imageviewer.ui.ImageInstance;
+import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.ThumbPanel;
 
 import javax.swing.AbstractAction;
@@ -63,9 +64,10 @@ public abstract class ImageViewerExtension extends AppExtension {
      * menus.
      *
      * @param topLevelMenu The name of the top-level menu being built: File, Edit, View, or Help.
+     * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
      * @return an optional list of menu items to insert into the given menu, or null for nothing.
      */
-    public List<JMenuItem> getMenuItems(String topLevelMenu) {
+    public List<JMenuItem> getMenuItems(String topLevelMenu, MainWindow.BrowseMode browseMode) {
         return null;
     }
 
@@ -84,9 +86,10 @@ public abstract class ImageViewerExtension extends AppExtension {
      * panel, also used in the toolbar and in the MainMenu. Extensions can add menu items
      * here if they pertain to the current image or current directory of images.
      *
+     * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
      * @return An optional list of menu items to insert into the popup menu, or null for none.
      */
-    public List<JMenuItem> getPopupMenuItems() {
+    public List<JMenuItem> getPopupMenuItems(MainWindow.BrowseMode browseMode) {
         return null;
     }
 

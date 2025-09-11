@@ -87,7 +87,7 @@ public class ThumbCacheExtension extends ImageViewerExtension {
     }
 
     @Override
-    public List<JMenuItem> getMenuItems(String topLevelMenu) {
+    public List<JMenuItem> getMenuItems(String topLevelMenu, MainWindow.BrowseMode browseMode) {
         if ("View".equals(topLevelMenu)) {
             List<JMenuItem> list = new ArrayList<>();
             JMenuItem item = new JMenuItem("View thumbnail cache stats");

@@ -36,7 +36,7 @@ public class ImageSetAddAction extends AbstractAction {
         }
         File file = currentImage.getImageFile();
         if (imageSet.addImageFilePath(file.getAbsolutePath())) {
-            ReloadUIAction.getInstance().actionPerformed(actionEvent); // TODO overkill? we must rebuild the menu...
+            MainWindow.getInstance().rebuildMenus();
         }
     }
 }

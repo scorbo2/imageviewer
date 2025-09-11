@@ -173,7 +173,7 @@ public class ImageSetManager {
 
             MainWindow.getInstance().getImageSetPanel().resync();
             log.info("Loaded " + imageSets.size() + " saved image sets.");
-            // TODO reload menus... but DON'T do a full ReloadUIAction.getInstance().actionPerformed(actionEvent);
+            MainWindow.getInstance().rebuildMenus();
             setDirty(false);
         }
         catch (IOException e) {

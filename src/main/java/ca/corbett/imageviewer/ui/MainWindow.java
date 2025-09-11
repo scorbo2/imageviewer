@@ -84,6 +84,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
     private static MainWindow instance;
     private static JFileChooser fileChooser;
 
+    private MenuManager menuManager;
     private JMenuBar menuBar;
     private JToolBar toolBar;
     private JPopupMenu imagePanelPopupMenu;
@@ -108,6 +109,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
      * Constructor is private to force singleton access.
      */
     private MainWindow() {
+        menuManager = new MenuManager();
     }
 
     /**
@@ -257,6 +259,10 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
         return browseMode;
     }
 
+    public MenuManager getMenuManager() {
+        return menuManager;
+    }
+
     public void setBrowseMode(BrowseMode mode) {
         // Reject no-op requests:
         if (mode == browseMode) {
@@ -264,6 +270,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
         }
 
         browseMode = mode;
+        menuManager.setBrowseMode(mode);
         switch (browseMode) {
             case FILE_SYSTEM:
                 if (imgSrcTabPane.getSelectedIndex() != 0) {
@@ -280,20 +287,15 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
                 break;
         }
 
-        // TODO now update the menus for the new browse mode!
+        rebuildMenus();
         logger.info("Switching browse modes to " + mode);
     }
 
-    /**
-     * Intended to be invoked if the quick move destination tree changes - this method will
-     * rescan the tree and rebuild our menus, the main menu bar, the image panel popup menu,
-     * and the toolbar dropdown menu.
-     */
-    public void rebuildQuickMoveMenus() {
-        MenuManager.rebuildQuickMoveEditMenu();
-        imagePanelPopupMenu = MenuManager.buildImagePanelPopupMenu();
+    public void rebuildMenus() {
+        menuManager.rebuildAll();
+        imagePanelPopupMenu = menuManager.buildImagePanelPopupMenu();
         imagePanel.setPopupMenu(imagePanelPopupMenu);
-        ToolBarManager.reloadQuickMovePopupMenu();
+        ToolBarManager.rebuildMenus();
     }
 
     /**
@@ -500,11 +502,8 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
         add(toolBar, BorderLayout.PAGE_START);
 
         // Build up our various menus:
-        menuBar = MenuManager.buildMainMenuBar();
-        this.setJMenuBar(menuBar);
-        imagePanelPopupMenu = MenuManager.buildImagePanelPopupMenu();
-        imagePanel.setPopupMenu(imagePanelPopupMenu);
-        ImageViewerExtensionManager.getInstance().quickMoveTreeChanged();
+        rebuildMenus();
+        ImageViewerExtensionManager.getInstance().quickMoveTreeChanged(); // TODO why are we invoking this here???
     }
 
     /**
@@ -671,11 +670,8 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
         add(toolBar, BorderLayout.PAGE_START);
 
         // Build up our various menus:
-        menuBar = MenuManager.buildMainMenuBar();
-        this.setJMenuBar(menuBar);
-        imagePanelPopupMenu = MenuManager.buildImagePanelPopupMenu();
-        imagePanel.setPopupMenu(imagePanelPopupMenu);
-        ImageViewerExtensionManager.getInstance().quickMoveTreeChanged();
+        rebuildMenus();
+        ImageViewerExtensionManager.getInstance().quickMoveTreeChanged(); // TODO why do we call this here?
 
         reload();
     }

@@ -4,6 +4,7 @@ import ca.corbett.extensions.AppExtensionInfo;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.imageviewer.Version;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
+import ca.corbett.imageviewer.ui.MainWindow;
 
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
@@ -49,7 +50,7 @@ public class RepeatUndoExtension extends ImageViewerExtension {
     }
 
     @Override
-    public List<JMenuItem> getMenuItems(String topLevelMenu) {
+    public List<JMenuItem> getMenuItems(String topLevelMenu, MainWindow.BrowseMode browseMode) {
         if ("Edit".equals(topLevelMenu)) {
             List<JMenuItem> list = new ArrayList<>();
             list.add(buildRepeatMenuItem());
@@ -60,7 +61,7 @@ public class RepeatUndoExtension extends ImageViewerExtension {
     }
 
     @Override
-    public List<JMenuItem> getPopupMenuItems() {
+    public List<JMenuItem> getPopupMenuItems(MainWindow.BrowseMode browseMode) {
         List<JMenuItem> list = new ArrayList<>();
         list.add(buildRepeatMenuItem());
         list.add(buildUndoMenuItem());

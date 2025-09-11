@@ -18,6 +18,7 @@ import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
@@ -27,7 +28,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,6 +44,7 @@ public final class ToolBarManager {
     public static final int iconSize = 26;
 
     private static JPopupMenu quickMovePopupMenu;
+    private static JPopupMenu deletePopupMenu;
 
     private ToolBarManager() {
 
@@ -116,17 +117,17 @@ public final class ToolBarManager {
 
             // Create a popup menu for the quick move button and attach it:
             quickMovePopupMenu = new JPopupMenu();
-            for (Component c : MenuManager.buildQuickMoveMenuItems()) {
+            for (Component c : MainWindow.getInstance().getMenuManager().buildImageMovementMenuItems()) {
                 quickMovePopupMenu.add(c);
             }
             moveButton.addActionListener(e -> quickMovePopupMenu.show(moveButton, 0, moveButton.getHeight()));
 
             // Create a popup menu for the delete button and attach it:
-            final JPopupMenu deleteMenu = new JPopupMenu();
-            for (Component c : MenuManager.buildDeleteMenuItems()) {
-                deleteMenu.add(c);
+            deletePopupMenu = new JPopupMenu();
+            for (Component c : MainWindow.getInstance().getMenuManager().buildImageRemovalMenuItems()) {
+                deletePopupMenu.add(c);
             }
-            deleteButton.addActionListener(e -> deleteMenu.show(deleteButton, 0, deleteButton.getHeight()));
+            deleteButton.addActionListener(e -> deletePopupMenu.show(deleteButton, 0, deleteButton.getHeight()));
 
             // Insert any buttons supplied by extensions, if any:
             for (JButton extensionBtn : ImageViewerExtensionManager.getInstance().getToolBarButtons()) {
@@ -156,11 +157,15 @@ public final class ToolBarManager {
      * Invoked when the quick move tree changes at runtime - this method will regenerate
      * our quick move popup menu.
      */
-    public static void reloadQuickMovePopupMenu() {
+    public static void rebuildMenus() {
         quickMovePopupMenu.removeAll();
-        List<Component> menuItems = MenuManager.buildQuickMoveMenuItems();
-        for (Component c : menuItems) {
-            quickMovePopupMenu.add(c);
+        for (JMenuItem i : MainWindow.getInstance().getMenuManager().buildImageMovementMenuItems()) {
+            quickMovePopupMenu.add(i);
+        }
+
+        deletePopupMenu.removeAll();
+        for (JMenuItem i : MainWindow.getInstance().getMenuManager().buildImageRemovalMenuItems()) {
+            deletePopupMenu.add(i);
         }
     }
 

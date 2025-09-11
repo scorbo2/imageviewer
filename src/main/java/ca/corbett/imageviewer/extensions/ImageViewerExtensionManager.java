@@ -7,6 +7,7 @@ import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.ImageOperation;
 import ca.corbett.imageviewer.Version;
 import ca.corbett.imageviewer.ui.ImageInstance;
+import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.ThumbPanel;
 
 import javax.swing.AbstractAction;
@@ -132,12 +133,13 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
      * to one of our built-in top-level menus.
      *
      * @param topLevelMenu The name of the top-level menu: File, Edit, View, or Help.
+     * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
      * @return A list of 0 or more menu items supplied by enabled extensions.
      */
-    public List<JMenuItem> getMenuItems(String topLevelMenu) {
+    public List<JMenuItem> getMenuItems(String topLevelMenu, MainWindow.BrowseMode browseMode) {
         List<JMenuItem> list = new ArrayList<>();
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            List<JMenuItem> toAdd = extension.getMenuItems(topLevelMenu);
+            List<JMenuItem> toAdd = extension.getMenuItems(topLevelMenu, browseMode);
             if (toAdd != null) {
                 list.addAll(toAdd);
             }
@@ -168,10 +170,10 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
      *
      * @return A list of 0 or more menu items supplied by enabled extensions.
      */
-    public List<JMenuItem> getPopupMenuItems() {
+    public List<JMenuItem> getPopupMenuItems(MainWindow.BrowseMode browseMode) {
         List<JMenuItem> list = new ArrayList<>();
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            List<JMenuItem> toAdd = extension.getPopupMenuItems();
+            List<JMenuItem> toAdd = extension.getPopupMenuItems(browseMode);
             if (toAdd != null) {
                 list.addAll(toAdd);
             }

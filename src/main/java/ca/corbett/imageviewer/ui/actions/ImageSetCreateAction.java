@@ -32,11 +32,10 @@ public class ImageSetCreateAction extends AbstractAction {
         File file = currentImage.getImageFile();
         String name = JOptionPane.showInputDialog(MainWindow.getInstance(), "Enter name for new list:");
         if (name != null) {
-            ImageSet imageSetOptional = ImageSetManager.getInstance().findOrCreateImageSet(name);
-            if (imageSetOptional.addImageFilePath(file.getAbsolutePath())) {
-                ReloadUIAction.getInstance().actionPerformed(actionEvent); // TODO overkill... just reload menus
-            }
+            ImageSet imageSet = ImageSetManager.getInstance().findOrCreateImageSet(name);
+            imageSet.addImageFilePath(file.getAbsolutePath());
             MainWindow.getInstance().getImageSetPanel().resync();
+            MainWindow.getInstance().rebuildMenus();
         }
     }
 }

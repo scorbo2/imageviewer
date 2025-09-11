@@ -5,6 +5,7 @@ import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.imageviewer.ImageOperation;
 import ca.corbett.imageviewer.Version;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
+import ca.corbett.imageviewer.ui.MainWindow;
 
 import javax.swing.JMenuItem;
 import java.awt.event.ActionEvent;
@@ -120,7 +121,7 @@ public class StatisticsExtension extends ImageViewerExtension {
     }
 
     @Override
-    public List<JMenuItem> getMenuItems(String topLevelMenu) {
+    public List<JMenuItem> getMenuItems(String topLevelMenu, MainWindow.BrowseMode browseMode) {
         if ("View".equals(topLevelMenu)) {
             List<JMenuItem> list = new ArrayList<>();
             JMenuItem item = new JMenuItem("Deletion statistics");
