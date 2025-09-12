@@ -29,11 +29,20 @@ public class ImageSet {
 
     private boolean isTransient;
 
+    private boolean isLocked;
+
     @JsonIgnore
     private boolean isDirty;
 
     public ImageSet() {
         isTransient = false;
+        isLocked = false;
+    }
+
+    public ImageSet(String fullyQualifiedName) {
+        isTransient = false;
+        isLocked = false;
+        setFullyQualifiedName(fullyQualifiedName);
     }
 
     public List<String> getImageFilePaths() {
@@ -90,6 +99,15 @@ public class ImageSet {
 
     public void setTransient(boolean isTransient) {
         this.isTransient = isTransient;
+        isDirty = true;
+    }
+
+    public boolean isLocked() {
+        return isLocked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.isLocked = locked;
         isDirty = true;
     }
 

@@ -1,6 +1,7 @@
 package ca.corbett.imageviewer.ui.imagesets;
 
 import ca.corbett.imageviewer.ui.MainWindow;
+import ca.corbett.imageviewer.ui.actions.ImageSetDeleteAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetEditAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetLoadAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetSaveAction;
@@ -85,6 +86,51 @@ public class ImageSetPanel extends JPanel {
         return Optional.empty();
     }
 
+    public boolean isCurrentBranchLocked() {
+        DefaultMutableTreeNode selectedNode = getSelectedNode().orElse(null);
+        if (selectedNode == null) {
+            return false;
+        }
+        return isBranchLocked(selectedNode);
+    }
+
+    public String getPathForNode(DefaultMutableTreeNode node) {
+        if (node == null || node == rootNode) {
+            return String.valueOf(PATH_DELIMITER);
+        }
+
+        List<String> pathNodes = new ArrayList<>();
+        DefaultMutableTreeNode nextNode = node;
+        while (nextNode != rootNode && nextNode != null) {
+            pathNodes.add(0, nextNode.getUserObject().toString());
+            nextNode = (DefaultMutableTreeNode)nextNode.getParent();
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(PATH_DELIMITER);
+        while (!pathNodes.isEmpty()) {
+            sb.append(pathNodes.get(0));
+            pathNodes.remove(0);
+            if (!pathNodes.isEmpty()) {
+                sb.append(PATH_DELIMITER);
+            }
+        }
+        return sb.toString();
+    }
+
+    public boolean isBranchLocked(DefaultMutableTreeNode node) {
+        DefaultMutableTreeNode nextNode = node;
+        while (nextNode != rootNode && nextNode != null) {
+            if (nextNode.getUserObject() instanceof ImageSet) {
+                if (((ImageSet)nextNode.getUserObject()).isLocked()) {
+                    return true;
+                }
+            }
+            nextNode = (DefaultMutableTreeNode)nextNode.getParent();
+        }
+
+        return false;
+    }
+
     public void selectAndScrollTo(ImageSet set) {
         String[] pathNodes = ImageSetManager.parsePathNodes(set.getFullyQualifiedName());
         if (pathNodes.length == 0) {
@@ -126,7 +172,7 @@ public class ImageSetPanel extends JPanel {
         DefaultMutableTreeNode selectedNode = getSelectedNode().orElse(null);
 
         rootNode.removeAllChildren();
-        List<ImageSet> imageSets = ImageSetManager.getInstance().getImageSets();
+        List<ImageSet> imageSets = MainWindow.getInstance().getImageSetManager().getImageSets();
         for (ImageSet set : imageSets) {
             addImageSet(set);
         }
@@ -177,15 +223,19 @@ public class ImageSetPanel extends JPanel {
         toolbar.setLayout(new FlowLayout(FlowLayout.LEFT));
         // TODO give this button an icon instead of a text label, make it pretty
         JButton button = new JButton(new ImageSetEditAction("Edit"));
-        button.setPreferredSize(new Dimension(90, 23));
+        button.setPreferredSize(new Dimension(60, 23));
         toolbar.add(button);
 
         button = new JButton(new ImageSetSaveAction("Save"));
-        button.setPreferredSize(new Dimension(90, 23));
+        button.setPreferredSize(new Dimension(60, 23));
         toolbar.add(button);
 
         button = new JButton(new ImageSetLoadAction("Load"));
-        button.setPreferredSize(new Dimension(90, 23));
+        button.setPreferredSize(new Dimension(60, 23));
+        toolbar.add(button);
+
+        button = new JButton(new ImageSetDeleteAction("Delete"));
+        button.setPreferredSize(new Dimension(60, 23));
         toolbar.add(button);
 
         return toolbar;

@@ -16,7 +16,7 @@ class ImageSetTest {
         String actual = imageSet.getFullyQualifiedName();
 
         // THEN it should be empty:
-        assertEquals("test", actual);
+        assertEquals("/test", actual);
     }
 
     @Test
@@ -36,8 +36,8 @@ class ImageSetTest {
 
         // THEN each should be fully qualified:
         char delim = ImageSetPanel.PATH_DELIMITER;
-        assertEquals("grandpappy", grandparentActual);
-        assertEquals("grandpappy" + delim + "pa", parentActual);
-        assertEquals("grandpappy" + delim + "pa" + delim + "test", childActual);
+        assertEquals("/grandpappy", grandparentActual);
+        assertEquals("/grandpappy" + delim + "pa", parentActual);
+        assertEquals("/grandpappy" + delim + "pa" + delim + "test", childActual);
     }
 }

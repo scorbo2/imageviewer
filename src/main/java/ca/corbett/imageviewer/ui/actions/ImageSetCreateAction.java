@@ -3,7 +3,6 @@ package ca.corbett.imageviewer.ui.actions;
 import ca.corbett.imageviewer.ui.ImageInstance;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.imagesets.ImageSet;
-import ca.corbett.imageviewer.ui.imagesets.ImageSetManager;
 
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
@@ -32,7 +31,7 @@ public class ImageSetCreateAction extends AbstractAction {
         File file = currentImage.getImageFile();
         String name = JOptionPane.showInputDialog(MainWindow.getInstance(), "Enter name for new list:");
         if (name != null) {
-            ImageSet imageSet = ImageSetManager.getInstance().findOrCreateImageSet(name);
+            ImageSet imageSet = MainWindow.getInstance().getImageSetManager().findOrCreateImageSet(name);
             imageSet.addImageFilePath(file.getAbsolutePath());
             MainWindow.getInstance().getImageSetPanel().resync();
             MainWindow.getInstance().rebuildMenus();

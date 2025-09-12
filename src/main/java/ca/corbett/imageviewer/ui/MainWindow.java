@@ -84,6 +84,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
     private static MainWindow instance;
     private static JFileChooser fileChooser;
 
+    private final ImageSetManager imageSetManager;
     private final MenuManager menuManager;
     private JMenuBar menuBar;
     private JToolBar toolBar;
@@ -111,6 +112,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
      */
     private MainWindow() {
         menuManager = new MenuManager();
+        imageSetManager = new ImageSetManager();
     }
 
     /**
@@ -155,7 +157,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
                     instance.saveUIState();
                     ImageViewerExtensionManager.getInstance().deactivateAll();
                     QuickMoveManager.getInstance().close();
-                    ImageSetManager.getInstance().save();
+                    instance.imageSetManager.save();
                     logger.info("Application windowClosing(): finished cleanup.");
                 }
 
@@ -169,7 +171,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
                     instance.saveUIState();
                     ImageViewerExtensionManager.getInstance().deactivateAll();
                     QuickMoveManager.getInstance().close();
-                    ImageSetManager.getInstance().save();
+                    instance.imageSetManager.save();
                     logger.info("Application windowClosed(): finished cleanup.");
                 }
 
@@ -178,7 +180,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
             // Custom LogConsole theme:
             LogConsoleManager.setCustomTheme();
 
-            ImageSetManager.getInstance().load();
+            instance.imageSetManager.load();
 
             ReloadUIAction.getInstance().registerReloadable(instance);
         }
@@ -262,6 +264,10 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
 
     public MenuManager getMenuManager() {
         return menuManager;
+    }
+
+    public ImageSetManager getImageSetManager() {
+        return imageSetManager;
     }
 
     public void setBrowseMode(BrowseMode mode) {

@@ -1,6 +1,6 @@
 package ca.corbett.imageviewer.ui.actions;
 
-import ca.corbett.imageviewer.ui.imagesets.ImageSetManager;
+import ca.corbett.imageviewer.ui.MainWindow;
 
 import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
@@ -19,6 +19,6 @@ public class ImageSetLoadAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
-        ImageSetManager.getInstance().load();
+        MainWindow.getInstance().getImageSetManager().load();
     }
 }

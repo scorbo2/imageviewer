@@ -144,6 +144,12 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         return imageSetSaveLocationOverride.getDirectory();
     }
 
+    // for unit tests only
+    public void setImageSetSaveLocation(File saveLocation) {
+        imageSetSaveLocation.setSelectedIndex(1);
+        imageSetSaveLocationOverride.setDirectory(saveLocation);
+    }
+
     public boolean isQuickMoveEnabled() {
         return enableQuickMoveProp.getValue();
     }

@@ -28,11 +28,10 @@ public class ImageSetManager {
 
     public final static char PATH_DELIMITER = '/';
 
-    private static ImageSetManager instance;
     private List<ImageSet> imageSets;
     private boolean isDirty;
 
-    private ImageSetManager() {
+    public ImageSetManager() {
         imageSets = new ArrayList<>();
         isDirty = false;
     }
@@ -63,13 +62,6 @@ public class ImageSetManager {
                 set.setDirty(false);
             }
         }
-    }
-
-    public static ImageSetManager getInstance() {
-        if (instance == null) {
-            instance = new ImageSetManager();
-        }
-        return instance;
     }
 
     public void addImageSet(ImageSet set) {
@@ -105,7 +97,11 @@ public class ImageSetManager {
     }
 
     public ImageSet findOrCreateImageSet(String fullyQualifiedName) {
-        Optional<ImageSet> set = findImageSet(fullyQualifiedName);
+        String parsedName = parseFullyQualifiedName(fullyQualifiedName);
+        if (parsedName.isBlank()) {
+            return null;
+        }
+        Optional<ImageSet> set = findImageSet(parsedName);
         if (set.isEmpty()) {
             ImageSet newSet = new ImageSet();
             newSet.setFullyQualifiedName(fullyQualifiedName);
@@ -115,6 +111,55 @@ public class ImageSetManager {
         }
 
         return set.get();
+    }
+
+    /**
+     * Remove the given ImageSet and all nodes underneath it in the tree.
+     */
+    public void remove(ImageSet set) {
+        imageSets.remove(set);
+        remove(set.getFullyQualifiedName());
+    }
+
+    public boolean isBranchLocked(String path) {
+        if (path == null || path.length() <= 1) {
+            return false;
+        }
+
+        // If any image set at or below this path is locked, the branch is locked:
+        for (ImageSet candidate : imageSets) {
+            if (candidate.getFullyQualifiedName().startsWith(path) && candidate.isLocked()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Removes all nodes at or under the given tree path.
+     */
+    public void remove(String path) {
+        // Ignore dumb requests:
+        if (path == null || path.length() <= 1) {
+            return;
+        }
+
+        List<ImageSet> survivors = new ArrayList<>(imageSets.size());
+        for (ImageSet candidate : imageSets) {
+            if (!candidate.getFullyQualifiedName().startsWith(path)) {
+                survivors.add(candidate);
+            }
+        }
+
+        // If nothing got removed, we're done:
+        if (survivors.size() == imageSets.size()) {
+            return;
+        }
+
+        // Otherwise, keep only those ImageSets that survives the deletion:
+        imageSets.clear();
+        imageSets.addAll(survivors);
     }
 
     public List<ImageSet> getImageSets() {
@@ -131,10 +176,10 @@ public class ImageSetManager {
         log.info("Saving image sets to " + saveFile.getAbsolutePath());
         DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
         prettyPrinter.indentArraysWith(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE);
-        List<ImageSet> imageSetsToSave = ImageSetManager.getInstance().getImageSets()
-                                                        .stream()
-                                                        .filter(item -> !item.isTransient())
-                                                        .toList();
+        List<ImageSet> imageSetsToSave = imageSets
+                .stream()
+                .filter(item -> !item.isTransient())
+                .toList();
         ObjectMapper mapper = new ObjectMapper();
         try {
             mapper.writer(prettyPrinter).writeValue(saveFile, imageSetsToSave);
@@ -168,7 +213,7 @@ public class ImageSetManager {
                     }
                 }
 
-                ImageSetManager.getInstance().addImageSet(set);
+                addImageSet(set);
             }
 
             MainWindow.getInstance().getImageSetPanel().resync();
