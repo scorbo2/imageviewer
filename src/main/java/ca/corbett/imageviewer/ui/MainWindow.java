@@ -84,13 +84,14 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
     private static MainWindow instance;
     private static JFileChooser fileChooser;
 
-    private MenuManager menuManager;
+    private final MenuManager menuManager;
     private JMenuBar menuBar;
     private JToolBar toolBar;
     private JPopupMenu imagePanelPopupMenu;
 
     private BrowseMode browseMode;
     private JTabbedPane imgSrcTabPane;
+    private ToggleableTabbedPane imageTabPane;
     private DirTree dirTree;
     private ImageSetPanel imageSetPanel;
     private ThumbContainerPanel thumbContainerPanel;
@@ -458,23 +459,24 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
             mainWrapperPanel.add(southComponent, BorderLayout.SOUTH);
         }
 
-        // Add a JTabbedPane to wrap the main image panel if any extension offers additional tabs:
+        imageTabPane = new ToggleableTabbedPane();
+        imageTabPane.addTab("Image", imagePanel);
+        mainWrapperPanel.add(imageTabPane, BorderLayout.CENTER);
+
+        // See if extensions have any image tab panes for us:
         List<JPanel> imageTabs = ImageViewerExtensionManager.getInstance().getImageTabPanels();
         if (!imageTabs.isEmpty()) {
-            JTabbedPane tabPane = new JTabbedPane();
-            tabPane.addTab("Image", imagePanel);
             int tabNumber = 1;
             for (JPanel tabPanel : imageTabs) {
                 String name = tabPanel.getName() == null ? "Tab " + tabNumber : tabPanel.getName();
-                tabPane.add(name, tabPanel);
+                imageTabPane.add(name, tabPanel);
                 tabNumber++;
             }
-            mainWrapperPanel.add(tabPane, BorderLayout.CENTER);
         }
 
         // If no extension supplies any image tabs, then don't show a tab pane:
         else {
-            mainWrapperPanel.add(imagePanel, BorderLayout.CENTER);
+            imageTabPane.setTabHeaderVisible(false);
         }
 
         sideSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, imgSrcTabPane, thumbScrollPane);
@@ -672,6 +674,26 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
         // Build up our various menus:
         rebuildMenus();
         ImageViewerExtensionManager.getInstance().quickMoveTreeChanged(); // TODO why do we call this here?
+
+        // Rebuild the image tab pane:
+        imageTabPane.removeAll();
+        imageTabPane.addTab("Image", imagePanel);
+        // See if extensions have any image tab panes for us:
+        List<JPanel> imageTabs = ImageViewerExtensionManager.getInstance().getImageTabPanels();
+        if (!imageTabs.isEmpty()) {
+            imageTabPane.setTabHeaderVisible(true);
+            int tabNumber = 1;
+            for (JPanel tabPanel : imageTabs) {
+                String name = tabPanel.getName() == null ? "Tab " + tabNumber : tabPanel.getName();
+                imageTabPane.add(name, tabPanel);
+                tabNumber++;
+            }
+        }
+
+        // If no extension supplies any image tabs, then don't show a tab pane:
+        else {
+            imageTabPane.setTabHeaderVisible(false);
+        }
 
         reload();
     }

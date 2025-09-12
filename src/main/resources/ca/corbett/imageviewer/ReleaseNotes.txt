@@ -2,6 +2,7 @@ ImageViewer Release Notes
 Author: Steve Corbett
 
 Version 2.2 [TODO] - Maintenance release
+  #30 - Handle dynamic image tab panels
   #27 - Add ImageSet transient option
   #26 - Image set refactoring
   #23 - Keyboard shortcuts for image source
