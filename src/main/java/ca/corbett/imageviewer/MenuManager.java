@@ -7,6 +7,7 @@ import ca.corbett.imageviewer.ui.actions.ExitAction;
 import ca.corbett.imageviewer.ui.actions.ImageOperationAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetAddAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetCreateAction;
+import ca.corbett.imageviewer.ui.actions.ImageSetDeleteAction;
 import ca.corbett.imageviewer.ui.actions.LogConsoleAction;
 import ca.corbett.imageviewer.ui.actions.ManageExtensionsAction;
 import ca.corbett.imageviewer.ui.actions.NextImageAction;
@@ -344,6 +345,7 @@ public final class MenuManager {
 
         else {
             menuList.add(new JMenuItem("TODO image set removal options go here"));
+            menuList.add(new JMenuItem(new ImageSetDeleteAction("Delete this image set")));
         }
 
         return menuList;
