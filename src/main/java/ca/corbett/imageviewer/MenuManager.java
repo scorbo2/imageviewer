@@ -6,6 +6,7 @@ import ca.corbett.imageviewer.ui.actions.AboutAction;
 import ca.corbett.imageviewer.ui.actions.ExitAction;
 import ca.corbett.imageviewer.ui.actions.ImageOperationAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetAddImageAction;
+import ca.corbett.imageviewer.ui.actions.ImageSetBrowseToSourceDirAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetCreateAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetDeleteAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetRemoveImageAction;
@@ -136,6 +137,10 @@ public final class MenuManager {
             imagePanelPopupMenu.add(buildImageSetMenu());
         }
 
+        if (browseMode == MainWindow.BrowseMode.IMAGE_SET) {
+            imagePanelPopupMenu.add(new JMenuItem(new ImageSetBrowseToSourceDirAction("Browse to source dir")));
+        }
+
         imagePanelPopupMenu.add(new JMenuItem(new RenameAction()));
 
         // Add any menu items from our extensions, if any:
@@ -208,6 +213,11 @@ public final class MenuManager {
         item = new JMenuItem(new ReloadAction());
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
         viewMenu.add(item);
+
+        if (browseMode == MainWindow.BrowseMode.IMAGE_SET) {
+            viewMenu.add(new JMenuItem(new ImageSetBrowseToSourceDirAction("Browse to source dir")));
+        }
+
         viewMenu.addSeparator();
 
         // Add any items to this list from our extensions, if any:

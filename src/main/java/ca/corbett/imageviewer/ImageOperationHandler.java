@@ -372,7 +372,7 @@ public final class ImageOperationHandler {
         }
 
         // Change selection to the parent dir and remove the child (below call causes a DirTree reload):
-        MainWindow.getInstance().navigateTo(parentDir);
+        MainWindow.getInstance().setDirectory(parentDir);
     }
 
     /**
@@ -502,7 +502,7 @@ public final class ImageOperationHandler {
             return;
         }
 
-        MainWindow.getInstance().navigateTo(srcDir);
+        MainWindow.getInstance().setDirectory(srcDir);
         getMessageUtil().info("Copy complete",
                               "The directory has been copied:\nFrom: " + srcDir.getAbsolutePath() + "\nTo: " + newDir.getAbsolutePath());
     }
@@ -636,7 +636,7 @@ public final class ImageOperationHandler {
             return;
         }
 
-        MainWindow.getInstance().navigateTo(srcDir);
+        MainWindow.getInstance().setDirectory(srcDir);
         getMessageUtil().info("Link complete",
                               "The directory has been linked:\nOriginal: " + srcDir.getAbsolutePath() + "\nSymlink: " + newDir.getAbsolutePath());
     }
@@ -826,7 +826,7 @@ public final class ImageOperationHandler {
 
         File currentDir = MainWindow.getInstance().getCurrentDirectory();
         File parentDir = currentDir.getParentFile();
-        MainWindow.getInstance().navigateTo(parentDir);
+        MainWindow.getInstance().setDirectory(parentDir);
     }
 
     /**
@@ -905,7 +905,7 @@ public final class ImageOperationHandler {
                     return;
                 }
 
-                MainWindow.getInstance().navigateTo(MainWindow.getInstance().getCurrentDirectory());
+                MainWindow.getInstance().setDirectory(MainWindow.getInstance().getCurrentDirectory());
                 getMessageUtil().info("The directory operation has been undone.");
                 break;
 
@@ -922,7 +922,7 @@ public final class ImageOperationHandler {
                 catch (IOException ioe) {
                     getMessageUtil().error("Caught exception while removing symlink: " + ioe.getMessage(), ioe);
                 }
-                MainWindow.getInstance().navigateTo(MainWindow.getInstance().getCurrentDirectory());
+                MainWindow.getInstance().setDirectory(MainWindow.getInstance().getCurrentDirectory());
                 getMessageUtil().info("The symlink has been removed.");
                 break;
         }

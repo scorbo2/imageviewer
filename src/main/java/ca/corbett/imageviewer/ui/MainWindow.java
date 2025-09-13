@@ -67,7 +67,7 @@ import java.util.logging.Logger;
  * @author scorbett
  * @since 2017-11-08
  */
-public final class MainWindow extends JFrame implements DirTreeListener, UIReloadable {
+public final class MainWindow extends JFrame implements UIReloadable {
 
     private static final Logger logger = Logger.getLogger(MainWindow.class.getName());
 
@@ -89,8 +89,10 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
 
     private BrowseMode browseMode;
     private JTabbedPane imgSrcTabPane;
+    private final ImgSrcTabPaneListener imgSrcTabPaneListener;
     private ToggleableTabbedPane imageTabPane;
     private DirTree dirTree;
+    private final DirTreeChangeListener dirTreeChangeListener;
     private ImageSetPanel imageSetPanel;
     private ThumbContainerPanel thumbContainerPanel;
     private JPanel mainWrapperPanel;
@@ -110,6 +112,8 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
     private MainWindow() {
         menuManager = new MenuManager();
         imageSetManager = new ImageSetManager();
+        imgSrcTabPaneListener = new ImgSrcTabPaneListener();
+        dirTreeChangeListener = new DirTreeChangeListener();
     }
 
     /**
@@ -268,13 +272,37 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
     }
 
     public void setBrowseMode(BrowseMode mode) {
+        setBrowseMode(mode, true);
+    }
+
+    public void setBrowseMode(BrowseMode mode, boolean autoLoad) {
         // Reject no-op requests:
         if (mode == browseMode) {
             return;
         }
 
+        imgSrcTabPane.removeChangeListener(imgSrcTabPaneListener);
         browseMode = mode;
+        switch (browseMode) {
+            case FILE_SYSTEM:
+                imgSrcTabPane.setSelectedIndex(0);
+                break;
+            case IMAGE_SET:
+                imgSrcTabPane.setSelectedIndex(1);
+                break;
+        }
+        imgSrcTabPane.addChangeListener(imgSrcTabPaneListener);
+
         menuManager.setBrowseMode(mode);
+        rebuildMenus();
+        logger.info("Switching browse modes to " + mode);
+
+        // if autoLoad is set, we will force a load of whatever is selected in the new tab.
+        // Callers can set this to false if they want to load something else.
+        if (!autoLoad) {
+            return;
+        }
+
         switch (browseMode) {
             case FILE_SYSTEM:
                 if (imgSrcTabPane.getSelectedIndex() != 0) {
@@ -290,9 +318,6 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
                 setImageSet(imageSetPanel.getSelectedImageSet().orElse(null));
                 break;
         }
-
-        rebuildMenus();
-        logger.info("Switching browse modes to " + mode);
     }
 
     public void rebuildMenus() {
@@ -356,7 +381,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
         dirTree = DirTree.createDirTree();
         dirTree.setMinimumSize(new Dimension(180, 100));
         dirTree.setPreferredSize(new Dimension(180, 200));
-        dirTree.addDirTreeListener(this);
+        dirTree.addDirTreeListener(dirTreeChangeListener);
 
         imageSetPanel = new ImageSetPanel();
 
@@ -364,20 +389,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
         imgSrcTabPane = new JTabbedPane();
         imgSrcTabPane.addTab("File system", dirTree);
         imgSrcTabPane.addTab("Image sets", imageSetPanel);
-        imgSrcTabPane.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent changeEvent) {
-                thumbContainerPanel.clear();
-                switch (imgSrcTabPane.getSelectedIndex()) {
-                    case 0:
-                        setBrowseMode(BrowseMode.FILE_SYSTEM);
-                        break;
-                    case 1:
-                        setBrowseMode(BrowseMode.IMAGE_SET);
-                        break;
-                }
-            }
-        });
+        imgSrcTabPane.addChangeListener(imgSrcTabPaneListener);
 
         thumbContainerPanel = ThumbContainerPanel.createThumbContainer();
         thumbContainerPanel.setMinimumSize(new Dimension(180, 100));
@@ -507,16 +519,8 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
 
         // Build up our various menus:
         rebuildMenus();
+        setJMenuBar(menuManager.getMainMenuBar());
         ImageViewerExtensionManager.getInstance().quickMoveTreeChanged(); // TODO why are we invoking this here???
-    }
-
-    /**
-     * Navigates to the given directory.
-     *
-     * @param directory The directory to which to navigate.
-     */
-    public void navigateTo(File directory) {
-        dirTree.reload(directory);
     }
 
     /**
@@ -713,7 +717,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
         thumbContainerPanel.removeAll();
         thumbContainerPanel.reloadThumbSizePreference();
         if (dirTree.getCurrentDir() != null) {
-            selectionChanged(dirTree, dirTree.getCurrentDir());
+            dirTreeChangeListener.selectionChanged(dirTree, dirTree.getCurrentDir());
         }
         updateStatusBar();
     }
@@ -832,39 +836,43 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
         });
     }
 
-    @Override
-    public void selectionChanged(DirTree source, File selectedDir) {
-        setDirectory(selectedDir);
-    }
-
+    /**
+     * Navigates to the specified directory (can be null for no selection), and switches
+     * browse mode to FILE_SYSTEM. This will update all menus and the window title as needed.
+     */
     public void setDirectory(File selectedDir) {
-        browseMode = BrowseMode.FILE_SYSTEM;
+        setBrowseMode(BrowseMode.FILE_SYSTEM, false);
+
+        // Select it in the tree without triggering a change event:
+        dirTree.removeDirTreeListener(dirTreeChangeListener);
+        dirTree.selectAndScrollTo(selectedDir);
+        dirTree.addDirTreeListener(dirTreeChangeListener);
+
         if (selectedDir == null) {
             setTitle(Version.NAME);
         }
         else {
-            setTitle(Version.NAME + " - " + selectedDir.getAbsolutePath());
+            setTitle(Version.NAME + " [File system] " + selectedDir.getAbsolutePath());
         }
+
         thumbContainerPanel.setDirectory(selectedDir); // handles nulls
-        // TODO update menus based on new browse mode! or have a set
     }
 
+    /**
+     * Selects and displays the given ImageSet (can be null for no selection), and switches
+     * browse mode to IMAGE_SET. This will update all menus and the window title as needed.
+     */
     public void setImageSet(ImageSet set) {
+        setBrowseMode(BrowseMode.IMAGE_SET, false);
+
         if (set == null) {
             setTitle(Version.NAME);
         }
         else {
-            setTitle(Version.NAME + " - " + set.getFullyQualifiedName());
+            setTitle(Version.NAME + " [Image set] " + set.getFullyQualifiedName());
         }
+
         thumbContainerPanel.setImageSet(set); // handles nulls
-    }
-
-    @Override
-    public void treeLocked(DirTree source, File lockDir) {
-    }
-
-    @Override
-    public void treeUnlocked(DirTree source) {
     }
 
     public void showMessageDialog(String title, String message) {
@@ -878,4 +886,36 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
         return messageUtil;
     }
 
+    private static class DirTreeChangeListener implements DirTreeListener {
+
+        @Override
+        public void selectionChanged(DirTree source, File selectedDir) {
+            MainWindow.getInstance().setDirectory(selectedDir);
+        }
+
+        @Override
+        public void treeLocked(DirTree source, File lockDir) {
+        }
+
+        @Override
+        public void treeUnlocked(DirTree source) {
+        }
+    }
+
+    private static class ImgSrcTabPaneListener implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent changeEvent) {
+            final MainWindow mw = MainWindow.getInstance();
+            mw.thumbContainerPanel.clear();
+            switch (mw.imgSrcTabPane.getSelectedIndex()) {
+                case 0:
+                    mw.setBrowseMode(BrowseMode.FILE_SYSTEM);
+                    break;
+                case 1:
+                    mw.setBrowseMode(BrowseMode.IMAGE_SET);
+                    break;
+            }
+        }
+    }
 }
