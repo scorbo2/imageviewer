@@ -28,9 +28,7 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenuBar;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -41,6 +39,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Image;
@@ -86,9 +85,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
 
     private final ImageSetManager imageSetManager;
     private final MenuManager menuManager;
-    private JMenuBar menuBar;
     private JToolBar toolBar;
-    private JPopupMenu imagePanelPopupMenu;
 
     private BrowseMode browseMode;
     private JTabbedPane imgSrcTabPane;
@@ -300,8 +297,7 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
 
     public void rebuildMenus() {
         menuManager.rebuildAll();
-        imagePanelPopupMenu = menuManager.buildImagePanelPopupMenu();
-        imagePanel.setPopupMenu(imagePanelPopupMenu);
+        imagePanel.setPopupMenu(menuManager.buildImagePanelPopupMenu());
         ToolBarManager.rebuildMenus();
     }
 
@@ -750,6 +746,31 @@ public final class MainWindow extends JFrame implements DirTreeListener, UIReloa
 
     public ImageSetPanel getImageSetPanel() {
         return imageSetPanel;
+    }
+
+    /**
+     * Flips the image panel tab pane back to the first tab (the main image panel).
+     */
+    public void resetSelectedImagePanelTab() {
+        setSelectedImagePanelTab(null);
+    }
+
+    /**
+     * Flips the image panel tab pane to the given tab name, if it exists.
+     * If the given name is null or blank, this is equivalent to resetSelectedImagePanelTab.
+     * If the given name is not found, nothing happens.
+     */
+    public void setSelectedImagePanelTab(String name) {
+        if (name == null || name.isBlank()) {
+            imageTabPane.setSelectedIndex(0);
+            return;
+        }
+        for (Component component : imageTabPane.getComponents()) {
+            if (name.equals(component.getName())) {
+                imageTabPane.setSelectedComponent(component);
+                return;
+            }
+        }
     }
 
     /**

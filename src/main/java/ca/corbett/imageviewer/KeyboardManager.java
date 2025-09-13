@@ -58,12 +58,14 @@ public final class KeyboardManager {
 
                         // Delete key to delete current image:
                         case KeyEvent.VK_DELETE:
+                            // TODO take browse mode into account!
                             ImageOperationHandler.deleteImage();
                             wasHandled = true;
                             break;
 
                         // F2 to rename current image:
                         case KeyEvent.VK_F2:
+                            // TODO do we need to take browse mode into account?
                             new RenameAction().actionPerformed(null);
                             wasHandled = true;
                             break;

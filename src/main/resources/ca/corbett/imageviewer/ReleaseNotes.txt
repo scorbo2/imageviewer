@@ -2,6 +2,7 @@ ImageViewer Release Notes
 Author: Steve Corbett
 
 Version 2.2 [TODO] - Maintenance release
+  #32 - Allow extensions to change current image tab
   #31 - Handle ImageSet deletion
   #30 - Handle dynamic image tab panels
   #27 - Add ImageSet transient option
