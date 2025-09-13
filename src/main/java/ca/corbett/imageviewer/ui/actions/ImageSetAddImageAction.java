@@ -14,7 +14,7 @@ import java.io.File;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 2.2
  */
-public class ImageSetAddAction extends AbstractAction {
+public class ImageSetAddImageAction extends AbstractAction {
 
     private final ImageSet imageSet;
 
@@ -22,7 +22,7 @@ public class ImageSetAddAction extends AbstractAction {
      * Creates an ImageSetAddAction with the given ImageSet. Every time the action is invoked,
      * the currently showing image (if any) will be added to this ImageSet if it is not already there.
      */
-    public ImageSetAddAction(ImageSet set) {
+    public ImageSetAddImageAction(ImageSet set) {
         super(set.getName());
         this.imageSet = set;
     }
@@ -31,7 +31,7 @@ public class ImageSetAddAction extends AbstractAction {
     public void actionPerformed(ActionEvent actionEvent) {
         ImageInstance currentImage = MainWindow.getInstance().getSelectedImage();
         if (currentImage.isEmpty()) {
-            MainWindow.getInstance().showMessageDialog("Rename", "Nothing selected.");
+            MainWindow.getInstance().showMessageDialog("Add image to image set", "No image selected.");
             return;
         }
         File file = currentImage.getImageFile();

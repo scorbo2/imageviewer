@@ -62,6 +62,7 @@ public class ImageSet {
 
     public void removeImageFilePath(String pathToRemove) {
         imageFilePaths.remove(pathToRemove);
+        isDirty = true;
     }
 
     public boolean addImageFilePath(String imageFilePath) {
@@ -133,6 +134,7 @@ public class ImageSet {
         this.fullyQualifiedName = ImageSetManager.parseFullyQualifiedName(newName);
         this.path = ImageSetManager.parsePath(newName);
         this.name = ImageSetManager.parseName(newName);
+        this.isDirty = true;
     }
 
     public String getFullyQualifiedName() {
