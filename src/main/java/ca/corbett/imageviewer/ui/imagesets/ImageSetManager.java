@@ -158,7 +158,7 @@ public class ImageSetManager {
 
         List<ImageSet> survivors = new ArrayList<>(imageSets.size());
         for (ImageSet candidate : imageSets) {
-            if (!candidate.getFullyQualifiedName().startsWith(path)) {
+            if (!candidate.getFullyQualifiedName().startsWith(path + PATH_DELIMITER)) {
                 survivors.add(candidate);
             }
         }

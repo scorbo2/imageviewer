@@ -3,8 +3,7 @@ package ca.corbett.imageviewer.ui.imagesets;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.actions.ImageSetDeleteAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetEditAction;
-import ca.corbett.imageviewer.ui.actions.ImageSetLoadAction;
-import ca.corbett.imageviewer.ui.actions.ImageSetSaveAction;
+import ca.corbett.imageviewer.ui.actions.ImageSetRenameAction;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -72,19 +71,24 @@ public class ImageSetPanel extends JPanel {
         toolbar.setLayout(new FlowLayout(FlowLayout.LEFT));
         // TODO give this button an icon instead of a text label, make it pretty
         JButton button = new JButton(new ImageSetEditAction("Edit"));
-        button.setPreferredSize(new Dimension(60, 23));
+        button.setPreferredSize(new Dimension(80, 23));
         toolbar.add(button);
 
-        button = new JButton(new ImageSetSaveAction("Save"));
-        button.setPreferredSize(new Dimension(60, 23));
-        toolbar.add(button);
-
-        button = new JButton(new ImageSetLoadAction("Load"));
-        button.setPreferredSize(new Dimension(60, 23));
-        toolbar.add(button);
+        // TODO reintroduce these once we have an icon set for them
+//        button = new JButton(new ImageSetSaveAction("Save"));
+//        button.setPreferredSize(new Dimension(60, 23));
+//        toolbar.add(button);
+//
+//        button = new JButton(new ImageSetLoadAction("Load"));
+//        button.setPreferredSize(new Dimension(60, 23));
+//        toolbar.add(button);
 
         button = new JButton(new ImageSetDeleteAction("Delete"));
-        button.setPreferredSize(new Dimension(60, 23));
+        button.setPreferredSize(new Dimension(80, 23));
+        toolbar.add(button);
+
+        button = new JButton(new ImageSetRenameAction("Rename/move this image set"));
+        button.setPreferredSize(new Dimension(80, 23));
         toolbar.add(button);
 
         return toolbar;
