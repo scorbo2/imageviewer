@@ -295,7 +295,6 @@ public final class MainWindow extends JFrame implements UIReloadable {
 
         menuManager.setBrowseMode(mode);
         rebuildMenus();
-        logger.info("Switching browse modes to " + mode);
 
         // if autoLoad is set, we will force a load of whatever is selected in the new tab.
         // Callers can set this to false if they want to load something else.

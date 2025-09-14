@@ -8,6 +8,7 @@ Version 2.2 [TODO] - Maintenance release
   #27 - Add ImageSet transient option
   #26 - Image set refactoring
   #25 - Add popup dialog for image set chooser
+  #24 - Add all images in current dir to image set
   #23 - Keyboard shortcuts for image source
   #22 - Add browse to source dir option for image sets
   #20 - Cosmetic fix in AboutDialog

@@ -5,6 +5,7 @@ import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.actions.AboutAction;
 import ca.corbett.imageviewer.ui.actions.ExitAction;
 import ca.corbett.imageviewer.ui.actions.ImageOperationAction;
+import ca.corbett.imageviewer.ui.actions.ImageSetAddAllImagesAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetAddImageAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetBrowseToSourceDirAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetCreateAction;
@@ -135,6 +136,7 @@ public final class MenuManager {
 
         if (browseMode == MainWindow.BrowseMode.FILE_SYSTEM) {
             imagePanelPopupMenu.add(buildImageSetMenu());
+            imagePanelPopupMenu.add(new ImageSetAddAllImagesAction("Add all images in this directory to image set..."));
         }
 
         if (browseMode == MainWindow.BrowseMode.IMAGE_SET) {
