@@ -306,6 +306,16 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     }
 
     /**
+     * Informational message to inform extensions that the current browse mode has changed.
+     * Extensions can use this to re-render whatever UI component may need to change as a result.
+     */
+    public void browseModeChanged(MainWindow.BrowseMode newBrowseMode) {
+        for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
+            extension.browseModeChanged(newBrowseMode);
+        }
+    }
+
+    /**
      * Informational message sent out each time a ThumbPanel has been created to represent
      * an image - extensions can use this to add custom stuff to the ThumbPanel.
      *

@@ -299,6 +299,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
         // if autoLoad is set, we will force a load of whatever is selected in the new tab.
         // Callers can set this to false if they want to load something else.
         if (!autoLoad) {
+            ImageViewerExtensionManager.getInstance().browseModeChanged(mode);
             return;
         }
 
@@ -317,6 +318,9 @@ public final class MainWindow extends JFrame implements UIReloadable {
                 setImageSet(imageSetPanel.getSelectedImageSet().orElse(null));
                 break;
         }
+
+        // Let extensions know about the change.
+        ImageViewerExtensionManager.getInstance().browseModeChanged(mode);
     }
 
     public void rebuildMenus() {
