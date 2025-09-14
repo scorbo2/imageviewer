@@ -121,8 +121,9 @@ public class ImageSetManager {
         remove(set.getFullyQualifiedName());
     }
 
-    public boolean isBranchLocked(String path) {
-        if (path == null || path.length() <= 1) {
+    public boolean isBranchLocked(String fullyQualifiedPath) {
+        String path = parseFullyQualifiedName(fullyQualifiedPath);
+        if (path.length() <= 1) {
             return false;
         }
 
@@ -131,6 +132,16 @@ public class ImageSetManager {
             if (candidate.getFullyQualifiedName().startsWith(path) && candidate.isLocked()) {
                 return true;
             }
+        }
+
+        // Also check any direct-line parent nodes:
+        String parentPath = parseParent(path);
+        while (!"/".equals(parentPath)) {
+            Optional<ImageSet> parentSet = findImageSet(parentPath);
+            if (parentSet.isPresent() && parentSet.get().isLocked()) {
+                return true;
+            }
+            parentPath = parseParent(parentPath);
         }
 
         return false;
@@ -256,10 +267,10 @@ public class ImageSetManager {
         return nodes[nodes.length-1];
     }
 
-    public static String parsePath(String input) {
+    public static String parseParent(String input) {
         String[] nodes = parsePathNodes(input);
         if (nodes.length == 0) {
-            return "";
+            return String.valueOf(PATH_DELIMITER);
         }
 
         // The path starts with the delimiter and includes each item in the

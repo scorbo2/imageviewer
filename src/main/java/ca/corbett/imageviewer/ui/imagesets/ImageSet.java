@@ -132,7 +132,7 @@ public class ImageSet {
      */
     public void setFullyQualifiedName(String newName) {
         this.fullyQualifiedName = ImageSetManager.parseFullyQualifiedName(newName);
-        this.path = ImageSetManager.parsePath(newName);
+        this.path = ImageSetManager.parseParent(newName);
         this.name = ImageSetManager.parseName(newName);
         this.isDirty = true;
     }

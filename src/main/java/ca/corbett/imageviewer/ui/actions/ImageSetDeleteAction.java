@@ -28,12 +28,9 @@ public class ImageSetDeleteAction extends AbstractAction {
         }
 
         // Is this branch locked?
-        // Check both the image set panel (checks that node and up) and image set manager (checks that node and down)
-        // TODO document this as it's confusing... why do we need to check two things... can we do this in one check?
         ImageSetManager imageSetManager = MainWindow.getInstance().getImageSetManager();
         String nodePath = MainWindow.getInstance().getImageSetPanel().getPathForNode(selectedNode.get());
-        if (MainWindow.getInstance().getImageSetPanel().isBranchLocked(selectedNode.get()) ||
-            imageSetManager.isBranchLocked(nodePath)) {
+        if (imageSetManager.isBranchLocked(nodePath)) {
             MainWindow.getInstance().showMessageDialog("Delete image set",
                                                        "One ore more image sets in this branch of "
                                                        + "the tree are locked and cannot be deleted.");

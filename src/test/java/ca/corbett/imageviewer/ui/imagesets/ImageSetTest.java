@@ -35,7 +35,7 @@ class ImageSetTest {
         String childActual = child.getFullyQualifiedName();
 
         // THEN each should be fully qualified:
-        char delim = ImageSetPanel.PATH_DELIMITER;
+        char delim = ImageSetManager.PATH_DELIMITER;
         assertEquals("/grandpappy", grandparentActual);
         assertEquals("/grandpappy" + delim + "pa", parentActual);
         assertEquals("/grandpappy" + delim + "pa" + delim + "test", childActual);

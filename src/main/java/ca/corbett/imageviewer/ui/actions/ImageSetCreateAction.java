@@ -3,9 +3,9 @@ package ca.corbett.imageviewer.ui.actions;
 import ca.corbett.imageviewer.ui.ImageInstance;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.imagesets.ImageSet;
+import ca.corbett.imageviewer.ui.imagesets.ImageSetChooserDialog;
 
 import javax.swing.AbstractAction;
-import javax.swing.JOptionPane;
 import java.awt.event.ActionEvent;
 import java.io.File;
 
@@ -29,9 +29,11 @@ public class ImageSetCreateAction extends AbstractAction {
             return;
         }
         File file = currentImage.getImageFile();
-        String name = JOptionPane.showInputDialog(MainWindow.getInstance(), "Enter name for new list:");
-        if (name != null) {
-            ImageSet imageSet = MainWindow.getInstance().getImageSetManager().findOrCreateImageSet(name);
+        ImageSetChooserDialog dialog = new ImageSetChooserDialog("Create new image set");
+        dialog.setVisible(true);
+        if (dialog.wasOkayed()) {
+            ImageSet imageSet = MainWindow.getInstance().getImageSetManager()
+                                          .findOrCreateImageSet(dialog.getSelectedPath());
             imageSet.addImageFilePath(file.getAbsolutePath());
             MainWindow.getInstance().getImageSetPanel().resync();
             MainWindow.getInstance().rebuildMenus();

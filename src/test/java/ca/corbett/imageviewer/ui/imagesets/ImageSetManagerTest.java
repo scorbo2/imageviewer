@@ -115,6 +115,66 @@ class ImageSetManagerTest {
     }
 
     @Test
+    public void parseParent_withInvalidInput_shouldReturnRoot() {
+        // GIVEN input with garbage values:
+        String[] garbageInput = {
+                "",
+                null,
+                "////////////////////",
+                "                     "
+        };
+
+        // WHEN we try to parse the parent:
+        for (String input : garbageInput) {
+            String actual = ImageSetManager.parseParent(input);
+
+            // THEN we should get the delimiter:
+            assertEquals("/", actual);
+        }
+    }
+
+    @Test
+    public void parseParent_withShortPath_shouldReturnRoot() {
+        // GIVEN input path with one element:
+        String[] shortInput = {
+                "hello",
+                "/hello",
+                "///hello",
+                "/hello/",
+                "hello/"
+        };
+
+        // WHEN we try to parse the parent:
+        for (String input : shortInput) {
+            String actual = ImageSetManager.parseParent(input);
+
+            // THEN we should get the delimiter:
+            assertEquals("/", actual);
+        }
+    }
+
+    @Test
+    public void parseParent_withLongPath_shouldReturnParent() {
+        // GIVEN input with two or more elements in the path:
+        String[] longInput = {
+                "/parent/",
+                "hello/parent/",
+                "/////////hello////////parent////////",
+                "blah/blah/blah/parent//////////",
+                "1/2/3/4/5/parent/"
+        };
+
+        // WHEN we try to parse the parent:
+        for (String input : longInput) {
+            String expectedPath = ImageSetManager.parseFullyQualifiedName(input) + "/";
+            String actual = ImageSetManager.parseParent(input + "test");
+
+            // THEN we should get the correct parent every time:
+            assertEquals(expectedPath, actual);
+        }
+    }
+
+    @Test
     public void findOrCreateImageSet_InNode_withGarbageInput_returnsEmpty() {
         //GIVEN input with garbage values:
         String[] garbageInput = {
@@ -265,6 +325,30 @@ class ImageSetManagerTest {
         assertFalse(actual1);
         assertTrue(actual2a);
         assertTrue(actual2b);
+    }
+
+    @Test
+    public void isLocked_withLockedAncestor_shouldReturnLocked() {
+        // GIVEN an ImageSetManager with a locked ancestor node high in the tree:
+        manager.addImageSet(new ImageSet("testRoot1")); // unlocked root
+        ImageSet lockedSet = new ImageSet("testRoot1/lockedNode");
+        lockedSet.setLocked(true);
+        manager.addImageSet(lockedSet);
+        manager.addImageSet(new ImageSet("testRoot1/lockedNode/test1"));
+        manager.addImageSet(new ImageSet("testRoot1/lockedNode/test1/test2"));
+        manager.addImageSet(new ImageSet("testRoot1/lockedNode/test1/test2/test3"));
+        manager.addImageSet(new ImageSet("testRoot2")); // unrelated sibling
+
+        // WHEN we check locked status:
+        // THEN everything in testRoot1 should be locked:
+        assertTrue(manager.isBranchLocked("testRoot1"));
+        assertTrue(manager.isBranchLocked("testRoot1/lockedNode"));
+        assertTrue(manager.isBranchLocked("testRoot1/lockedNode/test1"));
+        assertTrue(manager.isBranchLocked("testRoot1/lockedNode/test1/test2"));
+        assertTrue(manager.isBranchLocked("testRoot1/lockedNode/test1/test2/test3"));
+
+        // But the sibling node should be unlocked:
+        assertFalse(manager.isBranchLocked("testRoot2"));
     }
 
     @Test
