@@ -10,6 +10,7 @@ import ca.corbett.imageviewer.ui.actions.ImageSetAddImageAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetBrowseToSourceDirAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetCreateAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetDeleteAction;
+import ca.corbett.imageviewer.ui.actions.ImageSetMoveImageAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetRemoveImageAction;
 import ca.corbett.imageviewer.ui.actions.LogConsoleAction;
 import ca.corbett.imageviewer.ui.actions.ManageExtensionsAction;
@@ -338,7 +339,8 @@ public final class MenuManager {
         else {
             List<JMenuItem> menuList = new ArrayList<>();
 
-            menuList.add(new JMenuItem("TODO image set movement options go here"));
+            menuList.add(new JMenuItem(new ImageSetMoveImageAction("Move this image to other image set...", true)));
+            menuList.add(new JMenuItem(new ImageSetMoveImageAction("Copy this image to other image set...", false)));
 
             return menuList;
         }

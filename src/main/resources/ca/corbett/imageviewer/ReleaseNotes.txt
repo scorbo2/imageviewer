@@ -14,6 +14,7 @@ Version 2.2 [TODO] - Maintenance release
   #20 - Cosmetic fix in AboutDialog
   #19 - Image set dirty checking
   #18 - Allow removing images from image sets
+  #17 - Move/Copy image to other image set
   #16 - Intelligently change options based on view mode
   #15 - Improve MenuManager
   #14 - Image sets terminology
