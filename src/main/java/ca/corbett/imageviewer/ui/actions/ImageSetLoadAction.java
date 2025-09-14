@@ -3,6 +3,7 @@ package ca.corbett.imageviewer.ui.actions;
 import ca.corbett.imageviewer.ui.MainWindow;
 
 import javax.swing.AbstractAction;
+import javax.swing.JOptionPane;
 import java.awt.event.ActionEvent;
 
 /**
@@ -13,12 +14,24 @@ import java.awt.event.ActionEvent;
  */
 public class ImageSetLoadAction extends AbstractAction {
 
-    public ImageSetLoadAction(String name) {
+    private final boolean isWarningEnabled;
+
+    public ImageSetLoadAction(String name, boolean enableWarning) {
         super(name);
+        this.isWarningEnabled = enableWarning;
     }
 
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
+        if (isWarningEnabled) {
+            int result = JOptionPane.showConfirmDialog(MainWindow.getInstance(),
+                                                       "Really discard all changes and reload image sets?",
+                                                       "Confirm reload", JOptionPane.YES_NO_OPTION);
+            if (result == JOptionPane.NO_OPTION) {
+                return;
+            }
+        }
+
         MainWindow.getInstance().getImageSetManager().load();
     }
 }

@@ -203,10 +203,13 @@ public class ImageSetManager {
     }
 
     public void load() {
+        imageSets.clear();
+
         File saveFile = new File(AppConfig.getInstance().getImageSetSaveLocation(), "imageSets.json");
         log.info("Loading image sets from " + saveFile.getAbsolutePath());
         if (!saveFile.exists()) {
             log.info("No image sets to load.");
+            isDirty = false;
             return; // not a fatal error - there simply are no favorites
         }
         ObjectMapper mapper = new ObjectMapper();

@@ -75,7 +75,7 @@ public class ThumbCacheExtension extends ImageViewerExtension {
         List<JButton> list = new ArrayList<>();
         try {
             list.add(ToolBarManager.buildButton(
-                    ImageUtil.loadFromResource(MainWindow.class, "/ca/corbett/imageviewer/images/icon-pregenerate.png",
+                    ImageUtil.loadFromResource(MainWindow.class, "/ca/corbett/imageviewer/images/icon-thumbnails.png",
                                                ToolBarManager.iconSize, ToolBarManager.iconSize),
                     "Pre-generate thumbnails...",
                     new ThumbCachePregenerateAction()));

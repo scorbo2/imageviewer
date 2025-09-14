@@ -50,6 +50,10 @@ public final class ToolBarManager {
 
     }
 
+    public static JButton buildButton(BufferedImage iconImage, String toolTip, AbstractAction action) {
+        return buildButton(iconImage, toolTip, action, 30);
+    }
+
     /**
      * Builds and returns a toolbar button of the correct size with the specified
      * icon and action. Whatever icon is loaded from the given URL will be scaled
@@ -60,9 +64,7 @@ public final class ToolBarManager {
      * @param action    An optional Action to attach to the button.
      * @return A JButton that can be added to a toolbar.
      */
-    public static JButton buildButton(BufferedImage iconImage, String toolTip, AbstractAction action) {
-        final int btnSize = 30;
-
+    public static JButton buildButton(BufferedImage iconImage, String toolTip, AbstractAction action, int btnSize) {
         JButton button = new JButton(action);
         button.setText("");
         button.setFocusPainted(false);
@@ -86,22 +88,23 @@ public final class ToolBarManager {
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
         JPanel wrapper = new JPanel();
-        wrapper.setBackground(UIManager.getDefaults().getColor("ColorPalette.primaryBackground"));
+        wrapper.setBackground(UIManager.getDefaults().getColor("Button.background"));
         wrapper.setLayout(new FlowLayout(FlowLayout.LEFT, 4, 4));
         wrapper.setPreferredSize(new Dimension(500, 38));
 
         wrapper.add(new JLabel(" "));
 
         try {
-            wrapper.add(buildButton(loadIconImage("icon-previous.png"), "Previous image", new PreviousImageAction()));
-            wrapper.add(buildButton(loadIconImage("icon-next.png"), "Next image", new NextImageAction()));
+            wrapper.add(
+                    buildButton(loadIconImage("icon-go-previous.png"), "Previous image", new PreviousImageAction()));
+            wrapper.add(buildButton(loadIconImage("icon-go-next.png"), "Next image", new NextImageAction()));
 
             wrapper.add(new JLabel(" "));
 
-            wrapper.add(buildButton(loadIconImage("icon-zoom-in.png"), "Zoom in", new ImagePanelZoomInAction()));
-            wrapper.add(buildButton(loadIconImage("icon-zoom-out.png"), "Zoom out", new ImagePanelZoomOutAction()));
-            wrapper.add(buildButton(loadIconImage("icon-best-fit.png"), "Best fit", new ImagePanelBestFitAction()));
-            wrapper.add(buildButton(loadIconImage("icon-actual-size.png"), "Actual size",
+            wrapper.add(buildButton(loadIconImage("icon-zoom-in2.png"), "Zoom in", new ImagePanelZoomInAction()));
+            wrapper.add(buildButton(loadIconImage("icon-zoom-out2.png"), "Zoom out", new ImagePanelZoomOutAction()));
+            wrapper.add(buildButton(loadIconImage("icon-best-fit2.png"), "Best fit", new ImagePanelBestFitAction()));
+            wrapper.add(buildButton(loadIconImage("icon-actual-size2.png"), "Actual size",
                                     new ImagePanelActualSizeAction()));
 
             wrapper.add(new JLabel(" "));
@@ -110,9 +113,9 @@ public final class ToolBarManager {
 
             wrapper.add(new JLabel(" "));
 
-            final JButton moveButton = buildButton(loadIconImage("icon-quickmove.png"), "Quick Move...", null);
+            final JButton moveButton = buildButton(loadIconImage("icon-document-upload.png"), "Quick Move...", null);
             wrapper.add(moveButton);
-            final JButton deleteButton = buildButton(loadIconImage("icon-delete.png"), "Delete...", null);
+            final JButton deleteButton = buildButton(loadIconImage("icon-x.png"), "Delete...", null);
             wrapper.add(deleteButton);
 
             // Create a popup menu for the quick move button and attach it:
@@ -136,12 +139,13 @@ public final class ToolBarManager {
 
             wrapper.add(new JLabel(" "));
 
-            wrapper.add(buildButton(loadIconImage("icon-preferences.png"), "Preferences", new PreferencesAction()));
-            wrapper.add(buildButton(loadIconImage("icon-extensions.png"), "Extensions", new ManageExtensionsAction()));
+            wrapper.add(buildButton(loadIconImage("icon-settings.png"), "Preferences", new PreferencesAction()));
+            wrapper.add(buildButton(loadIconImage("icon-image-information.png"), "Extensions",
+                                    new ManageExtensionsAction()));
 
             wrapper.add(new JLabel(" "));
 
-            wrapper.add(buildButton(loadIconImage("icon-help.png"), "About", new AboutAction()));
+            wrapper.add(buildButton(loadIconImage("icon-help2.png"), "About", new AboutAction()));
 
             toolBar.add(wrapper);
         }
