@@ -2,7 +2,7 @@
 
 This is "imageviewer", a 100% Java music player with a UI written in Java Swing.
 
-![ImageViewer](imageviewer.png "ImageViewer")
+![ImageViewer](imageviewer.jpg "ImageViewer")
 
 Features:
 - extremely customizable via Java extension classes
