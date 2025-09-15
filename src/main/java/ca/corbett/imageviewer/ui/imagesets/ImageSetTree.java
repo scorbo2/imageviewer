@@ -114,6 +114,9 @@ public class ImageSetTree {
     }
 
     public void selectAndScrollTo(ImageSet set) {
+        if (set == null) {
+            return;
+        }
         String[] pathNodes = ImageSetManager.parsePathNodes(set.getFullyQualifiedName());
         if (pathNodes.length == 0) {
             return;
