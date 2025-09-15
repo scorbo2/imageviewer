@@ -2,6 +2,7 @@ package ca.corbett.imageviewer;
 
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
+import ca.corbett.imageviewer.ui.actions.ImageSetRemoveImageAction;
 import ca.corbett.imageviewer.ui.actions.RenameAction;
 
 import java.awt.KeyEventDispatcher;
@@ -58,14 +59,17 @@ public final class KeyboardManager {
 
                         // Delete key to delete current image:
                         case KeyEvent.VK_DELETE:
-                            // TODO take browse mode into account!
-                            ImageOperationHandler.deleteImage();
+                            if (MainWindow.getInstance().getBrowseMode() == MainWindow.BrowseMode.FILE_SYSTEM) {
+                                ImageOperationHandler.deleteImage();
+                            }
+                            else {
+                                new ImageSetRemoveImageAction("Remove image from image set").actionPerformed(null);
+                            }
                             wasHandled = true;
                             break;
 
                         // F2 to rename current image:
                         case KeyEvent.VK_F2:
-                            // TODO do we need to take browse mode into account?
                             new RenameAction().actionPerformed(null);
                             wasHandled = true;
                             break;
