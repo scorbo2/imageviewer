@@ -1,7 +1,6 @@
 package ca.corbett.imageviewer.ui.actions;
 
 import ca.corbett.imageviewer.ui.MainWindow;
-import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 import ca.corbett.imageviewer.ui.imagesets.ImageSetChooserDialog;
 import ca.corbett.imageviewer.ui.imagesets.ImageSetManager;
 
@@ -16,17 +15,15 @@ public class ImageSetRenameAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
-        // Make sure some ImageSet is selected:
-        ImageSet sourceSet = MainWindow.getInstance().getImageSetPanel().getSelectedImageSet().orElse(null);
-        if (sourceSet == null) {
+        String selectedPath = MainWindow.getInstance().getImageSetPanel().getSelectedPath();
+        if (selectedPath == null || selectedPath.length() <= 1) {
             MainWindow.getInstance().showMessageDialog("Move image set", "No Image set selected.");
             return;
         }
 
-
         // Is this branch locked?
         ImageSetManager imageSetManager = MainWindow.getInstance().getImageSetManager();
-        if (imageSetManager.isBranchLocked(sourceSet.getFullyQualifiedName())) {
+        if (imageSetManager.isBranchLocked(selectedPath)) {
             MainWindow.getInstance().showMessageDialog("Move image set",
                                                        "One ore more image sets in this branch of "
                                                                + "the tree are locked and cannot be moved.");
@@ -36,21 +33,10 @@ public class ImageSetRenameAction extends AbstractAction {
         ImageSetChooserDialog dialog = new ImageSetChooserDialog("Choose new path", true);
         dialog.setVisible(true);
         if (dialog.wasOkayed()) {
-            ImageSetManager manager = MainWindow.getInstance().getImageSetManager();
-            ImageSet newImageSet = manager.findOrCreateImageSet(dialog.getSelectedPath());
-            if (sourceSet.equals(newImageSet)) {
-                MainWindow.getInstance().showMessageDialog("Move image set", "Source and destination are the same.");
-            }
-
-            for (String filePath : sourceSet.getImageFilePaths()) {
-                newImageSet.addImageFilePath(filePath);
-            }
-            manager.remove(sourceSet);
+            imageSetManager.renameBranch(selectedPath, dialog.getSelectedPath());
 
             MainWindow.getInstance().getImageSetPanel().resync();
             MainWindow.getInstance().rebuildMenus();
         }
-
-
     }
 }

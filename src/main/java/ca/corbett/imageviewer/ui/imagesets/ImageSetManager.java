@@ -153,11 +153,12 @@ public class ImageSetManager {
     public void remove(String path) {
         path = parseFullyQualifiedName(path);
         // Ignore dumb requests:
-        if (path == null || path.length() <= 1) {
+        if (path.length() <= 1) {
             return;
         }
 
         // First remove the given target path if it is an image set:
+        isDirty = true;
         findImageSet(path).ifPresent(this::remove);
 
         // Now remove any child nodes, if any:
@@ -176,6 +177,69 @@ public class ImageSetManager {
         // Otherwise, keep only those ImageSets that survives the deletion:
         imageSets.clear();
         imageSets.addAll(survivors);
+    }
+
+    /**
+     * Renames the given branch and everything under it. Use with caution as this may
+     * have unexpected results in the case of a collision:
+     * <ul>
+     * <li>/test1/test2/hi
+     * <li>/blah/hi
+     * </ul>
+     * <pre>renameBranch("/test1/test2", "blah");</pre> will introduce a collision, in that
+     * there will be two separate ImageSets both with the fully qualified name /blah/hi.
+     * To resolve this collision, this code will merge the two image sets into one - that is,
+     * all images from the renamed set will be added to the existing image set, with duplicates
+     * removed.
+     */
+    public void renameBranch(String oldPath, String newPath) {
+        String exactOldPath = parseFullyQualifiedName(oldPath);
+        String exactNewPath = parseFullyQualifiedName(newPath);
+        oldPath = exactOldPath + PATH_DELIMITER;
+        newPath = exactNewPath + PATH_DELIMITER;
+
+        List<ImageSet> deadImageSets = new ArrayList<>(imageSets.size());
+
+        for (ImageSet candidate : imageSets) {
+            Optional<ImageSet> existingSet = findImageSet(newPath + candidate.getName());
+
+            if (candidate.getFullyQualifiedName().startsWith(oldPath)) {
+                // Merge with existing set if present:
+                if (existingSet.isPresent()) {
+                    for (String imagePath : candidate.getImageFilePaths()) {
+                        existingSet.get().addImageFilePath(imagePath);
+                    }
+                    deadImageSets.add(candidate);
+                }
+
+                // Just move existing set if not present:
+                else {
+                    candidate.setFullyQualifiedName(candidate.getFullyQualifiedName().replace(oldPath, newPath));
+                }
+                isDirty = true;
+            }
+            else if (candidate.getFullyQualifiedName().equals(exactOldPath)) {
+                // Merge with existing set if present:
+                if (existingSet.isPresent()) {
+                    for (String imagePath : candidate.getImageFilePaths()) {
+                        existingSet.get().addImageFilePath(imagePath);
+                    }
+                    deadImageSets.add(candidate);
+                }
+
+                // move existing set if not present:
+                else {
+                    candidate.setFullyQualifiedName(exactNewPath);
+                }
+                isDirty = true;
+            }
+        }
+
+        // If we "killed" any image sets, remove them:
+        if (!deadImageSets.isEmpty()) {
+            isDirty = true;
+            imageSets.removeAll(deadImageSets);
+        }
     }
 
     public List<ImageSet> getImageSets() {

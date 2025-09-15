@@ -403,4 +403,64 @@ class ImageSetManagerTest {
         assertFalse(manager.findImageSet("/test1/test2").isPresent());
         assertFalse(manager.findImageSet("/test1/test2/test3").isPresent());
     }
+
+    @Test
+    public void renameBranch_withNoMatch_shouldDoNothing() {
+        // GIVEN an ImageSetManager with a branch of ImageSets:
+        ImageSet set1 = new ImageSet("test1");
+        ImageSet set2 = new ImageSet("test1/test2");
+        ImageSet set3 = new ImageSet("test1/test2/test3");
+        manager.addImageSet(set1);
+        manager.addImageSet(set2);
+        manager.addImageSet(set3);
+
+        // WHEN we rename a branch that does not exist:
+        manager.renameBranch("/howdy/pardner", "froobydooby");
+
+        // THEN nothing should have changed:
+        assertTrue(manager.findImageSet("/test1").isPresent());
+        assertTrue(manager.findImageSet("/test1/test2").isPresent());
+        assertTrue(manager.findImageSet("/test1/test2/test3").isPresent());
+    }
+
+    @Test
+    public void renameBranch_withBranchMatch_shouldRenameBranch() {
+        // GIVEN an ImageSetManager with a branch of ImageSets:
+        ImageSet set1 = new ImageSet("test1");
+        ImageSet set2 = new ImageSet("test1/test2");
+        ImageSet set3 = new ImageSet("test1/test2/test3");
+        manager.addImageSet(set1);
+        manager.addImageSet(set2);
+        manager.addImageSet(set3);
+
+        // WHEN we rename a branch in the middle:
+        manager.renameBranch("/test1/test2", "hello");
+
+        // THEN everything at that level and under should have been updated
+        assertTrue(manager.findImageSet("/test1").isPresent());
+        assertTrue(manager.findImageSet("/hello").isPresent());
+        assertTrue(manager.findImageSet("/hello/test3").isPresent());
+        assertFalse(manager.findImageSet("/test1/test2").isPresent());
+        assertFalse(manager.findImageSet("/test1/test3").isPresent());
+    }
+
+    @Test
+    public void renameBranch_withLeafMatch_shouldRenameLeaf() {
+        // GIVEN an ImageSetManager with a branch of ImageSets:
+        ImageSet set1 = new ImageSet("test1");
+        ImageSet set2 = new ImageSet("test1/test2");
+        ImageSet set3 = new ImageSet("test1/test2/test3");
+        manager.addImageSet(set1);
+        manager.addImageSet(set2);
+        manager.addImageSet(set3);
+
+        // WHEN we rename a leaf node:
+        manager.renameBranch("/test1/test2/test3", "hello");
+
+        // THEN only that leaf should have been renamed:
+        assertTrue(manager.findImageSet("/test1").isPresent());
+        assertTrue(manager.findImageSet("/hello").isPresent());
+        assertFalse(manager.findImageSet("/hello/test3").isPresent());
+        assertTrue(manager.findImageSet("/hello").isPresent());
+    }
 }

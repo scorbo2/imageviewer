@@ -44,6 +44,12 @@ public class ImageSetTree {
         return list;
     }
 
+    /**
+     * Returns the ImageSet at the selected tree node if there is a selection.
+     * This will return empty if the selected tree node is a leaf node and not
+     * an ImageSet. If you want the current tree path regardless of whether it's
+     * a leaf node or an ImageSet, use getSelectedPath() instead.
+     */
     public Optional<DefaultMutableTreeNode> getSelectedNode() {
         TreePath path = tree.getSelectionPath();
         if (path == null || path.getLastPathComponent() == null) {
@@ -60,12 +66,20 @@ public class ImageSetTree {
         return Optional.of(selected);
     }
 
+    /**
+     * Returns the path of the current selection, even if it is just a leaf node
+     * and not an ImageSet. To retrieve only the selected ImageSet, use
+     * getSelectedNode() instead.
+     */
     public String getSelectedPath() {
-        DefaultMutableTreeNode selectedNode = getSelectedNode().orElse(null);
-        if (selectedNode == null) {
+        TreePath path = tree.getSelectionPath();
+        if (path == null || path.getLastPathComponent() == null) {
+            // nothing selected
             return null;
         }
-        return getPathForNode(getSelectedNode().get());
+
+        // If whatever was selected is somehow not an ImageSet, we're done:
+        return getPathForNode((DefaultMutableTreeNode)path.getLastPathComponent());
     }
 
     public Optional<ImageSet> getSelectedImageSet() {

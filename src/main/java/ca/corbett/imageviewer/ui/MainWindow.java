@@ -876,6 +876,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
             setTitle(Version.NAME + " [Image set] " + set.getFullyQualifiedName());
         }
 
+        imageSetPanel.selectAndScrollTo(set);
         thumbContainerPanel.setImageSet(set); // handles nulls
     }
 

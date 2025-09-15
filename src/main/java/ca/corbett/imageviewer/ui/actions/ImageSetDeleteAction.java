@@ -4,9 +4,7 @@ import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.imagesets.ImageSetManager;
 
 import javax.swing.AbstractAction;
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.event.ActionEvent;
-import java.util.Optional;
 
 /**
  * Represents an action to delete the currently selected ImageSet, if any.
@@ -21,16 +19,15 @@ public class ImageSetDeleteAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
-        Optional<DefaultMutableTreeNode> selectedNode = MainWindow.getInstance().getImageSetPanel().getSelectedNode();
-        if (selectedNode.isEmpty()) {
+        String selectedPath = MainWindow.getInstance().getImageSetPanel().getSelectedPath();
+        if (selectedPath == null || selectedPath.length() <= 1) {
             MainWindow.getInstance().showMessageDialog("Delete image set", "Nothing selected.");
             return;
         }
 
         // Is this branch locked?
         ImageSetManager imageSetManager = MainWindow.getInstance().getImageSetManager();
-        String nodePath = MainWindow.getInstance().getImageSetPanel().getPathForNode(selectedNode.get());
-        if (imageSetManager.isBranchLocked(nodePath)) {
+        if (imageSetManager.isBranchLocked(selectedPath)) {
             MainWindow.getInstance().showMessageDialog("Delete image set",
                                                        "One ore more image sets in this branch of "
                                                        + "the tree are locked and cannot be deleted.");
@@ -38,7 +35,7 @@ public class ImageSetDeleteAction extends AbstractAction {
         }
 
         // Nuke it:
-        imageSetManager.remove(nodePath);
+        imageSetManager.remove(selectedPath);
 
         // Reload the tree
         MainWindow.getInstance().getImageSetPanel().resync();

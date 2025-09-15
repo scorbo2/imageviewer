@@ -28,7 +28,7 @@ public class ImageSetEditAction extends AbstractAction {
     public void actionPerformed(ActionEvent actionEvent) {
         Optional<ImageSet> selectedImageSet = MainWindow.getInstance().getImageSetPanel().getSelectedImageSet();
         if (selectedImageSet.isEmpty()) {
-            MainWindow.getInstance().showMessageDialog("Edit image set", "Nothing selected.");
+            MainWindow.getInstance().showMessageDialog("Edit image set", "No image set is selected.");
             return;
         }
 
