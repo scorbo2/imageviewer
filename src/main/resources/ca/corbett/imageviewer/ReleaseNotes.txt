@@ -14,6 +14,7 @@ Version 2.2 [TODO] - Maintenance release
   #24 - Add all images in current dir to image set
   #23 - Keyboard shortcuts for image source
   #22 - Add browse to source dir option for image sets
+  #21 - Image operations need to update ImageSetManager
   #20 - Cosmetic fix in AboutDialog
   #19 - Image set dirty checking
   #18 - Allow removing images from image sets

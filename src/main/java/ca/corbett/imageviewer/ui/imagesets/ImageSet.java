@@ -2,6 +2,7 @@ package ca.corbett.imageviewer.ui.imagesets;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -118,6 +119,44 @@ public class ImageSet {
 
     public void setDirty(boolean dirty) {
         isDirty = dirty;
+    }
+
+    public void imageMoved(String srcFilePath, String destFilePath) {
+        for (int i = 0; i < imageFilePaths.size(); i++) {
+            if (Objects.equals(imageFilePaths.get(i), srcFilePath)) {
+                imageFilePaths.set(i, destFilePath);
+                isDirty = true;
+            }
+        }
+    }
+
+    public void imageDeleted(String srcFilePath) {
+        while (imageFilePaths.contains(srcFilePath)) {
+            imageFilePaths.remove(srcFilePath);
+            isDirty = true;
+        }
+    }
+
+    public void directoryMoved(String srcDirPath, String destDirPath) {
+        // Our paths must end with a separator.
+        // Why? Consider moving /example/hello to /somewhere/else
+        // We go through all paths looking for any that begin with /example/hello
+        // But there could be other sibling dirs like /example/hello1, /example/hello2, etc
+        // We DON'T want to update those.
+        // So, we convert /example/hello to /example/hello/ so our startsWith() is more accurate.
+        if (!srcDirPath.endsWith(File.separator)) {
+            srcDirPath += File.separator; // trailing separator is important!
+        }
+        if (!destDirPath.endsWith(File.separator)) {
+            destDirPath += File.separator; // trailing separator is important!
+        }
+
+        for (int i = 0; i < imageFilePaths.size(); i++) {
+            if (imageFilePaths.get(i).startsWith(srcDirPath)) {
+                imageFilePaths.set(i, imageFilePaths.get(i).replace(srcDirPath, destDirPath));
+                isDirty = true;
+            }
+        }
     }
 
     /**

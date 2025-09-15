@@ -151,11 +151,16 @@ public class ImageSetManager {
      * Removes all nodes at or under the given tree path.
      */
     public void remove(String path) {
+        path = parseFullyQualifiedName(path);
         // Ignore dumb requests:
         if (path == null || path.length() <= 1) {
             return;
         }
 
+        // First remove the given target path if it is an image set:
+        findImageSet(path).ifPresent(this::remove);
+
+        // Now remove any child nodes, if any:
         List<ImageSet> survivors = new ArrayList<>(imageSets.size());
         for (ImageSet candidate : imageSets) {
             if (!candidate.getFullyQualifiedName().startsWith(path + PATH_DELIMITER)) {
@@ -175,6 +180,24 @@ public class ImageSetManager {
 
     public List<ImageSet> getImageSets() {
         return imageSets.stream().sorted(Comparator.comparing(ImageSet::getFullyQualifiedName)).toList();
+    }
+
+    public void imageMoved(File srcFile, File destFile) {
+        for (ImageSet imageSet : imageSets) {
+            imageSet.imageMoved(srcFile.getAbsolutePath(), destFile.getAbsolutePath());
+        }
+    }
+
+    public void imageDeleted(File srcFile) {
+        for (ImageSet imageSet : imageSets) {
+            imageSet.imageDeleted(srcFile.getAbsolutePath());
+        }
+    }
+
+    public void directoryMoved(File srcDir, File destDir) {
+        for (ImageSet imageSet : imageSets) {
+            imageSet.directoryMoved(srcDir.getAbsolutePath(), destDir.getAbsolutePath());
+        }
     }
 
     public void save() {

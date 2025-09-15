@@ -123,6 +123,10 @@ public class ImageSetPanel extends JPanel {
     }
 
     private void handleTreeSelectionChanged(TreeSelectionEvent event) {
+        if (MainWindow.getInstance().getBrowseMode() == MainWindow.BrowseMode.FILE_SYSTEM) {
+            return; // don't need to do anything if we're not browsing image sets
+        }
+
         // Passing null is allowed here, it will clear the thumb panel:
         MainWindow.getInstance().setImageSet(getSelectedImageSet().orElse(null));
     }

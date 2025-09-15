@@ -53,6 +53,10 @@ public final class ImageOperationHandler {
             getMessageUtil().error("No previous operation to repeat.");
             return;
         }
+        if (MainWindow.getInstance().getBrowseMode() == MainWindow.BrowseMode.IMAGE_SET) {
+            getMessageUtil().error("Undo/redo are not available when browsing image sets.");
+            return;
+        }
         File lastDestination = lastOperation.getDestination();
         if (!lastDestination.exists() || !lastDestination.isDirectory()) {
             getMessageUtil().error("Previous destination \""
@@ -91,6 +95,10 @@ public final class ImageOperationHandler {
             getMessageUtil().error("The previous operation cannot be undone.");
             return;
         }
+        if (MainWindow.getInstance().getBrowseMode() == MainWindow.BrowseMode.IMAGE_SET) {
+            getMessageUtil().error("Undo/redo are not available when browsing image sets.");
+            return;
+        }
         if (lastOperation.getPayload() == ImageOperation.Payload.DIRECTORY) {
             undoDirectoryOperation();
         }
@@ -112,15 +120,11 @@ public final class ImageOperationHandler {
      * @return Result.SUCCESS if all is well, CANCEL or CANCEL_ALL on error or cancel.
      */
     private static NameConflictDialog.Result handleSingleFileOperation(File srcFile, File destDir, boolean batchMode, ImageOperation.Type operation) {
-        String opName = "moveSingleFile";
-        switch (operation) {
-            case COPY:
-                opName = "copySingleFile";
-                break;
-            case SYMLINK:
-                opName = "linkSingleFile";
-                break;
-        }
+        String opName = switch (operation) {
+            case COPY -> "copySingleFile";
+            case SYMLINK -> "linkSingleFile";
+            default -> "moveSingleFile";
+        };
 
         // Sanity check - make sure the source file exists:
         if (srcFile == null || !srcFile.exists()) {
@@ -241,6 +245,11 @@ public final class ImageOperationHandler {
 
             // Notify extensions of what just happened:
             ImageViewerExtensionManager.getInstance().postImageOperation(operation, destFile);
+
+            // Also notify the ImageSetManager if it was a MOVE operation:
+            if (operation == ImageOperation.Type.MOVE) {
+                MainWindow.getInstance().getImageSetManager().imageMoved(srcFile, destFile);
+            }
         }
         catch (IOException ex) {
             getMessageUtil().error("File transfer error", "Error transferring file, probably permissions related.", ex);
@@ -365,6 +374,7 @@ public final class ImageOperationHandler {
                        new Object[]{srcDir.getAbsolutePath(), newDir.getAbsolutePath()});
             FileUtils.moveDirectory(srcDir, newDir);
             ImageViewerExtensionManager.getInstance().directoryWasMoved(srcDir, newDir);
+            MainWindow.getInstance().getImageSetManager().directoryMoved(srcDir, newDir);
         }
         catch (IOException ex) {
             getMessageUtil().error("Move error", "Error moving directory.", ex);
@@ -693,6 +703,10 @@ public final class ImageOperationHandler {
         }
         ImageViewerExtensionManager.getInstance().postImageOperation(ImageOperation.Type.MOVE, newFile);
 
+        // Notify the ImageSetManager that this has happened
+        // Note we can't use srcFile here as it has been renamed... we need the original file
+        MainWindow.getInstance().getImageSetManager().imageMoved(currentImage.getImageFile(), newFile);
+
         MainWindow.getInstance().selectedImageRenamed(newFile);
     }
 
@@ -728,8 +742,11 @@ public final class ImageOperationHandler {
             f.delete();
         }
 
-        // Notify extensions that we deleted the file (this is debatable since srcFile no longer exists, but eh.
+        // Notify extensions that we deleted the file (this is debatable since srcFile no longer exists, but eh).
         ImageViewerExtensionManager.getInstance().postImageOperation(ImageOperation.Type.DELETE, srcFile);
+
+        // Also notify ImageSetManager:
+        MainWindow.getInstance().getImageSetManager().imageDeleted(srcFile);
 
         // Update the container panel and currently showing image:
         MainWindow.getInstance().selectedImageRemoved();
@@ -817,6 +834,7 @@ public final class ImageOperationHandler {
         // deletion thread enumerates all files and tries to delete them. So, if the extension
         // deletes a file before the directory deletion thread gets to it, the directory deletion
         // thread thinks something went wrong. We can safely ignore it 99% of the time.
+        // TODO: is this old comment still accurate after companion handling was moved up into the app?
         //
         //if (!ok) {
         //  getMessageUtil().info("Deletion problem",

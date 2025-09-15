@@ -36,6 +36,6 @@ public class ImageSetRemoveImageAction extends AbstractAction {
         }
 
         imageSet.removeImageFilePath(currentImage.getImageFile().getAbsolutePath());
-        MainWindow.getInstance().reload();
+        MainWindow.getInstance().getImageSetPanel().resync();
     }
 }

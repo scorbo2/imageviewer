@@ -33,5 +33,6 @@ public class ImageSetLoadAction extends AbstractAction {
         }
 
         MainWindow.getInstance().getImageSetManager().load();
+        MainWindow.getInstance().getImageSetPanel().resync();
     }
 }

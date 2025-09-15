@@ -336,6 +336,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
      */
     public void selectedImageRemoved() {
         thumbContainerPanel.removeSelected();
+        imageSetPanel.resync();
         updateStatusBar();
     }
 
