@@ -51,6 +51,7 @@ Out of the box, ImageViewer comes with the following extensions:
 - **Crop image** - easily crop images using a rectangular selection.
 - **Add border** - easily add a configurable border to a single images or a directory of images.
 - **Add watermark** - easily add a watermark with configurable position and transparency to an image or a directory of images.
+- **ICE** - tag images and search images by tag
 
 ### Create your own extension!
 

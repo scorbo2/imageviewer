@@ -3,6 +3,7 @@ Author: Steve Corbett
 
 Version 2.2 [TODO] - Maintenance release
   #34 - Standardize icons across the app+extensions
+  #33 - Thorough javadoc pass
   #32 - Allow extensions to change current image tab
   #31 - Handle ImageSet deletion
   #30 - Handle dynamic image tab panels
