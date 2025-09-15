@@ -28,7 +28,7 @@ public class ImageSetManager {
 
     public final static char PATH_DELIMITER = '/';
 
-    private List<ImageSet> imageSets;
+    private final List<ImageSet> imageSets;
     private boolean isDirty;
 
     public ImageSetManager() {
@@ -36,6 +36,10 @@ public class ImageSetManager {
         isDirty = false;
     }
 
+    /**
+     * Indicates whether a save is needed. If false, there have been no changes to this ImageSetManager
+     * or to any ImageSet that it manages.
+     */
     public boolean isDirty() {
         File saveFile = new File(AppConfig.getInstance().getImageSetSaveLocation(), "imageSets.json");
         // If our save destination doesn't exist, the answer is yes with no further checking needed:
@@ -64,11 +68,14 @@ public class ImageSetManager {
         }
     }
 
+    /**
+     * Adds the given ImageSet to this ImageSetManager, OR adds all the images from the
+     * given ImageSet to an existing ImageSet, if there is one with the same fully qualified name.
+     */
     public void addImageSet(ImageSet set) {
         // See if we already have this one:
         ImageSet existingSet = findImageSet(set.getFullyQualifiedName()).orElse(null);
 
-        // TODO think about this...
         // If there's an existing set with that path, add all of this new set's images to that existing one.
         // The imageset will weed out duplicates automatically.
         if (existingSet != null) {
@@ -87,6 +94,9 @@ public class ImageSetManager {
         }
     }
 
+    /**
+     * Searches for and returns an ImageSet with the given fully qualified name, if it exists.
+     */
     public Optional<ImageSet> findImageSet(String fullyQualifiedName) {
         for (ImageSet imageSet : imageSets) {
             if (imageSet.getFullyQualifiedName().equals(parseFullyQualifiedName(fullyQualifiedName))) {
@@ -96,6 +106,10 @@ public class ImageSetManager {
         return Optional.empty();
     }
 
+    /**
+     * Searches for an ImageSet with the given fully qualified name, returning it if found,
+     * and creating it if not found. Either way, the result will be an ImageSet instance.
+     */
     public ImageSet findOrCreateImageSet(String fullyQualifiedName) {
         String parsedName = parseFullyQualifiedName(fullyQualifiedName);
         if (parsedName.isBlank()) {
@@ -121,6 +135,13 @@ public class ImageSetManager {
         remove(set.getFullyQualifiedName());
     }
 
+    /**
+     * Reports whether the given path is locked and should not be deleted, moved, or renamed.
+     * A given path is considered locked if the node it describes or <b>any node underneath
+     * that node</b> is marked as locked. We also check the direct-line parentage up to but not
+     * including the root node. The result will be that the branch is considered locked if any
+     * node on that path is locked.
+     */
     public boolean isBranchLocked(String fullyQualifiedPath) {
         String path = parseFullyQualifiedName(fullyQualifiedPath);
         if (path.length() <= 1) {
@@ -246,18 +267,30 @@ public class ImageSetManager {
         return imageSets.stream().sorted(Comparator.comparing(ImageSet::getFullyQualifiedName)).toList();
     }
 
+    /**
+     * Use this to indicate that the given image file has moved to the given destination.
+     * If this ImageSet contained srcFile, it will be updated to destFile, otherwise nothing happens.
+     */
     public void imageMoved(File srcFile, File destFile) {
         for (ImageSet imageSet : imageSets) {
             imageSet.imageMoved(srcFile.getAbsolutePath(), destFile.getAbsolutePath());
         }
     }
 
+    /**
+     * Use this to indicate that a given image file has been removed. If this ImageSet contained
+     * a reference to that file, it is dropped from this ImageSet.
+     */
     public void imageDeleted(File srcFile) {
         for (ImageSet imageSet : imageSets) {
             imageSet.imageDeleted(srcFile.getAbsolutePath());
         }
     }
 
+    /**
+     * Use this to indicate that a file system directory has been moved. This ImageSet will
+     * go through all images it contains and update their paths as needed.
+     */
     public void directoryMoved(File srcDir, File destDir) {
         for (ImageSet imageSet : imageSets) {
             imageSet.directoryMoved(srcDir.getAbsolutePath(), destDir.getAbsolutePath());
@@ -327,6 +360,28 @@ public class ImageSetManager {
         }
     }
 
+    /**
+     * Parses the given input into a delimited String value. Multiple delimiters and empty
+     * delimiters are removed. For example, all of the following examples will be parsed
+     * into "/hello/there":
+     * <ul>
+     *     <li>hello/there</li>
+     *     <li>/hello/there</li>
+     *     <li>/hello/there/</li>
+     *     <li>//////hello//////there/////</li>
+     * </ul>
+     * Note that the returned string will start with the delimiter and will not
+     * end with the delimiter. The exception is that any input that evaluates to an
+     * empty string will return an empty string. For example, all of the following inputs
+     * will return the empty string:
+     * <ul>
+     *     <li>null</li>
+     *     <li>""</li>
+     *     <li>" "</li>
+     *     <li>"/"</li>
+     *     <li>"////////////////"</li>
+     * </ul>
+     */
     public static String parseFullyQualifiedName(String input) {
         String[] nodes = parsePathNodes(input);
         if (nodes.length == 0) {
@@ -346,6 +401,17 @@ public class ImageSetManager {
         return sb.toString();
     }
 
+    /**
+     * Parses just the name out of the given input path. The name is the last
+     * delimited token in the given path, or the path itself if no delimiters are given.
+     * For example, all of the following will return "hello":
+     * <ul>
+     *     <li>"hello"</li>
+     *     <li>"/hello"</li>
+     *     <li>"/parent/path/hello"</li>
+     *     <li>"/////////hello"</li>
+     * </ul>
+     */
     public static String parseName(String input) {
         String[] nodes = parsePathNodes(input);
         if (nodes.length == 0) {
@@ -357,6 +423,17 @@ public class ImageSetManager {
         return nodes[nodes.length-1];
     }
 
+    /**
+     * Parses the given input and returns all path elements EXCEPT the last one.
+     * This is the inverse of the getName() method. If there are no delimiters
+     * present, this will return "/". For example, all of the following will
+     * return "/Folder1":
+     * <ul>
+     *     <li>"Folder1/test"</li>
+     *     <li>"/Folder1/test"</li>
+     *     <li>"/Folder1///////test"</li>
+     * </ul>
+     */
     public static String parseParent(String input) {
         String[] nodes = parsePathNodes(input);
         if (nodes.length == 0) {

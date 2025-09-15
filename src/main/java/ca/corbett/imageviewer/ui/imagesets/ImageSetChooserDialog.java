@@ -20,7 +20,18 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Provides a popup dialog for choosing the a new ImageSet within the tree.
+ * Provides a popup dialog for choosing a new ImageSet within the tree.
+ * <p>
+ *     The user can opt to enter a fully qualified path manually.
+ *     This is probably the easiest way for advanced users to
+ *     select the desired path. Use the delimiter character (default "/")
+ *     to separate path nodes. Example: "Folder1/My Image Set"
+ * </p>
+ * <p>
+ *     The user can also opt to choose the parent node visually, then
+ *     enter the ImageSet name manually. Delimiter characters are not
+ *     allowed in the ImageSet name.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 2.2

@@ -27,6 +27,16 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * A Panel that can be used very similarly to the way DirTree is used to browse the file system,
+ * except that this panel will browse the configured ImageSet(s) instead. Controls are provided
+ * to edit, rename, move, or delete the selected ImageSet. Here, you can also reload or save
+ * the current ImageSet list (changes are saved automatically on application exit, but you can
+ * force a save here).
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ * @since ImageViewer 2.2
+ */
 public class ImageSetPanel extends JPanel {
 
     private static final Logger logger = Logger.getLogger(ImageSetPanel.class.getName());

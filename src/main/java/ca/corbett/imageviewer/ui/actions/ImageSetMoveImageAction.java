@@ -8,6 +8,14 @@ import ca.corbett.imageviewer.ui.imagesets.ImageSetChooserDialog;
 import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 
+/**
+ * An Action to move the currently selected image, if any, to a new
+ * path to be chosen by the user via popup dialog. The chosen destination
+ * path may or may not already exist; it is created if needed.
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ * @since ImageViewer 2.2
+ */
 public class ImageSetMoveImageAction extends AbstractAction {
 
     private final boolean removeSourceImage;

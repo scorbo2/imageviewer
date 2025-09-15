@@ -30,6 +30,17 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 
+/**
+ * Provides a way to view/edit the image list within an ImageSet.
+ * This is mostly used for re-ordering the list as desired, or to
+ * remove unwanted entries. Note that removing entries from the ImageSet
+ * can also trivially be done from the MainWindow by hitting the
+ * delete key. In IMAGE_SET browse mode, this simply removes the selected
+ * image from the selected ImageSet.
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ * @Since ImageViewer 2.2
+ */
 public class ImageSetEditDialog extends JDialog {
 
     private final ImageSet imageSet;

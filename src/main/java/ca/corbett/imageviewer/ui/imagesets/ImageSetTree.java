@@ -13,6 +13,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Wraps a JTree and provides a way to keep it in sync with the ImageSet instances that
+ * are managed by ImageSetManager.
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ * @since ImageViewer 2.2
+ */
 public class ImageSetTree {
 
     private final JTree tree;
@@ -132,6 +139,10 @@ public class ImageSetTree {
         tree.setSelectionPath(path);
     }
 
+    /**
+     * Clears the current contents and then loads every ImageSet that is present in
+     * MainWindow's ImageSetManager.
+     */
     public void resync() {
         DefaultMutableTreeNode selectedNode = getSelectedNode().orElse(null);
 

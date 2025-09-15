@@ -10,7 +10,8 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 
 /**
- * An Action that can show a popup and create a new ImageSet with the user-supplied path and name.
+ * Takes the currently selected image, if any, and adds it to a new ImageSet with a path
+ * to be chosen by the user via popup dialog.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 2.2

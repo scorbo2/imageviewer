@@ -9,8 +9,30 @@ import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
- * Represents a list which can contain either other ImageSets or individual image files.
- * To be used with ImageSetPanel.
+ * An <b>ImageSet</b> is a list of images whose locations are arbitrary. This is as opposed
+ * to browsing a directory of images, where all contents reside in the same file system
+ * location. ImageSets can be constructed on the fly and can represent any number of
+ * images. On the MainWindow, the user can choose to browse based on the file system,
+ * in which case the DirTree is used to select a directory of images. But, the user
+ * can also opt to browse by ImageSet, in which case an ImageSetPanel is used in
+ * conjunction with ImageSetManager to view or edit a tree of ImageSets.
+ * <p>
+ *     Each ImageSet has a fullyQualifiedName, which can be used to optionally
+ *     describe a tree structure. For example, "/Folder1/Folder2/My Image Set"
+ *     describes an ImageSet named "My Image Set" inside a nested folder-like structure.
+ * </p>
+ * <p>
+ *     ImageSets can be <b>transient</b>. If so, that ImageSet will not be persisted
+ *     when the application exits. This is intended to be used for search results or such.
+ *     By default, ImageSets are <b>not</b> transient, meaning they are persisted, and
+ *     will be loaded the next time the application starts.
+ * </p>
+ * <p>
+ *     ImageSets can be <b>locked</b>. If so, that ImageSet cannot be deleted, moved,
+ *     or renamed by the user. This is intended for extension-specific ImageSets.
+ *     By default, ImageSets are <b>not</b> locked, meaning that they can be deleted
+ *     or modified at any time by the user.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 2.2

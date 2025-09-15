@@ -8,6 +8,8 @@ import java.awt.event.ActionEvent;
 
 /**
  * Loads all persisted ImageSets from the configured save location.
+ * An optional confirmation dialog can be enabled to warn the user that
+ * any unsaved changes made since the last load or save will be discarded.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 2.2

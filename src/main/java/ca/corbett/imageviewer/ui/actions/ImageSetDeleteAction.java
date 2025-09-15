@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
  * Represents an action to delete the currently selected ImageSet, if any.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ * @since ImageViewer 2.2
  */
 public class ImageSetDeleteAction extends AbstractAction {
 

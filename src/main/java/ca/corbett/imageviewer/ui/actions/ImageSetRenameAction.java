@@ -7,6 +7,13 @@ import ca.corbett.imageviewer.ui.imagesets.ImageSetManager;
 import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 
+/**
+ * An Action to rename or move the currently selected image set, if any, to a new path
+ * to be selected by the user via popup dialog.
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ * @since ImageViewer 2.2
+ */
 public class ImageSetRenameAction extends AbstractAction {
 
     public ImageSetRenameAction(String name) {

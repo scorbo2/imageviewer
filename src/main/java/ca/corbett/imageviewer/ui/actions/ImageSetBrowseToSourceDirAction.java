@@ -7,6 +7,13 @@ import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 import java.io.File;
 
+/**
+ * An Action to switch browse modes to FILE_SYSTEM and select the source directory of
+ * whatever image is currently showing.
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ * @since ImageViewer 2.2
+ */
 public class ImageSetBrowseToSourceDirAction extends AbstractAction {
 
     public ImageSetBrowseToSourceDirAction(String name) {

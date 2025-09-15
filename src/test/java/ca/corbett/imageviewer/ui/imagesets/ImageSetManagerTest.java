@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -171,6 +172,44 @@ class ImageSetManagerTest {
 
             // THEN we should get the correct parent every time:
             assertEquals(expectedPath, actual);
+        }
+    }
+
+    @Test
+    public void parseFullyQualifiedName_withGarbageInput_shouldReturnEmpty() {
+        // GIVEN input with garbage values:
+        String[] garbageInput = {
+                "",
+                null,
+                "////////////////////",
+                "                     "
+        };
+
+        // WHEN we try to parse it:
+        for (String input : garbageInput) {
+            String actual = ImageSetManager.parseFullyQualifiedName(input);
+
+            // THEN we should get an empty string
+            assertEquals("", actual);
+        }
+    }
+
+    @Test
+    public void parseFullyQualifiedName_withValidInput_shouldReturnPath() {
+        // GIVEN input with garbage values:
+        String[] garbageInput = {
+                "hello/there",
+                "/hello/there",
+                "/hello/there/",
+                "/////hello////there////"
+        };
+
+        // WHEN we try to parse it:
+        for (String input : garbageInput) {
+            String actual = ImageSetManager.parseFullyQualifiedName(input);
+
+            // THEN we should get the expected string:
+            assertEquals("/hello/there", actual);
         }
     }
 
@@ -462,5 +501,32 @@ class ImageSetManagerTest {
         assertTrue(manager.findImageSet("/hello").isPresent());
         assertFalse(manager.findImageSet("/hello/test3").isPresent());
         assertTrue(manager.findImageSet("/hello").isPresent());
+    }
+
+    @Test
+    public void renameBranch_withCollisions_shouldMergeCollisions() {
+        // GIVEN an ImageSetManager with existing image lists here and there:
+        ImageSet set1 = new ImageSet("path1/test1");
+        ImageSet set2 = new ImageSet("path2/test1");
+        set1.addImageFilePath("blah/test1.jpg");
+        set1.addImageFilePath("blah/test2.jpg");
+        set2.addImageFilePath("blah/test3.jpg");
+        set2.addImageFilePath("blah/test4.jpg");
+        manager.addImageSet(set1);
+        manager.addImageSet(set2);
+
+        // WHEN we rename one branch to the same name as the other branch:
+        manager.renameBranch("path1", "path2");
+
+        // THEN the two image sets should have merged into 1:
+        assertEquals(1, manager.getImageSets().size());
+        assertFalse(manager.findImageSet("/path1/test1").isPresent());
+        Optional<ImageSet> actual = manager.findImageSet("/path2/test1");
+        assertTrue(actual.isPresent());
+        assertEquals(4, actual.get().getImageFilePaths().size());
+        assertTrue(actual.get().getImageFilePaths().contains("blah/test1.jpg"));
+        assertTrue(actual.get().getImageFilePaths().contains("blah/test2.jpg"));
+        assertTrue(actual.get().getImageFilePaths().contains("blah/test3.jpg"));
+        assertTrue(actual.get().getImageFilePaths().contains("blah/test4.jpg"));
     }
 }
