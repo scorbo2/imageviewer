@@ -1,7 +1,7 @@
 ImageViewer Release Notes
 Author: Steve Corbett
 
-Version 2.2 [TODO] - Maintenance release
+Version 2.2 [TODO] - Image sets
   #36 - Fix image panel nesting on main window
   #35 - Allow extensions to supply image set toolbar buttons
   #34 - Standardize icons across the app+extensions
