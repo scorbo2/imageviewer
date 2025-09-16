@@ -42,7 +42,7 @@ public class ThumbCacheExtension extends ImageViewerExtension {
     public ThumbCacheExtension() {
         extInfo = new AppExtensionInfo.Builder("Thumbnail caching")
                 .setAuthor("steve@corbett.ca")
-                .setVersion("1.0")
+                .setVersion(Version.VERSION)
                 .setTargetAppName(Version.APPLICATION_NAME)
                 .setTargetAppVersion(Version.VERSION)
                 .setShortDescription("Basic caching of thumbnails")

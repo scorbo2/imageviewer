@@ -26,7 +26,7 @@ public class ImageInfoExtension extends ImageViewerExtension {
     public ImageInfoExtension() {
         extInfo = new AppExtensionInfo.Builder("Image information")
                 .setAuthor("steve@corbett.ca")
-                .setVersion("1.0")
+                .setVersion(Version.VERSION)
                 .setTargetAppName(Version.APPLICATION_NAME)
                 .setTargetAppVersion(Version.VERSION)
                 .setShortDescription("Shows information for the current image.")

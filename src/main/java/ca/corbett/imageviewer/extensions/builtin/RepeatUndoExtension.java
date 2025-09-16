@@ -29,6 +29,7 @@ public class RepeatUndoExtension extends ImageViewerExtension {
                 .setAuthor("steve@corbett.ca")
                 .setTargetAppName(Version.APPLICATION_NAME)
                 .setTargetAppVersion(Version.VERSION)
+                .setVersion(Version.VERSION)
                 .setShortDescription("Repeat and undo move, copy, or symlink actions.")
                 .setLongDescription("Allows you to repeat the last move, copy, or symlink action "
                                             + "by pressing Ctrl+R. Delete operations can't be repeated.\n\n"

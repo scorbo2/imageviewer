@@ -50,7 +50,7 @@ public class StatisticsExtension extends ImageViewerExtension {
     public StatisticsExtension() {
         extInfo = new AppExtensionInfo.Builder("Statistics tracker")
                 .setAuthor("steve@corbett.ca")
-                .setVersion("1.0")
+                .setVersion(Version.VERSION)
                 .setTargetAppName(Version.APPLICATION_NAME)
                 .setTargetAppVersion(Version.VERSION)
                 .setShortDescription("Tracks statistics on ImageViewer operations.")
