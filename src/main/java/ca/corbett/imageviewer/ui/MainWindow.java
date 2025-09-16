@@ -95,7 +95,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
     private final DirTreeChangeListener dirTreeChangeListener;
     private ImageSetPanel imageSetPanel;
     private ThumbContainerPanel thumbContainerPanel;
-    private JPanel mainWrapperPanel;
+    private JPanel imagePanelWrapperPanel;
     private ImagePanel imagePanel;
     private ImagePanelConfig imagePanelProperties;
     private JLabel statusLabel1;
@@ -370,9 +370,9 @@ public final class MainWindow extends JFrame implements UIReloadable {
     }
 
     public void redrawImagePanel() {
-        mainWrapperPanel.invalidate();
-        mainWrapperPanel.revalidate();
-        mainWrapperPanel.repaint();
+        imagePanelWrapperPanel.invalidate();
+        imagePanelWrapperPanel.revalidate();
+        imagePanelWrapperPanel.repaint();
     }
 
     /**
@@ -452,8 +452,8 @@ public final class MainWindow extends JFrame implements UIReloadable {
         imagePanelProperties.setZoomFactorIncrement(0.02);
         imagePanel = new ImagePanel(imagePanelProperties);
 
-        mainWrapperPanel = new JPanel();
-        mainWrapperPanel.setLayout(new BorderLayout());
+        imagePanelWrapperPanel = new JPanel();
+        imagePanelWrapperPanel.setLayout(new BorderLayout());
 
         // Add extra panels, if any are supplied by our extensions:
         JComponent westComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
@@ -465,21 +465,22 @@ public final class MainWindow extends JFrame implements UIReloadable {
         JComponent southComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
                 ImageViewerExtension.ExtraPanelPosition.Bottom);
         if (westComponent != null) {
-            mainWrapperPanel.add(westComponent, BorderLayout.WEST);
+            imagePanelWrapperPanel.add(westComponent, BorderLayout.WEST);
         }
         if (eastComponent != null) {
-            mainWrapperPanel.add(eastComponent, BorderLayout.EAST);
+            imagePanelWrapperPanel.add(eastComponent, BorderLayout.EAST);
         }
         if (northComponent != null) {
-            mainWrapperPanel.add(northComponent, BorderLayout.NORTH);
+            imagePanelWrapperPanel.add(northComponent, BorderLayout.NORTH);
         }
         if (southComponent != null) {
-            mainWrapperPanel.add(southComponent, BorderLayout.SOUTH);
+            imagePanelWrapperPanel.add(southComponent, BorderLayout.SOUTH);
         }
 
+        imagePanelWrapperPanel.add(imagePanel, BorderLayout.CENTER);
+
         imageTabPane = new ToggleableTabbedPane();
-        imageTabPane.addTab("Image", imagePanel);
-        mainWrapperPanel.add(imageTabPane, BorderLayout.CENTER);
+        imageTabPane.addTab("Image", imagePanelWrapperPanel);
 
         // See if extensions have any image tab panes for us:
         List<JPanel> imageTabs = ImageViewerExtensionManager.getInstance().getImageTabPanels();
@@ -498,8 +499,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
         }
 
         sideSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, imgSrcTabPane, thumbScrollPane);
-        mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sideSplitPane, mainWrapperPanel);
-        //TODO this behaves horribly in certain look and feels: mainSplitPane.setOneTouchExpandable(true);
+        mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sideSplitPane, imageTabPane);
 
         setLayout(new BorderLayout());
         add(mainSplitPane, BorderLayout.CENTER);
