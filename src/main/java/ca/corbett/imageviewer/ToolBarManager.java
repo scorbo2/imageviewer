@@ -133,7 +133,7 @@ public final class ToolBarManager {
             deleteButton.addActionListener(e -> deletePopupMenu.show(deleteButton, 0, deleteButton.getHeight()));
 
             // Insert any buttons supplied by extensions, if any:
-            for (JButton extensionBtn : ImageViewerExtensionManager.getInstance().getToolBarButtons()) {
+            for (JButton extensionBtn : ImageViewerExtensionManager.getInstance().getMainToolBarButtons()) {
                 wrapper.add(extensionBtn);
             }
 

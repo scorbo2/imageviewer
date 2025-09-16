@@ -182,14 +182,30 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     }
 
     /**
-     * Interrogates extensions to see if they have any toolbar buttons to add to the toolbar.
+     * Interrogates extensions to see if they have any toolbar buttons to add to the main toolbar.
      *
      * @return A list of 0 or more buttons supplied by enabled extensions.
      */
-    public List<JButton> getToolBarButtons() {
+    public List<JButton> getMainToolBarButtons() {
         List<JButton> list = new ArrayList<>();
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            List<JButton> toAdd = extension.getToolBarButtons();
+            List<JButton> toAdd = extension.getMainToolBarButtons();
+            if (toAdd != null) {
+                list.addAll(toAdd);
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Interrogates extensions to see if they have any toolbar buttons to add to the image set panel toolbar.
+     *
+     * @return A list of 0 or more buttons supplied by enabled extensions.
+     */
+    public List<JButton> getImageSetToolBarButtons() {
+        List<JButton> list = new ArrayList<>();
+        for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
+            List<JButton> toAdd = extension.getImageSetToolBarButtons();
             if (toAdd != null) {
                 list.addAll(toAdd);
             }

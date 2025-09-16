@@ -2,6 +2,7 @@ package ca.corbett.imageviewer.ui.imagesets;
 
 import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.imageviewer.ToolBarManager;
+import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.actions.ImageSetDeleteAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetEditAction;
@@ -9,6 +10,7 @@ import ca.corbett.imageviewer.ui.actions.ImageSetLoadAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetRenameAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetSaveAction;
 
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -114,6 +116,15 @@ public class ImageSetPanel extends JPanel {
 
             wrapper.add(new JLabel(" "));
 
+            // Allow extensions to insert their own buttons here:
+            List<JButton> extButtons = ImageViewerExtensionManager.getInstance().getImageSetToolBarButtons();
+            if (!extButtons.isEmpty()) {
+                for (JButton btn : extButtons) {
+                    wrapper.add(btn);
+                }
+                wrapper.add(new JLabel(" "));
+            }
+
             wrapper.add(ToolBarManager.buildButton(
                     loadIconImage("icon-reboot.png"),
                     "Discard changes and reload all image sets",
@@ -144,7 +155,7 @@ public class ImageSetPanel extends JPanel {
     /**
      * Invoked internally to load an icon image from resources, scale it if needed, and return it.
      */
-    private static BufferedImage loadIconImage(String resourceName) throws IOException {
+    public static BufferedImage loadIconImage(String resourceName) throws IOException {
         final int iconSize = 18;
         return ImageUtil.loadFromResource(MainWindow.class,
                                           "/ca/corbett/imageviewer/images/" + resourceName,

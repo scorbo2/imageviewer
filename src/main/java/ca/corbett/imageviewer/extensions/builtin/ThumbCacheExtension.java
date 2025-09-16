@@ -71,7 +71,7 @@ public class ThumbCacheExtension extends ImageViewerExtension {
     }
 
     @Override
-    public List<JButton> getToolBarButtons() {
+    public List<JButton> getMainToolBarButtons() {
         List<JButton> list = new ArrayList<>();
         try {
             list.add(ToolBarManager.buildButton(

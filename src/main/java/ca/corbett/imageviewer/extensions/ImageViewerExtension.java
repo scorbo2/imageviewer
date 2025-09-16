@@ -100,7 +100,18 @@ public abstract class ImageViewerExtension extends AppExtension {
      *
      * @return A List of JButtons, or null.
      */
-    public List<JButton> getToolBarButtons() {
+    public List<JButton> getMainToolBarButtons() {
+        return null;
+    }
+
+    /**
+     * Invoked when the application is building the ImageSetPanel ToolBar - extensions can add
+     * buttons to this toolbar by returning them here. Use ToolBarManager.buildButton() and
+     * ImageSetPanel.loadImageIcon() as convenience methods.
+     *
+     * @return A List of JButtons, or null.
+     */
+    public List<JButton> getImageSetToolBarButtons() {
         return null;
     }
 
