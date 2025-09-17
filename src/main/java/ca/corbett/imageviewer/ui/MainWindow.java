@@ -95,7 +95,6 @@ public final class MainWindow extends JFrame implements UIReloadable {
     private final DirTreeChangeListener dirTreeChangeListener;
     private ImageSetPanel imageSetPanel;
     private ThumbContainerPanel thumbContainerPanel;
-    private JPanel imagePanelWrapperPanel;
     private ImagePanel imagePanel;
     private ImagePanelConfig imagePanelProperties;
     private JLabel statusLabel1;
@@ -369,14 +368,8 @@ public final class MainWindow extends JFrame implements UIReloadable {
         return thumbContainerPanel.getAliens();
     }
 
-    public void redrawImagePanel() {
-        imagePanelWrapperPanel.invalidate();
-        imagePanelWrapperPanel.revalidate();
-        imagePanelWrapperPanel.repaint();
-    }
-
     /**
-     * Internal meethod to set up the main window and all its components.
+     * Internal method to set up the main window and all its components.
      */
     private void initComponents() {
         setSize(MIN_WIDTH, MIN_HEIGHT);
@@ -452,35 +445,8 @@ public final class MainWindow extends JFrame implements UIReloadable {
         imagePanelProperties.setZoomFactorIncrement(0.02);
         imagePanel = new ImagePanel(imagePanelProperties);
 
-        imagePanelWrapperPanel = new JPanel();
-        imagePanelWrapperPanel.setLayout(new BorderLayout());
-
-        // Add extra panels, if any are supplied by our extensions:
-        JComponent westComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
-                ImageViewerExtension.ExtraPanelPosition.Left);
-        JComponent eastComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
-                ImageViewerExtension.ExtraPanelPosition.Right);
-        JComponent northComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
-                ImageViewerExtension.ExtraPanelPosition.Top);
-        JComponent southComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
-                ImageViewerExtension.ExtraPanelPosition.Bottom);
-        if (westComponent != null) {
-            imagePanelWrapperPanel.add(westComponent, BorderLayout.WEST);
-        }
-        if (eastComponent != null) {
-            imagePanelWrapperPanel.add(eastComponent, BorderLayout.EAST);
-        }
-        if (northComponent != null) {
-            imagePanelWrapperPanel.add(northComponent, BorderLayout.NORTH);
-        }
-        if (southComponent != null) {
-            imagePanelWrapperPanel.add(southComponent, BorderLayout.SOUTH);
-        }
-
-        imagePanelWrapperPanel.add(imagePanel, BorderLayout.CENTER);
-
         imageTabPane = new ToggleableTabbedPane();
-        imageTabPane.addTab("Image", imagePanelWrapperPanel);
+        imageTabPane.addTab("Image", buildImagePanelWrapperPanel());
 
         // See if extensions have any image tab panes for us:
         List<JPanel> imageTabs = ImageViewerExtensionManager.getInstance().getImageTabPanels();
@@ -687,7 +653,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
 
         // Rebuild the image tab pane:
         imageTabPane.removeAll();
-        imageTabPane.addTab("Image", imagePanel);
+        imageTabPane.addTab("Image", buildImagePanelWrapperPanel());
         // See if extensions have any image tab panes for us:
         List<JPanel> imageTabs = ImageViewerExtensionManager.getInstance().getImageTabPanels();
         if (!imageTabs.isEmpty()) {
@@ -724,6 +690,36 @@ public final class MainWindow extends JFrame implements UIReloadable {
             dirTreeChangeListener.selectionChanged(dirTree, dirTree.getCurrentDir());
         }
         updateStatusBar();
+    }
+
+    private JPanel buildImagePanelWrapperPanel() {
+        JPanel imagePanelWrapperPanel = new JPanel();
+        imagePanelWrapperPanel.setLayout(new BorderLayout());
+
+        // Add extra panels, if any are supplied by our extensions:
+        JComponent westComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
+                ImageViewerExtension.ExtraPanelPosition.Left);
+        JComponent eastComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
+                ImageViewerExtension.ExtraPanelPosition.Right);
+        JComponent northComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
+                ImageViewerExtension.ExtraPanelPosition.Top);
+        JComponent southComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
+                ImageViewerExtension.ExtraPanelPosition.Bottom);
+        if (westComponent != null) {
+            imagePanelWrapperPanel.add(westComponent, BorderLayout.WEST);
+        }
+        if (eastComponent != null) {
+            imagePanelWrapperPanel.add(eastComponent, BorderLayout.EAST);
+        }
+        if (northComponent != null) {
+            imagePanelWrapperPanel.add(northComponent, BorderLayout.NORTH);
+        }
+        if (southComponent != null) {
+            imagePanelWrapperPanel.add(southComponent, BorderLayout.SOUTH);
+        }
+
+        imagePanelWrapperPanel.add(imagePanel, BorderLayout.CENTER);
+        return imagePanelWrapperPanel;
     }
 
     public void setImageBackgroundColor(Color color) {
@@ -815,7 +811,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
             long fileSize = srcFile.length();
             status1 = FileUtils.byteCountToDisplaySize(fileSize);
 
-            long memorySize = imagePanel.getImageWidth()
+            long memorySize = (long)imagePanel.getImageWidth()
                     * imagePanel.getImageHeight() * 3;
             status1 += " (" + FileUtils.byteCountToDisplaySize(memorySize) + " in memory), ";
 
