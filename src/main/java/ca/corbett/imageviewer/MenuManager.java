@@ -55,46 +55,17 @@ import java.util.List;
 public final class MenuManager {
 
     private final JMenuBar menuBar;
-    private final JMenu fileMenu;
-    private final JMenu editMenu;
-    private final JMenu viewMenu;
-    private final JMenu settingsMenu;
-    private final JMenu helpMenu;
+    private JMenu fileMenu;
+    private JMenu editMenu;
+    private JMenu viewMenu;
+    private JMenu settingsMenu;
+    private JMenu helpMenu;
     private MainWindow.BrowseMode browseMode;
 
     public MenuManager() {
         browseMode = MainWindow.BrowseMode.FILE_SYSTEM;
         menuBar = new JMenuBar();
-
-        fileMenu = new JMenu("File");
-        fileMenu.setMnemonic(KeyEvent.VK_F);
-        menuBar.add(fileMenu);
-
-        editMenu = new JMenu("Edit");
-        editMenu.setMnemonic(KeyEvent.VK_E);
-        menuBar.add(editMenu);
-
-        // Any extension-provided top-level menu can go in between Edit and View:
-        List<JMenu> extensionMenus = ImageViewerExtensionManager.getInstance().getTopLevelMenus();
-        if (!extensionMenus.isEmpty()) {
-            for (JMenu extensionMenu : extensionMenus) {
-                menuBar.add(extensionMenu);
-            }
-        }
-
-        viewMenu = new JMenu("View");
-        viewMenu.setMnemonic(KeyEvent.VK_V);
-        menuBar.add(viewMenu);
-
-        settingsMenu = new JMenu("Settings");
-        settingsMenu.setMnemonic(KeyEvent.VK_S);
-        menuBar.add(settingsMenu);
-
-        helpMenu = new JMenu("Help");
-        helpMenu.setMnemonic(KeyEvent.VK_H);
-        menuBar.add(helpMenu);
-
-        rebuildMainMenuBar();
+        rebuildAll();
     }
 
     public void setBrowseMode(MainWindow.BrowseMode mode) {
@@ -107,10 +78,7 @@ public final class MenuManager {
     }
 
     public void rebuildAll() {
-        rebuildMainMenuBar();
-    }
-
-    public void rebuildMainMenuBar() {
+        rebuildMenuBar();
         rebuildFileMenu();
         rebuildEditMenu();
         rebuildViewMenu();
@@ -154,6 +122,38 @@ public final class MenuManager {
 
         return imagePanelPopupMenu;
 
+    }
+
+    private void rebuildMenuBar() {
+        menuBar.removeAll();
+
+        fileMenu = new JMenu("File");
+        fileMenu.setMnemonic(KeyEvent.VK_F);
+        menuBar.add(fileMenu);
+
+        editMenu = new JMenu("Edit");
+        editMenu.setMnemonic(KeyEvent.VK_E);
+        menuBar.add(editMenu);
+
+        // Any extension-provided top-level menu can go in between Edit and View:
+        List<JMenu> extensionMenus = ImageViewerExtensionManager.getInstance().getTopLevelMenus(browseMode);
+        if (!extensionMenus.isEmpty()) {
+            for (JMenu extensionMenu : extensionMenus) {
+                menuBar.add(extensionMenu);
+            }
+        }
+
+        viewMenu = new JMenu("View");
+        viewMenu.setMnemonic(KeyEvent.VK_V);
+        menuBar.add(viewMenu);
+
+        settingsMenu = new JMenu("Settings");
+        settingsMenu.setMnemonic(KeyEvent.VK_S);
+        menuBar.add(settingsMenu);
+
+        helpMenu = new JMenu("Help");
+        helpMenu.setMnemonic(KeyEvent.VK_H);
+        menuBar.add(helpMenu);
     }
 
     private void rebuildFileMenu() {

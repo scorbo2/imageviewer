@@ -151,12 +151,13 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
      * Interrogates extensions to see if they have any top-level menus that they want
      * to add to the MainWindow's main menu.
      *
+     * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
      * @return A list of 0 or more JMenus supplied by enabled extensions.
      */
-    public List<JMenu> getTopLevelMenus() {
+    public List<JMenu> getTopLevelMenus(MainWindow.BrowseMode browseMode) {
         List<JMenu> list = new ArrayList<>();
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            List<JMenu> toAdd = extension.getTopLevelMenus();
+            List<JMenu> toAdd = extension.getTopLevelMenus(browseMode);
             if (toAdd != null) {
                 list.addAll(toAdd);
             }

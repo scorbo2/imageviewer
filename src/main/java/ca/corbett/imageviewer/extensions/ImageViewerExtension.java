@@ -75,9 +75,10 @@ public abstract class ImageViewerExtension extends AppExtension {
      * Invoked when the application wants to know if the extension has its own top-level
      * menu to add to the MainWindow's main menu.
      *
+     * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
      * @return an optional list of JMenu objects for the main menu, or null for none.
      */
-    public List<JMenu> getTopLevelMenus() {
+    public List<JMenu> getTopLevelMenus(MainWindow.BrowseMode browseMode) {
         return null;
     }
 
