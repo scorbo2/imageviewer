@@ -1,6 +1,6 @@
-# imageviewer
+# ImageViewer
 
-This is "imageviewer", a 100% Java music player with a UI written in Java Swing.
+This is "ImageViewer", a 100% Java image viewer with a UI written in Java Swing.
 
 ![ImageViewer](imageviewer.jpg "ImageViewer")
 
