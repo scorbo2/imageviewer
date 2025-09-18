@@ -369,6 +369,17 @@ public final class MainWindow extends JFrame implements UIReloadable {
     }
 
     /**
+     * Kludge alert - quick access extension needs this to force the quick access
+     * panel to be visible from the configure quick access destinations dialog.
+     * TODO this seems very clunky and there must be a better way to do this.
+     */
+    public void redrawImagePanel() {
+        imageTabPane.invalidate();
+        imageTabPane.revalidate();
+        imageTabPane.repaint();
+    }
+
+    /**
      * Internal method to set up the main window and all its components.
      */
     private void initComponents() {
