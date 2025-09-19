@@ -2,6 +2,7 @@ package ca.corbett.imageviewer.ui.imagesets;
 
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
@@ -46,11 +47,13 @@ public class ImageSetEditDialog extends JDialog {
     private final ImageSet imageSet;
     private boolean wasOkayed = false;
     private DefaultListModel<String> listModel;
+    private CheckBoxField transientField;
+    private CheckBoxField lockedField;
 
     public ImageSetEditDialog(ImageSet imageSet) {
         super(MainWindow.getInstance(), "Edit image set: "+imageSet.getName(), true);
         this.imageSet = imageSet;
-        setSize(new Dimension(640,400));
+        setSize(new Dimension(640, 460));
         setResizable(false);
         setLocationRelativeTo(MainWindow.getInstance());
         setLayout(new BorderLayout());
@@ -65,6 +68,10 @@ public class ImageSetEditDialog extends JDialog {
         formPanel.add(new LabelField("Full name:", imageSet.getFullyQualifiedName()));
         formPanel.add(LabelField.createPlainHeaderLabel("Drag+drop or ctrl+up/ctrl+down to reorder, DEL to remove"));
         formPanel.add(buildListField());
+        transientField = new CheckBoxField("Save this image set on shutdown", !imageSet.isTransient());
+        formPanel.add(transientField);
+        lockedField = new CheckBoxField("Lock this image set to prevent deletion", imageSet.isLocked());
+        formPanel.add(lockedField);
 
         return formPanel;
     }
@@ -190,6 +197,8 @@ public class ImageSetEditDialog extends JDialog {
             for (int i = 0; i < listModel.getSize(); i++) {
                 imageSet.addImageFilePath(listModel.getElementAt(i));
             }
+            imageSet.setTransient(!transientField.isChecked());
+            imageSet.setLocked(lockedField.isChecked());
         }
         dispose();
     }
