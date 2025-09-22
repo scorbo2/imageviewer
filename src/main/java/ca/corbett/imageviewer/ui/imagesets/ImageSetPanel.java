@@ -86,6 +86,10 @@ public class ImageSetPanel extends JPanel {
         imageSetTree.resync();
     }
 
+    public void resync(ImageSet selectAndScrollTo) {
+        imageSetTree.resync(selectAndScrollTo);
+    }
+
     public DefaultMutableTreeNode addImageSet(ImageSet set) {
         return imageSetTree.addImageSet(set);
     }

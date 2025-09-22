@@ -139,12 +139,20 @@ public class ImageSetTree {
         tree.setSelectionPath(path);
     }
 
+    public void resync() {
+        ImageSet selectAndScrollTo = null;
+        DefaultMutableTreeNode selectedNode = getSelectedNode().orElse(null);
+        if (selectedNode != null && (selectedNode.getUserObject() instanceof ImageSet)) {
+            selectAndScrollTo = (ImageSet)selectedNode.getUserObject();
+        }
+        resync(selectAndScrollTo);
+    }
+
     /**
      * Clears the current contents and then loads every ImageSet that is present in
      * MainWindow's ImageSetManager.
      */
-    public void resync() {
-        DefaultMutableTreeNode selectedNode = getSelectedNode().orElse(null);
+    public void resync(ImageSet selectAndScrollTo) {
 
         rootNode.removeAllChildren();
         List<ImageSet> imageSets = MainWindow.getInstance().getImageSetManager().getImageSets();
@@ -153,9 +161,8 @@ public class ImageSetTree {
         }
         treeModel.reload();
 
-        // Re-select whatever was selected if there was a selection:
-        if (selectedNode != null && (selectedNode.getUserObject() instanceof ImageSet)) {
-            selectAndScrollTo((ImageSet)selectedNode.getUserObject());
+        if (selectAndScrollTo != null) {
+            selectAndScrollTo(selectAndScrollTo);
         }
     }
 
