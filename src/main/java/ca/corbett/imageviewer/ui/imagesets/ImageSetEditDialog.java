@@ -40,7 +40,7 @@ import java.io.IOException;
  * image from the selected ImageSet.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
- * @Since ImageViewer 2.2
+ * @since ImageViewer 2.2
  */
 public class ImageSetEditDialog extends JDialog {
 
