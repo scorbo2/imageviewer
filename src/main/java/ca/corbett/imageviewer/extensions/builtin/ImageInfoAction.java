@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 /**
  * Launches the ImageInformation dialog for the currently selected image, if there is one.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 class ImageInfoAction extends AbstractAction {
 

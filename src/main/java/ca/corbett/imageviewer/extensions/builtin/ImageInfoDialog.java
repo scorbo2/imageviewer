@@ -25,7 +25,7 @@ import java.text.SimpleDateFormat;
 /**
  * Shows basic information for the given image (file size, image dimensions, date/time).
  *
- * @author scorbett
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 class ImageInfoDialog extends JDialog {
 

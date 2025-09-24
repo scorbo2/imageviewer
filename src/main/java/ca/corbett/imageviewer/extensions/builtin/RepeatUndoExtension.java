@@ -10,7 +10,6 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,7 +17,7 @@ import java.util.List;
  * the last image operation, whether it was a move, a copy, or a symlink (note that delete
  * operations can't be undone).
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public class RepeatUndoExtension extends ImageViewerExtension {
 
@@ -52,21 +51,12 @@ public class RepeatUndoExtension extends ImageViewerExtension {
 
     @Override
     public List<JMenuItem> getMenuItems(String topLevelMenu, MainWindow.BrowseMode browseMode) {
-        if ("Edit".equals(topLevelMenu)) {
-            List<JMenuItem> list = new ArrayList<>();
-            list.add(buildRepeatMenuItem());
-            list.add(buildUndoMenuItem());
-            return list;
-        }
-        return null;
+        return "Edit".equals(topLevelMenu) ? List.of(buildRepeatMenuItem(), buildUndoMenuItem()) : null;
     }
 
     @Override
     public List<JMenuItem> getPopupMenuItems(MainWindow.BrowseMode browseMode) {
-        List<JMenuItem> list = new ArrayList<>();
-        list.add(buildRepeatMenuItem());
-        list.add(buildUndoMenuItem());
-        return list;
+        return List.of(buildRepeatMenuItem(), buildUndoMenuItem());
     }
 
     private JMenuItem buildRepeatMenuItem() {
@@ -80,5 +70,4 @@ public class RepeatUndoExtension extends ImageViewerExtension {
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
         return menuItem;
     }
-
 }

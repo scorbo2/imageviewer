@@ -31,7 +31,7 @@ import java.util.List;
  * tracking entirely, you can disable the StatisticsExtension via the extension
  * manager dialog.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 final class StatisticsDialog extends JDialog {
 
@@ -285,5 +285,4 @@ final class StatisticsDialog extends JDialog {
         owner.clearStats();
         updateStats();
     }
-
 }

@@ -8,8 +8,6 @@ import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.ui.MainWindow;
 
 import javax.swing.JMenuItem;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.sql.Connection;
@@ -28,7 +26,7 @@ import java.util.logging.Logger;
  * in the app, and can generate reports on statistics over time.
  * TODO track more than just deletions! track all operations
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 2.0
  */
 public class StatisticsExtension extends ImageViewerExtension {
@@ -39,8 +37,6 @@ public class StatisticsExtension extends ImageViewerExtension {
     public enum DateRange {
         TODAY, LAST_MONTH, THIS_MONTH
     }
-
-    ;
 
     private final AppExtensionInfo extInfo;
     private Connection statsConn = null;
@@ -124,16 +120,8 @@ public class StatisticsExtension extends ImageViewerExtension {
     public List<JMenuItem> getMenuItems(String topLevelMenu, MainWindow.BrowseMode browseMode) {
         if ("View".equals(topLevelMenu)) {
             List<JMenuItem> list = new ArrayList<>();
-            JMenuItem item = new JMenuItem("Deletion statistics");
+            JMenuItem item = new JMenuItem(new ViewStatisticsAction("Deletion statistics", this));
             item.setMnemonic(KeyEvent.VK_D);
-            final StatisticsExtension thisInstance = this;
-            item.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    new StatisticsDialog(thisInstance).setVisible(true);
-                }
-
-            });
             list.add(item);
             return list;
         }
@@ -180,7 +168,7 @@ public class StatisticsExtension extends ImageViewerExtension {
      *
      * @return An array of distinct file extensions that have been deleted.
      */
-    String[] getDeletedFileExtensions() {
+    protected String[] getDeletedFileExtensions() {
         List<String> extList = new ArrayList<>();
         String sql = "select distinct ext from stats order by ext";
         try (Statement st = statsConn.createStatement(); ResultSet rs = st.executeQuery(sql)) {

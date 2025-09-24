@@ -13,9 +13,6 @@ import ca.corbett.imageviewer.ui.MainWindow;
 
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -29,7 +26,7 @@ import java.util.logging.Logger;
  * This built-in extension provides a basic thumbnail caching mechanism for ImageViewer,
  * to speed up subsequent visits to already-visited directories.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public class ThumbCacheExtension extends ImageViewerExtension {
 
@@ -90,34 +87,12 @@ public class ThumbCacheExtension extends ImageViewerExtension {
     public List<JMenuItem> getMenuItems(String topLevelMenu, MainWindow.BrowseMode browseMode) {
         if ("View".equals(topLevelMenu)) {
             List<JMenuItem> list = new ArrayList<>();
-            JMenuItem item = new JMenuItem("View thumbnail cache stats");
+            JMenuItem item = new JMenuItem(new ThumbCacheViewStatsAction("View thumbnail cache stats"));
             item.setMnemonic(KeyEvent.VK_V);
-            item.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    getMessageUtil().info("Thumbnail cache stats", ThumbCacheManager.gatherCacheStats().toString());
-                }
-
-            });
             list.add(item);
 
-            item = new JMenuItem("Clear thumbnail cache");
+            item = new JMenuItem(new ThumbCacheClearAction("Clear thumbnail cache"));
             item.setMnemonic(KeyEvent.VK_C);
-            item.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (JOptionPane.showConfirmDialog(MainWindow.getInstance(),
-                                                      "Are you sure you wish to clear cache? This can't be undone.",
-                                                      "Confirm",
-                                                      JOptionPane.YES_NO_OPTION,
-                                                      JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-                        ThumbCacheManager.clear();
-                        getMessageUtil().info("Cache cleared!");
-                    }
-
-                }
-
-            });
             list.add(item);
 
             return list;
@@ -149,6 +124,13 @@ public class ThumbCacheExtension extends ImageViewerExtension {
         ThumbCacheManager.remove(imageFile);
     }
 
+    /**
+     * We hook into this so that we can move, copy, symlink, and delete thumbnails as their
+     * master image gets moved, copied, symlinked, or deleted.
+     * Note this should be in postImageOperation but there's
+     * an <a href="https://github.com/scorbo2/imageviewer/issues/42">issue</a> in the way.
+     * TODO clean this up when issue 42 is resolved.
+     */
     @Override
     public void preImageOperation(ImageOperation.Type opType, File srcFile, File destFile) {
         switch (opType) {

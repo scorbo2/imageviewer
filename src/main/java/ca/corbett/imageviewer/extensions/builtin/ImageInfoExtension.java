@@ -10,14 +10,13 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * This built-in extension to ImageViewer provides a basic image information dialog that
  * can be summoned for any selected image.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public class ImageInfoExtension extends ImageViewerExtension {
 
@@ -49,18 +48,12 @@ public class ImageInfoExtension extends ImageViewerExtension {
 
     @Override
     public List<JMenuItem> getMenuItems(String menu, MainWindow.BrowseMode browseMode) {
-        List<JMenuItem> list = new ArrayList<>();
-        if ("View".equals(menu)) {
-            list.add(createMenuItem());
-        }
-        return list;
+        return "View".equals(menu) ? List.of(createMenuItem()) : null;
     }
 
     @Override
     public List<JMenuItem> getPopupMenuItems(MainWindow.BrowseMode browseMode) {
-        List<JMenuItem> list = new ArrayList<>();
-        list.add(createMenuItem());
-        return list;
+        return List.of(createMenuItem());
     }
 
     private JMenuItem createMenuItem() {
@@ -80,5 +73,4 @@ public class ImageInfoExtension extends ImageViewerExtension {
         }
         return false;
     }
-
 }
