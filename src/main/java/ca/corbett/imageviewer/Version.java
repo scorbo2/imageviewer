@@ -75,7 +75,7 @@ public final class Version {
     static {
         aboutInfo = new AboutInfo();
         aboutInfo.applicationName = APPLICATION_NAME;
-        aboutInfo.applicationVersion = VERSION;
+        aboutInfo.applicationVersion = VERSION + "-SNAPSHOT";
         aboutInfo.copyright = COPYRIGHT;
         aboutInfo.license = LICENSE;
         aboutInfo.projectUrl = PROJECT_URL;
@@ -83,6 +83,8 @@ public final class Version {
         aboutInfo.releaseNotesLocation = "/ca/corbett/imageviewer/ReleaseNotes.txt";
         aboutInfo.logoImageLocation = "/ca/corbett/imageviewer/images/logo_wide.jpg";
         aboutInfo.shortDescription = "Fast and extensible image viewer and sorter.";
+        aboutInfo.addCustomField("Snapshot:",
+                                 "<html><b>This is not a final release build.</b></html>");
 
         String installDir = System.getProperty("INSTALL_DIR", null);
         INSTALL_DIR = installDir == null ? null : new File(installDir);
