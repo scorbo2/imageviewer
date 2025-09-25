@@ -120,6 +120,7 @@ public class ImageSetManager {
             ImageSet newSet = new ImageSet();
             newSet.setFullyQualifiedName(fullyQualifiedName);
             imageSets.add(newSet);
+            log.log(Level.INFO, "createImageSet: {0}", new Object[]{newSet.getFullyQualifiedName()});
             isDirty = true;
             return newSet;
         }
@@ -180,13 +181,17 @@ public class ImageSetManager {
 
         // First remove the given target path if it is an image set:
         isDirty = true;
-        findImageSet(path).ifPresent(this::remove);
+        findImageSet(path).ifPresent(imageSets::remove);
+        log.log(Level.INFO, "deleteImageSet: " + path);
 
         // Now remove any child nodes, if any:
         List<ImageSet> survivors = new ArrayList<>(imageSets.size());
         for (ImageSet candidate : imageSets) {
             if (!candidate.getFullyQualifiedName().startsWith(path + PATH_DELIMITER)) {
                 survivors.add(candidate);
+            }
+            else {
+                log.log(Level.INFO, "deleteImageSet: " + candidate.getFullyQualifiedName());
             }
         }
 
@@ -261,6 +266,8 @@ public class ImageSetManager {
             isDirty = true;
             imageSets.removeAll(deadImageSets);
         }
+
+        log.log(Level.INFO, "moveImageSet: {0} -> {1}", new Object[]{oldPath, newPath});
     }
 
     public List<ImageSet> getImageSets() {

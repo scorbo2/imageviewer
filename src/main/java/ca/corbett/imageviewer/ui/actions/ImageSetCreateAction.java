@@ -8,6 +8,8 @@ import ca.corbett.imageviewer.ui.imagesets.ImageSetChooserDialog;
 import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Takes the currently selected image, if any, and adds it to a new ImageSet with a path
@@ -17,6 +19,8 @@ import java.io.File;
  * @since ImageViewer 2.2
  */
 public class ImageSetCreateAction extends AbstractAction {
+
+    private static final Logger log = Logger.getLogger(ImageSetCreateAction.class.getName());
 
     public ImageSetCreateAction() {
         super("Create new list...");
@@ -36,6 +40,8 @@ public class ImageSetCreateAction extends AbstractAction {
             ImageSet imageSet = MainWindow.getInstance().getImageSetManager()
                                           .findOrCreateImageSet(dialog.getSelectedPath());
             imageSet.addImageFilePath(file.getAbsolutePath());
+            log.log(Level.INFO, "addToImageSet: {0} added to image set {1}",
+                    new Object[]{file.getAbsolutePath(), imageSet.getFullyQualifiedName()});
             MainWindow.getInstance().getImageSetPanel().resync();
             MainWindow.getInstance().rebuildMenus();
         }

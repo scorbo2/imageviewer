@@ -37,6 +37,13 @@ public final class LogConsoleManager {
         theme.setStyle("renameImage", createStyle("renameImage", true, Color.CYAN, true));
         theme.setStyle("deleteImage", createStyle("deleteImage", true, Color.RED, true));
         theme.setStyle("deleteDirectory", createStyle("deleteDirectory", true, Color.RED, true));
+        theme.setStyle("addToImageSet", createStyle("addToImageSet", true, Color.PINK, true));
+        theme.setStyle("createImageSet", createStyle("createImageSet", true, Color.PINK, true));
+        theme.setStyle("removeFromImageSet", createStyle("removeFromImageSet", true, Color.ORANGE, true));
+        theme.setStyle("deleteImageSet", createStyle("deleteImageSet", true, Color.RED, true));
+        theme.setStyle("moveImageSet", createStyle("moveImageSet", true, Color.ORANGE, true));
+        theme.setStyle("copyImageToImageSet", createStyle("copyImageToImageSet", true, Color.PINK, true));
+        theme.setStyle("moveImageToImageSet", createStyle("moveImageToImageSet", true, Color.PINK, true));
 
         // Add any provided by extensions:
         List<LogConsoleStyle> extensionStyles = ImageViewerExtensionManager.getInstance().getLogConsoleStyles();

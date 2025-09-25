@@ -6,6 +6,8 @@ import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 
 import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Removes the currently showing image from the current ImageSet.
@@ -14,6 +16,8 @@ import java.awt.event.ActionEvent;
  * @since ImageViewer 2.2
  */
 public class ImageSetRemoveImageAction extends AbstractAction {
+
+    private static final Logger log = Logger.getLogger(ImageSetRemoveImageAction.class.getName());
 
     public ImageSetRemoveImageAction(String name) {
         super(name);
@@ -36,6 +40,8 @@ public class ImageSetRemoveImageAction extends AbstractAction {
         }
 
         imageSet.removeImageFilePath(currentImage.getImageFile().getAbsolutePath());
+        log.log(Level.INFO, "removeFromImageSet: {0} removed from image set {1}",
+                new Object[]{currentImage.getImageFile().getAbsolutePath(), imageSet.getFullyQualifiedName()});
         MainWindow.getInstance().getImageSetPanel().resync();
     }
 }

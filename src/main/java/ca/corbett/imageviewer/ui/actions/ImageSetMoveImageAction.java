@@ -7,6 +7,8 @@ import ca.corbett.imageviewer.ui.imagesets.ImageSetChooserDialog;
 
 import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * An Action to move the currently selected image, if any, to a new
@@ -17,6 +19,8 @@ import java.awt.event.ActionEvent;
  * @since ImageViewer 2.2
  */
 public class ImageSetMoveImageAction extends AbstractAction {
+
+    private static final Logger log = Logger.getLogger(ImageSetMoveImageAction.class.getName());
 
     private final boolean removeSourceImage;
     private final String actionLabel;
@@ -52,10 +56,16 @@ public class ImageSetMoveImageAction extends AbstractAction {
                 MainWindow.getInstance().showMessageDialog(actionLabel, "Source and destination are the same.");
             }
 
+            String opName = removeSourceImage ? "moveImageToImageSet" : "copyImageToImageSet";
             destinationSet.addImageFilePath(currentImage.getImageFile().getAbsolutePath());
             if (removeSourceImage) {
                 sourceSet.removeImageFilePath(currentImage.getImageFile().getAbsolutePath());
             }
+            log.log(Level.INFO, "{0}: {1} from {2} -> {3}",
+                    new Object[]{opName,
+                            currentImage.getImageFile().getName(),
+                            sourceSet.getFullyQualifiedName(),
+                            destinationSet.getFullyQualifiedName()});
 
             MainWindow.getInstance().getImageSetPanel().resync();
             MainWindow.getInstance().rebuildMenus();
