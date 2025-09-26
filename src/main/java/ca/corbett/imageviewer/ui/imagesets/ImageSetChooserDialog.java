@@ -76,6 +76,9 @@ public class ImageSetChooserDialog extends JDialog {
     private String computeSelectedPath() {
         String path;
         if (typeChooser.getSelectedIndex() == 0) {
+            path = imageSetTree.getSelectedPath(); // already validated by isFormValid
+        }
+        else if (typeChooser.getSelectedIndex() == 1) {
             String parentPath = imageSetTree.getSelectedPath();
             if (parentPath == null) {
                 parentPath = String.valueOf(ImageSetManager.PATH_DELIMITER);
@@ -94,10 +97,18 @@ public class ImageSetChooserDialog extends JDialog {
         FormPanel formPanel = new FormPanel(Alignment.TOP_CENTER);
         formPanel.setBorderMargin(16);
 
-        List<String> options = List.of("Choose a parent node and enter name", "Manual entry");
-        typeChooser = new ComboField<>("Choose:", options, 1);
+        List<String> options = List.of("Choose destination node",
+                                       "Choose a parent node and enter name",
+                                       "Manual path entry");
+        typeChooser = new ComboField<>("Choose:", options, 0);
         typeChooser.addValueChangedListener(field -> {
             if (typeChooser.getSelectedIndex() == 0) {
+                manualEntryLabel.setVisible(false);
+                manualEntryField.setVisible(false);
+                parentTreeField.setVisible(true);
+                nameField.setVisible(false);
+            }
+            else if (typeChooser.getSelectedIndex() == 1) {
                 manualEntryLabel.setVisible(false);
                 manualEntryField.setVisible(false);
                 parentTreeField.setVisible(true);
@@ -114,7 +125,6 @@ public class ImageSetChooserDialog extends JDialog {
 
         parentTreeField = new PanelField(new BorderLayout());
         parentTreeField.getPanel().setPreferredSize(new Dimension(325, 180));
-        parentTreeField.setVisible(false);
         imageSetTree = new ImageSetTree();
         JScrollPane scrollPane = new JScrollPane(imageSetTree.getTree());
         parentTreeField.getPanel().add(scrollPane, BorderLayout.CENTER);
@@ -126,9 +136,11 @@ public class ImageSetChooserDialog extends JDialog {
 
         manualEntryLabel = new LabelField("<html>You can use the / character to create a folder structure.<br>"
                                                   + "Example: folder1/folder2/new image set");
+        manualEntryLabel.setVisible(false);
         formPanel.add(manualEntryLabel);
 
         manualEntryField = new ShortTextField("Path:", 20);
+        manualEntryField.setVisible(false);
         formPanel.add(manualEntryField);
 
         add(formPanel, BorderLayout.CENTER);
@@ -138,6 +150,14 @@ public class ImageSetChooserDialog extends JDialog {
     private boolean isFormValid() {
         String errorMsg = null;
         if (typeChooser.getSelectedIndex() == 0) {
+            if (imageSetTree.getSelectedImageSet().isEmpty()) {
+                errorMsg = "Select a destination node.";
+            }
+        }
+        else if (typeChooser.getSelectedIndex() == 1) {
+            if (imageSetTree.getSelectedImageSet().isEmpty()) {
+                errorMsg = "You must select the parent node.";
+            }
             String entry = nameField.getText();
             if (entry.contains(String.valueOf(ImageSetManager.PATH_DELIMITER))) {
                 errorMsg = "Name field can't contain the / character.";
@@ -153,7 +173,7 @@ public class ImageSetChooserDialog extends JDialog {
             }
         }
 
-        if (isEnableOverwriteCheck) {
+        if (isEnableOverwriteCheck && typeChooser.getSelectedIndex() != 0) {
             String fullPath = computeSelectedPath();
             ImageSetManager manager = MainWindow.getInstance().getImageSetManager();
             Optional<ImageSet> existingSet = manager.findImageSet(fullPath);
