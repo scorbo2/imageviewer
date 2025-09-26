@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
@@ -200,6 +201,51 @@ public class ImageSet {
 
     public String getFullyQualifiedName() {
         return fullyQualifiedName;
+    }
+
+    public int size() {
+        return imageFilePaths.size();
+    }
+
+    /**
+     * If no Comparator is given, then by default we sort by full path + filename.
+     */
+    public void sort() {
+        imageFilePaths.sort(null);
+    }
+
+    /**
+     * Sorts the items in this set using the given Comparator, which can compare
+     * any attribute(s) of the files in the set. If null is provided, then the
+     * set is sorted by full path + name and this call is equivalent to sort().
+     */
+    public void sort(Comparator<File> comparator) {
+        if (comparator == null) {
+            sort();
+            return;
+        }
+
+        // If there's nothing to sort, don't bother:
+        if (imageFilePaths.size() <= 1) {
+            return;
+        }
+
+        // This is awkward, but internally we don't store File objects, but rather
+        // Strings, to cut down on overhead and to make persistence much easier.
+        // But, when given a File Comparator, we have to convert our list to
+        // a List of Files in order to sort it.
+        List<File> fileList = new ArrayList<>(imageFilePaths.size());
+        for (String path : imageFilePaths) {
+            fileList.add(new File(path));
+        }
+        fileList.sort(comparator);
+
+        // And now we convert it back to a list of absolute paths:
+        imageFilePaths.clear();
+        for (File f : fileList) {
+            imageFilePaths.add(f.getAbsolutePath());
+        }
+        isDirty = true;
     }
 
     @Override

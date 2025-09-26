@@ -29,7 +29,9 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
 
 /**
  * Provides a way to view/edit the image list within an ImageSet.
@@ -53,7 +55,7 @@ public class ImageSetEditDialog extends JDialog {
     public ImageSetEditDialog(ImageSet imageSet) {
         super(MainWindow.getInstance(), "Edit image set: "+imageSet.getName(), true);
         this.imageSet = imageSet;
-        setSize(new Dimension(640, 460));
+        setSize(new Dimension(640, 540));
         setResizable(false);
         setLocationRelativeTo(MainWindow.getInstance());
         setLayout(new BorderLayout());
@@ -68,6 +70,7 @@ public class ImageSetEditDialog extends JDialog {
         formPanel.add(new LabelField("Full name:", imageSet.getFullyQualifiedName()));
         formPanel.add(LabelField.createPlainHeaderLabel("Drag+drop or ctrl+up/ctrl+down to reorder, DEL to remove"));
         formPanel.add(buildListField());
+        formPanel.add(buildSortOptionsPanel());
         transientField = new CheckBoxField("Save this image set on shutdown", !imageSet.isTransient());
         formPanel.add(transientField);
         lockedField = new CheckBoxField("Lock this image set to prevent deletion", imageSet.isLocked());
@@ -96,6 +99,77 @@ public class ImageSetEditDialog extends JDialog {
         panelField.setShouldExpand(true);
         panelField.getPanel().add(new JScrollPane(list), BorderLayout.CENTER);
         return panelField;
+    }
+
+    private FormField buildSortOptionsPanel() {
+        PanelField panelField = new PanelField(new FlowLayout(FlowLayout.LEFT));
+        panelField.setShouldExpand(true);
+        JPanel wrapper = panelField.getPanel();
+
+        JButton button = new JButton("Sort by path");
+        button.setPreferredSize(new Dimension(120, 23));
+        button.addActionListener(actionEvent -> sortByPath());
+        wrapper.add(button);
+
+        button = new JButton("Sort by name");
+        button.setPreferredSize(new Dimension(120, 23));
+        button.addActionListener(actionEvent -> sortByName());
+        wrapper.add(button);
+
+        button = new JButton("Sort by date");
+        button.setPreferredSize(new Dimension(120, 23));
+        button.addActionListener(actionEvent -> sortByDate());
+        wrapper.add(button);
+
+        button = new JButton("Reverse sort");
+        button.setPreferredSize(new Dimension(120, 23));
+        button.addActionListener(actionEvent -> reverseSort());
+        wrapper.add(button);
+
+        panelField.getMargins().setBottom(32);
+        return panelField;
+    }
+
+    private void sortByPath() {
+        sortList(Comparator.comparing(File::getAbsolutePath));
+    }
+
+    private void sortByName() {
+        sortList(Comparator.comparing(File::getName));
+    }
+
+    private void sortByDate() {
+        sortList(Comparator.comparing(File::lastModified));
+    }
+
+    private void reverseSort() {
+        if (imageSet.size() <= 1) {
+            return; // don't bother
+        }
+        ImageSet copy = new ImageSet();
+        for (int i = listModel.getSize() - 1; i >= 0; i--) {
+            copy.addImageFilePath(listModel.getElementAt(i));
+        }
+        setListContents(copy);
+    }
+
+    private void sortList(Comparator<File> comparator) {
+        if (imageSet.size() <= 1) {
+            return; // don't bother
+        }
+        ImageSet copy = new ImageSet();
+        for (String filePath : imageSet.getImageFilePaths()) {
+            copy.addImageFilePath(filePath);
+        }
+        copy.sort(comparator);
+        setListContents(copy);
+    }
+
+    private void setListContents(ImageSet set) {
+        listModel.clear();
+        for (String filePath : set.getImageFilePaths()) {
+            listModel.addElement(filePath);
+        }
     }
 
     /**

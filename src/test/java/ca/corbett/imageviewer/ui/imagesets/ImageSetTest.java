@@ -2,6 +2,9 @@ package ca.corbett.imageviewer.ui.imagesets;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.util.Comparator;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -162,4 +165,76 @@ class ImageSetTest {
         assertTrue(testSet.getImageFilePaths().contains("/foobar/childPath/nested/3"));
     }
 
+    @Test
+    public void sort_byName_shouldSort() {
+        // GIVEN a bunch of image paths with sortable names:
+        ImageSet set = new ImageSet("test");
+        set.addImageFilePath("/a/5.jpg");
+        set.addImageFilePath("/b/3.jpg");
+        set.addImageFilePath("/c/4.jpg");
+        set.addImageFilePath("/d/2.jpg");
+        set.addImageFilePath("/e/1.jpg");
+
+        // WHEN we sort the list by filename:
+        set.sort(Comparator.comparing(File::getName));
+
+        // THEN it should ignore paths and sort by just filename:
+        assertEquals(5, set.getImageFilePaths().size());
+        assertEquals("/e/1.jpg", set.getImageFilePaths().get(0));
+        assertEquals("/d/2.jpg", set.getImageFilePaths().get(1));
+        assertEquals("/b/3.jpg", set.getImageFilePaths().get(2));
+        assertEquals("/c/4.jpg", set.getImageFilePaths().get(3));
+        assertEquals("/a/5.jpg", set.getImageFilePaths().get(4));
+    }
+
+    @Test
+    public void sort_byPath_shouldSort() {
+        // GIVEN a bunch of image paths with sortable paths:
+        ImageSet set = new ImageSet("test");
+        set.addImageFilePath("/5/a.jpg");
+        set.addImageFilePath("/4/c.jpg");
+        set.addImageFilePath("/3/d.jpg");
+        set.addImageFilePath("/2/b.jpg");
+        set.addImageFilePath("/1/e.jpg");
+
+        // WHEN we sort the list by path:
+        set.sort(Comparator.comparing(File::getAbsolutePath));
+
+        // THEN it should sort by full path+name:
+        assertEquals(5, set.getImageFilePaths().size());
+        assertEquals("/1/e.jpg", set.getImageFilePaths().get(0));
+        assertEquals("/2/b.jpg", set.getImageFilePaths().get(1));
+        assertEquals("/3/d.jpg", set.getImageFilePaths().get(2));
+        assertEquals("/4/c.jpg", set.getImageFilePaths().get(3));
+        assertEquals("/5/a.jpg", set.getImageFilePaths().get(4));
+    }
+
+    @Test
+    public void sort_byFileDate_shouldSort() throws Exception {
+        // GIVEN files with ascending
+        File file1 = File.createTempFile("aaa", ".tmp");
+        file1.setLastModified(30);
+        File file2 = File.createTempFile("zzz", ".tmp");
+        file2.setLastModified(10);
+        File file3 = File.createTempFile("ttt", ".tmp");
+        file3.setLastModified(20);
+        ImageSet set = new ImageSet("test");
+        set.addImageFilePath(file1.getAbsolutePath());
+        set.addImageFilePath(file2.getAbsolutePath());
+        set.addImageFilePath(file3.getAbsolutePath());
+
+        // WHEN we sort by file time:
+        set.sort(Comparator.comparing(File::lastModified));
+
+        // THEN it should ignore names and sort by file time:
+        assertEquals(3, set.getImageFilePaths().size());
+        assertEquals(file2.getAbsolutePath(), set.getImageFilePaths().get(0)); // oldest
+        assertEquals(file3.getAbsolutePath(), set.getImageFilePaths().get(1));
+        assertEquals(file1.getAbsolutePath(), set.getImageFilePaths().get(2)); // newest
+
+        // Cleanup:
+        file1.delete();
+        file2.delete();
+        file3.delete();
+    }
 }

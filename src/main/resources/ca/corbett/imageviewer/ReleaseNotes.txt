@@ -3,6 +3,7 @@ Author: Steve Corbett
 
 Version 2.2 [TODO] - Image sets
   #47 - Log image set copy, move, create, and delete operations
+  #45 - Image set editor: provide sorting options
   #43 - Fix null pointer exception in thumbnail pregeneration
   #39 - Image set editor: allow setting transient and locked
   #38 - Re-query for extra panels on reloadUI()

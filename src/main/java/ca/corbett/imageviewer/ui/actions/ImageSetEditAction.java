@@ -26,6 +26,11 @@ public class ImageSetEditAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
+        if (MainWindow.getInstance().getBrowseMode() == MainWindow.BrowseMode.FILE_SYSTEM) {
+            MainWindow.getInstance().showMessageDialog("Edit image set",
+                                                       "This feature is only supported when browsing image sets.");
+            return;
+        }
         Optional<ImageSet> selectedImageSet = MainWindow.getInstance().getImageSetPanel().getSelectedImageSet();
         if (selectedImageSet.isEmpty()) {
             MainWindow.getInstance().showMessageDialog("Edit image set", "No image set is selected.");
