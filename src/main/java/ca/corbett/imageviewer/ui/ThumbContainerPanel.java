@@ -106,8 +106,7 @@ public final class ThumbContainerPanel extends JPanel {
      * @return The new instance.
      */
     public static ThumbContainerPanel createThumbContainer() {
-        ThumbContainerPanel panel = new ThumbContainerPanel();
-        return panel;
+        return new ThumbContainerPanel();
     }
 
     /**
@@ -219,7 +218,7 @@ public final class ThumbContainerPanel extends JPanel {
     }
 
     /**
-     * Intended to be invoked when the thumbnail dimsensions are changed in preferences.
+     * Intended to be invoked when the thumbnail dimensions are changed in preferences.
      * If any thumbnails are currently showing, the list will be regenerated at the new
      * size. The new size will also be used going forward.
      */
@@ -597,6 +596,20 @@ public final class ThumbContainerPanel extends JPanel {
         // very last one, so clear all selection:
         else {
             fireSelectionClearedEvent();
+        }
+    }
+
+    /**
+     * Tells this thumb container panel to re-fire the selection event for whatever is
+     * currently selected (or a selection cleared event if nothing is selected).
+     */
+    public void reselectCurrent() {
+        ThumbPanel thumbPanel = selectedPanelIndex >= 0 ? loadedThumbPanels.get(selectedPanelIndex) : null;
+        if (thumbPanel == null) {
+            fireSelectionClearedEvent();
+        }
+        else {
+            fireThumbSelectedEvent(thumbPanel);
         }
     }
 

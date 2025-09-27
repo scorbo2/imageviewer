@@ -50,7 +50,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -94,12 +96,12 @@ public final class MainWindow extends JFrame implements UIReloadable {
     private DirTree dirTree;
     private final DirTreeChangeListener dirTreeChangeListener;
     private ImageSetPanel imageSetPanel;
-    private ThumbContainerPanel thumbContainerPanel;
+    private final Map<BrowseMode, ThumbContainerPanel> thumbContainerPanelMap;
     private ImagePanel imagePanel;
     private ImagePanelConfig imagePanelProperties;
     private JLabel statusLabel1;
     private JLabel statusLabel2;
-    private JSplitPane sideSplitPane;
+    private final Map<BrowseMode, JSplitPane> sideSplitPaneMap;
     private JSplitPane mainSplitPane;
 
     // Optionally set via cmdline args in Main, this will override our saved startup dir if set:
@@ -113,6 +115,8 @@ public final class MainWindow extends JFrame implements UIReloadable {
         imageSetManager = new ImageSetManager();
         imgSrcTabPaneListener = new ImgSrcTabPaneListener();
         dirTreeChangeListener = new DirTreeChangeListener();
+        thumbContainerPanelMap = new HashMap<>(2);
+        sideSplitPaneMap = new HashMap<>(2);
     }
 
     /**
@@ -270,10 +274,6 @@ public final class MainWindow extends JFrame implements UIReloadable {
         return imageSetManager;
     }
 
-    public void setBrowseMode(BrowseMode mode) {
-        setBrowseMode(mode, true);
-    }
-
     public void setBrowseMode(BrowseMode mode, boolean autoLoad) {
         // Reject no-op requests:
         if (mode == browseMode) {
@@ -295,30 +295,13 @@ public final class MainWindow extends JFrame implements UIReloadable {
         menuManager.setBrowseMode(mode);
         rebuildMenus();
 
-        // if autoLoad is set, we will force a load of whatever is selected in the new tab.
-        // Callers can set this to false if they want to load something else.
-        if (!autoLoad) {
-            ImageViewerExtensionManager.getInstance().browseModeChanged(mode);
-            return;
+        // Re-select the current image in this browse mode if instructed:
+        // (else the caller wants to set some other selection)
+        if (autoLoad) {
+            thumbContainerPanelMap.get(browseMode).reselectCurrent();
         }
 
-        switch (browseMode) {
-            case FILE_SYSTEM:
-                if (imgSrcTabPane.getSelectedIndex() != 0) {
-                    imgSrcTabPane.setSelectedIndex(0);
-                }
-                setDirectory(dirTree.getCurrentDir());
-                break;
-
-            case IMAGE_SET:
-                if (imgSrcTabPane.getSelectedIndex() != 1) {
-                    imgSrcTabPane.setSelectedIndex(1);
-                }
-                setImageSet(imageSetPanel.getSelectedImageSet().orElse(null));
-                break;
-        }
-
-        // Let extensions know about the change.
+        // Let extensions know our browse mode just changed:
         ImageViewerExtensionManager.getInstance().browseModeChanged(mode);
     }
 
@@ -334,7 +317,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
      * bar will be updated, and the next available image will be selected (if there is one).
      */
     public void selectedImageRemoved() {
-        thumbContainerPanel.removeSelected();
+        thumbContainerPanelMap.get(getBrowseMode()).removeSelected();
         imageSetPanel.resync();
         updateStatusBar();
     }
@@ -346,17 +329,17 @@ public final class MainWindow extends JFrame implements UIReloadable {
      * @param newFile The File object representing the new image file. Assumed to be in same dir.
      */
     public void selectedImageRenamed(File newFile) {
-        thumbContainerPanel.renameSelected(newFile);
+        thumbContainerPanelMap.get(getBrowseMode()).renameSelected(newFile);
         imagePanel.setExtraAttribute("srcFile", newFile);
     }
 
     /**
      * Returns the list of files currently being shown, whether they have been loaded yet or not.
      *
-     * @return A List of File objects representing all the images in the current directory.
+     * @return A List of File objects representing all the images in the current directory or current image set.
      */
     public List<File> getCurrentFileList() {
-        return thumbContainerPanel.getImageFiles();
+        return thumbContainerPanelMap.get(getBrowseMode()).getImageFiles();
     }
 
     /**
@@ -365,7 +348,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
      * @return A List of File objects representing all unknown files in the current directory.
      */
     public List<File> getCurrentAlienFileList() {
-        return thumbContainerPanel.getAliens();
+        return thumbContainerPanelMap.get(getBrowseMode()).getAliens();
     }
 
     /**
@@ -393,62 +376,26 @@ public final class MainWindow extends JFrame implements UIReloadable {
 
         imageSetPanel = new ImageSetPanel();
 
+        for (BrowseMode mode : BrowseMode.values()) {
+            ThumbContainerPanel thumbContainerPanel = ThumbContainerPanel.createThumbContainer();
+            thumbContainerPanel.setMinimumSize(new Dimension(180, 100));
+            thumbContainerPanel.addListener(new ThumbPanelListener());
+            JScrollPane thumbScrollPane = new JScrollPane(thumbContainerPanel);
+            thumbScrollPane.getVerticalScrollBar().setUnitIncrement(20);
+
+            JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                                                  mode == BrowseMode.FILE_SYSTEM ? dirTree : imageSetPanel,
+                                                  thumbScrollPane);
+
+            thumbContainerPanelMap.put(mode, thumbContainerPanel);
+            sideSplitPaneMap.put(mode, splitPane);
+        }
+
         browseMode = BrowseMode.FILE_SYSTEM;
         imgSrcTabPane = new JTabbedPane();
-        imgSrcTabPane.addTab("File system", dirTree);
-        imgSrcTabPane.addTab("Image sets", imageSetPanel);
+        imgSrcTabPane.addTab("File system", sideSplitPaneMap.get(BrowseMode.FILE_SYSTEM));
+        imgSrcTabPane.addTab("Image sets", sideSplitPaneMap.get(BrowseMode.IMAGE_SET));
         imgSrcTabPane.addChangeListener(imgSrcTabPaneListener);
-
-        thumbContainerPanel = ThumbContainerPanel.createThumbContainer();
-        thumbContainerPanel.setMinimumSize(new Dimension(180, 100));
-        thumbContainerPanel.addListener(new ThumbContainerPanelListener() {
-            @Override
-            public void thumbnailSelected(ThumbContainerPanel source, ThumbPanel pn) {
-                // Flush the old image if present:
-                if (imagePanel.getImage() != null) {
-                    imagePanel.getImage().flush();
-                }
-                // Load the new image:
-                try {
-                    File imgFile = pn.getFile();
-                    if (imgFile.getName().toLowerCase().endsWith(".gif")) {
-                        ImageIcon icon = ImageUtil.loadImageIcon(imgFile);
-                        imagePanel.setImageIcon(icon);
-                    }
-                    else {
-                        BufferedImage image = ImageUtil.loadImage(pn.getFile());
-                        imagePanel.setImage(image);
-                    }
-                }
-                catch (IOException ioe) {
-                    getMessageUtil().error("Image load error", "Unable to load image.", ioe);
-                }
-                imagePanel.setExtraAttribute("srcFile", pn.getFile());
-                ImageViewerExtensionManager.getInstance().imageSelected(getSelectedImage());
-                updateStatusBar();
-            }
-
-            @Override
-            public void selectionCleared(ThumbContainerPanel source) {
-                imagePanel.setImage(null);
-                imagePanel.setExtraAttribute("srcFile", null);
-                ImageViewerExtensionManager.getInstance().imageSelected(getSelectedImage());
-                updateStatusBar();
-            }
-
-            @Override
-            public void loadStarting(ThumbContainerPanel source) {
-                dirTree.setEnabled(false);
-            }
-
-            @Override
-            public void loadCompleted(ThumbContainerPanel source) {
-                dirTree.setEnabled(true);
-            }
-
-        });
-        JScrollPane thumbScrollPane = new JScrollPane(thumbContainerPanel);
-        thumbScrollPane.getVerticalScrollBar().setUnitIncrement(20);
 
         imagePanelProperties = ImagePanelConfig.createDefaultProperties();
         imagePanelProperties.setMagnifierCursor(null);
@@ -475,8 +422,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
             imageTabPane.setTabHeaderVisible(false);
         }
 
-        sideSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, imgSrcTabPane, thumbScrollPane);
-        mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sideSplitPane, imageTabPane);
+        mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, imgSrcTabPane, imageTabPane);
 
         setLayout(new BorderLayout());
         add(mainSplitPane, BorderLayout.CENTER);
@@ -509,7 +455,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
      * if the currently selected image is the first in the list, this does nothing.
      */
     public void selectPreviousImage() {
-        thumbContainerPanel.selectPrevious();
+        thumbContainerPanelMap.get(getBrowseMode()).selectPrevious();
     }
 
     /**
@@ -517,7 +463,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
      * if the currently selected image is the last in the list, this does nothing.
      */
     public void selectNextImage() {
-        thumbContainerPanel.selectNext();
+        thumbContainerPanelMap.get(getBrowseMode()).selectNext();
     }
 
     /**
@@ -598,7 +544,8 @@ public final class MainWindow extends JFrame implements UIReloadable {
         logger.fine("MainWindow.loadUIState()");
 
         AppConfig prefs = AppConfig.getInstance();
-        sideSplitPane.setDividerLocation(prefs.getSideSplitPanePosition());
+        sideSplitPaneMap.get(BrowseMode.FILE_SYSTEM).setDividerLocation(prefs.getFileSystemVerticalSplitPanePosition());
+        sideSplitPaneMap.get(BrowseMode.IMAGE_SET).setDividerLocation(prefs.getImageSetVerticalSplitPanePosition());
         mainSplitPane.setDividerLocation(prefs.getMainSplitPanePosition());
         this.setSize(prefs.getMainWindowWidth(), prefs.getMainWindowHeight());
 
@@ -628,7 +575,8 @@ public final class MainWindow extends JFrame implements UIReloadable {
         logger.fine("MainWindow.saveUIState()");
 
         AppConfig prefs = AppConfig.getInstance();
-        prefs.setSideSplitPanePosition(sideSplitPane.getDividerLocation());
+        prefs.setFileSystemVerticalSplitPanePosition(sideSplitPaneMap.get(BrowseMode.FILE_SYSTEM).getDividerLocation());
+        prefs.setImageSetVerticalSplitPanePosition(sideSplitPaneMap.get(BrowseMode.IMAGE_SET).getDividerLocation());
         prefs.setMainSplitPanePosition(mainSplitPane.getDividerLocation());
         prefs.setMainWindowWidth(this.getWidth());
         prefs.setMainWindowHeight(this.getHeight());
@@ -685,20 +633,23 @@ public final class MainWindow extends JFrame implements UIReloadable {
         reload();
     }
 
+    /**
+     * In file system browse mode, forces a reload of the current directory.
+     * In image set browse mode, forces a reload of the currently selected image set.
+     * If nothing is selected, the thumb panel is cleared.
+     */
     public void reload() {
         if (browseMode == BrowseMode.FILE_SYSTEM) {
-            reloadCurrentDirectory();
+            thumbContainerPanelMap.get(BrowseMode.FILE_SYSTEM).removeAll();
+            thumbContainerPanelMap.get(BrowseMode.FILE_SYSTEM).reloadThumbSizePreference();
+            if (dirTree.getCurrentDir() != null) {
+                dirTreeChangeListener.selectionChanged(dirTree, dirTree.getCurrentDir());
+            }
         }
         else {
+            thumbContainerPanelMap.get(BrowseMode.IMAGE_SET).removeAll();
+            thumbContainerPanelMap.get(BrowseMode.IMAGE_SET).reloadThumbSizePreference();
             setImageSet(imageSetPanel.getSelectedImageSet().orElse(null));
-        }
-    }
-
-    public void reloadCurrentDirectory() {
-        thumbContainerPanel.removeAll();
-        thumbContainerPanel.reloadThumbSizePreference();
-        if (dirTree.getCurrentDir() != null) {
-            dirTreeChangeListener.selectionChanged(dirTree, dirTree.getCurrentDir());
         }
         updateStatusBar();
     }
@@ -735,7 +686,8 @@ public final class MainWindow extends JFrame implements UIReloadable {
 
     public void setImageBackgroundColor(Color color) {
         imagePanelProperties.setBgColor(color);
-        thumbContainerPanel.setBackground(color);
+        thumbContainerPanelMap.get(BrowseMode.FILE_SYSTEM).setBackground(color);
+        thumbContainerPanelMap.get(BrowseMode.IMAGE_SET).setBackground(color);
         imagePanel.applyProperties(imagePanelProperties);
         ImageViewerExtensionManager.getInstance().imagePanelBackgroundChanged(color);
     }
@@ -813,9 +765,9 @@ public final class MainWindow extends JFrame implements UIReloadable {
     private void updateStatusBar() {
         String status1 = "Ready.";
         String status2 = "";
-        int index = thumbContainerPanel.getSelectionIndex();
+        int index = thumbContainerPanelMap.get(getBrowseMode()).getSelectionIndex();
         if (index != -1) {
-            int size = thumbContainerPanel.getCount();
+            int size = thumbContainerPanelMap.get(getBrowseMode()).getCount();
             status2 = (index + 1) + " of " + size + "    ";
 
             File srcFile = ((File)imagePanel.getExtraAttribute("srcFile"));
@@ -843,7 +795,6 @@ public final class MainWindow extends JFrame implements UIReloadable {
                 panel.revalidate();
                 panel.repaint();
             }
-
         });
     }
 
@@ -870,7 +821,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
             setTitle(Version.NAME + " [File system] " + selectedDir.getAbsolutePath());
         }
 
-        thumbContainerPanel.setDirectory(selectedDir); // handles nulls
+        thumbContainerPanelMap.get(getBrowseMode()).setDirectory(selectedDir); // handles nulls
     }
 
     /**
@@ -888,11 +839,23 @@ public final class MainWindow extends JFrame implements UIReloadable {
         }
 
         imageSetPanel.selectAndScrollTo(set);
-        thumbContainerPanel.setImageSet(set); // handles nulls
+        thumbContainerPanelMap.get(getBrowseMode()).setImageSet(set); // handles nulls
     }
 
     public void showMessageDialog(String title, String message) {
         getMessageUtil().info(title, message);
+    }
+
+    public void disableUI() {
+        dirTree.setEnabled(false);
+        imgSrcTabPane.setEnabled(false);
+        imageSetPanel.setEnabled(false);
+    }
+
+    public void enableUI() {
+        dirTree.setEnabled(true);
+        imgSrcTabPane.setEnabled(true);
+        imageSetPanel.setEnabled(true);
     }
 
     private MessageUtil getMessageUtil() {
@@ -923,15 +886,64 @@ public final class MainWindow extends JFrame implements UIReloadable {
         @Override
         public void stateChanged(ChangeEvent changeEvent) {
             final MainWindow mw = MainWindow.getInstance();
-            mw.thumbContainerPanel.clear();
             switch (mw.imgSrcTabPane.getSelectedIndex()) {
                 case 0:
-                    mw.setBrowseMode(BrowseMode.FILE_SYSTEM);
+                    mw.setBrowseMode(BrowseMode.FILE_SYSTEM, true);
                     break;
                 case 1:
-                    mw.setBrowseMode(BrowseMode.IMAGE_SET);
+                    mw.setBrowseMode(BrowseMode.IMAGE_SET, true);
                     break;
             }
+        }
+    }
+
+    private static class ThumbPanelListener implements ThumbContainerPanelListener {
+
+        @Override
+        public void thumbnailSelected(ThumbContainerPanel source, ThumbPanel pn) {
+            final MainWindow mw = MainWindow.getInstance();
+
+            // Flush the old image if present:
+            if (mw.imagePanel.getImage() != null) {
+                mw.imagePanel.getImage().flush();
+            }
+            // Load the new image:
+            try {
+                File imgFile = pn.getFile();
+                if (imgFile.getName().toLowerCase().endsWith(".gif")) {
+                    ImageIcon icon = ImageUtil.loadImageIcon(imgFile);
+                    mw.imagePanel.setImageIcon(icon);
+                }
+                else {
+                    BufferedImage image = ImageUtil.loadImage(pn.getFile());
+                    mw.imagePanel.setImage(image);
+                }
+            }
+            catch (IOException ioe) {
+                mw.getMessageUtil().error("Image load error", "Unable to load image.", ioe);
+            }
+            mw.imagePanel.setExtraAttribute("srcFile", pn.getFile());
+            ImageViewerExtensionManager.getInstance().imageSelected(mw.getSelectedImage());
+            mw.updateStatusBar();
+        }
+
+        @Override
+        public void selectionCleared(ThumbContainerPanel source) {
+            final MainWindow mw = MainWindow.getInstance();
+            mw.imagePanel.setImage(null);
+            mw.imagePanel.setExtraAttribute("srcFile", null);
+            ImageViewerExtensionManager.getInstance().imageSelected(mw.getSelectedImage());
+            mw.updateStatusBar();
+        }
+
+        @Override
+        public void loadStarting(ThumbContainerPanel source) {
+            MainWindow.getInstance().disableUI();
+        }
+
+        @Override
+        public void loadCompleted(ThumbContainerPanel source) {
+            MainWindow.getInstance().enableUI();
         }
     }
 }

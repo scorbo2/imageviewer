@@ -320,7 +320,7 @@ public final class ImageOperationHandler {
         }
 
         // Reload the thumbnails:
-        MainWindow.getInstance().reloadCurrentDirectory();
+        MainWindow.getInstance().reload();
     }
 
     /**
@@ -813,7 +813,7 @@ public final class ImageOperationHandler {
      */
     public static void deleteAllImagesCallback(boolean allDeletedOkay) {
         MainWindow.getInstance().enableDirTree();
-        MainWindow.getInstance().reloadCurrentDirectory();
+        MainWindow.getInstance().reload();
 
         if (!allDeletedOkay) {
             getMessageUtil().info("Deletion problem",
@@ -1101,7 +1101,7 @@ public final class ImageOperationHandler {
                 }
         }
 
-        MainWindow.getInstance().reloadCurrentDirectory();
+        MainWindow.getInstance().reload();
         getMessageUtil().info("The last operation has been undone.");
     }
 

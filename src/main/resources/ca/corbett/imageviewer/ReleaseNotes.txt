@@ -5,6 +5,7 @@ Version 2.2 [TODO] - Image sets
   #48 - More options in image set destination chooser
   #47 - Log image set copy, move, create, and delete operations
   #45 - Image set editor: provide sorting options
+  #44 - Don't force a full reload when switching browse modes
   #43 - Fix null pointer exception in thumbnail pregeneration
   #39 - Image set editor: allow setting transient and locked
   #38 - Re-query for extra panels on reloadUI()

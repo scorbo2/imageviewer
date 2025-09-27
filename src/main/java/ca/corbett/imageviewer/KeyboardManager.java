@@ -77,14 +77,14 @@ public final class KeyboardManager {
                         // ALT+1 for File system browsing:
                         case KeyEvent.VK_1:
                             if (e.isAltDown()) {
-                                MainWindow.getInstance().setBrowseMode(MainWindow.BrowseMode.FILE_SYSTEM);
+                                MainWindow.getInstance().setBrowseMode(MainWindow.BrowseMode.FILE_SYSTEM, true);
                             }
                             break;
 
                         // ALT+2 for File system browsing:
                         case KeyEvent.VK_2:
                             if (e.isAltDown()) {
-                                MainWindow.getInstance().setBrowseMode(MainWindow.BrowseMode.IMAGE_SET);
+                                MainWindow.getInstance().setBrowseMode(MainWindow.BrowseMode.IMAGE_SET, true);
                             }
                             break;
 

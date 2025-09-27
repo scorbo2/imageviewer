@@ -28,7 +28,8 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
     protected static AppConfig instance;
     private MessageUtil messageUtil;
 
-    private IntegerProperty sideSplitPanePositionProp;
+    private IntegerProperty fileSystemVerticalSplitPanePositionProp;
+    private IntegerProperty imageSetVerticalSplitPanePositionProp;
     private IntegerProperty mainSplitPanePositionProp;
     private IntegerProperty mainWindowWidthProp;
     private IntegerProperty mainWindowHeightProp;
@@ -66,12 +67,20 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         return instance;
     }
 
-    public int getSideSplitPanePosition() {
-        return sideSplitPanePositionProp.getValue();
+    public int getFileSystemVerticalSplitPanePosition() {
+        return fileSystemVerticalSplitPanePositionProp.getValue();
     }
 
-    public void setSideSplitPanePosition(int value) {
-        sideSplitPanePositionProp.setValue(value);
+    public int getImageSetVerticalSplitPanePosition() {
+        return imageSetVerticalSplitPanePositionProp.getValue();
+    }
+
+    public void setFileSystemVerticalSplitPanePosition(int value) {
+        fileSystemVerticalSplitPanePositionProp.setValue(value);
+    }
+
+    public void setImageSetVerticalSplitPanePosition(int value) {
+        imageSetVerticalSplitPanePositionProp.setValue(value);
     }
 
     public int getMainSplitPanePosition() {
@@ -171,10 +180,17 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
     protected List<AbstractProperty> createInternalProperties() {
         List<AbstractProperty> list = new ArrayList<>();
 
-        sideSplitPanePositionProp = new IntegerProperty("UI.Main Window.sideSplitPanePosition", "sideSplitPanePosition",
-                                                        400, 1, 9999, 1);
-        sideSplitPanePositionProp.setExposed(false);
-        list.add(sideSplitPanePositionProp);
+        fileSystemVerticalSplitPanePositionProp = new IntegerProperty(
+                "UI.Main Window.fileSystemVerticalSplitPanePosition",
+                "sideSplitPanePosition", 400, 1, 9999, 1);
+        fileSystemVerticalSplitPanePositionProp.setExposed(false);
+        list.add(fileSystemVerticalSplitPanePositionProp);
+
+        imageSetVerticalSplitPanePositionProp = new IntegerProperty(
+                "UI.Main Window.imageSetVerticalSplitPanePosition",
+                "sideSplitPanePosition", 400, 1, 9999, 1);
+        imageSetVerticalSplitPanePositionProp.setExposed(false);
+        list.add(imageSetVerticalSplitPanePositionProp);
 
         mainSplitPanePositionProp = new IntegerProperty("UI.Main Window.mainSplitPanePosition", "mainSplitPanePosition",
                                                         180, 1, 9999, 1);
