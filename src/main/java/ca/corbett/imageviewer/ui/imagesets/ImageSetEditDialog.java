@@ -31,7 +31,9 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * Provides a way to view/edit the image list within an ImageSet.
@@ -55,7 +57,7 @@ public class ImageSetEditDialog extends JDialog {
     public ImageSetEditDialog(ImageSet imageSet) {
         super(MainWindow.getInstance(), "Edit image set: "+imageSet.getName(), true);
         this.imageSet = imageSet;
-        setSize(new Dimension(640, 540));
+        setSize(new Dimension(660, 540));
         setResizable(false);
         setLocationRelativeTo(MainWindow.getInstance());
         setLayout(new BorderLayout());
@@ -107,23 +109,28 @@ public class ImageSetEditDialog extends JDialog {
         JPanel wrapper = panelField.getPanel();
 
         JButton button = new JButton("Sort by path");
-        button.setPreferredSize(new Dimension(120, 23));
+        button.setPreferredSize(new Dimension(110, 23));
         button.addActionListener(actionEvent -> sortByPath());
         wrapper.add(button);
 
         button = new JButton("Sort by name");
-        button.setPreferredSize(new Dimension(120, 23));
+        button.setPreferredSize(new Dimension(110, 23));
         button.addActionListener(actionEvent -> sortByName());
         wrapper.add(button);
 
         button = new JButton("Sort by date");
-        button.setPreferredSize(new Dimension(120, 23));
+        button.setPreferredSize(new Dimension(110, 23));
         button.addActionListener(actionEvent -> sortByDate());
         wrapper.add(button);
 
         button = new JButton("Reverse sort");
-        button.setPreferredSize(new Dimension(120, 23));
+        button.setPreferredSize(new Dimension(110, 23));
         button.addActionListener(actionEvent -> reverseSort());
+        wrapper.add(button);
+
+        button = new JButton("Randomize");
+        button.setPreferredSize(new Dimension(110, 23));
+        button.addActionListener(actionEvent -> randomizeSort());
         wrapper.add(button);
 
         panelField.getMargins().setBottom(32);
@@ -149,6 +156,19 @@ public class ImageSetEditDialog extends JDialog {
         ImageSet copy = new ImageSet();
         for (int i = listModel.getSize() - 1; i >= 0; i--) {
             copy.addImageFilePath(listModel.getElementAt(i));
+        }
+        setListContents(copy);
+    }
+
+    private void randomizeSort() {
+        if (imageSet.size() <= 1) {
+            return; // don't bother
+        }
+        List<String> randomized = imageSet.getImageFilePaths();
+        Collections.shuffle(randomized);
+        ImageSet copy = new ImageSet();
+        for (String item : randomized) {
+            copy.addImageFilePath(item);
         }
         setListContents(copy);
     }

@@ -2,6 +2,7 @@ ImageViewer Release Notes
 Author: Steve Corbett
 
 Version 2.2 [TODO] - Image sets
+  #49 - Allow randomization in image set edit dialog
   #48 - More options in image set destination chooser
   #47 - Log image set copy, move, create, and delete operations
   #45 - Image set editor: provide sorting options
