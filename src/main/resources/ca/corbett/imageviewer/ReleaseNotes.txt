@@ -6,6 +6,7 @@ Version 2.2 [TODO] - Image sets
   #49 - Allow randomization in image set edit dialog
   #48 - More options in image set destination chooser
   #47 - Log image set copy, move, create, and delete operations
+  #46 - Improvements to image information dialog
   #45 - Image set editor: provide sorting options
   #44 - Don't force a full reload when switching browse modes
   #43 - Fix null pointer exception in thumbnail pregeneration

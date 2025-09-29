@@ -8,8 +8,10 @@ import ca.corbett.imageviewer.ui.ImageInstance;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.border.BevelBorder;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -18,6 +20,8 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.text.SimpleDateFormat;
@@ -44,8 +48,11 @@ class ImageInfoDialog extends JDialog {
     }
 
     private void initComponents() {
-        setSize(300, 200);
-        setResizable(false);
+        setSize(400, 240);
+        setMinimumSize(new Dimension(340, 240));
+        setMaximumSize(new Dimension(600, 240)); // this is ignored by JDialog :(
+        addMaxSizeListener(600, 240); // so we have to do this instead.
+        setResizable(true);
         setLocationRelativeTo(ownerFrame);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -53,18 +60,20 @@ class ImageInfoDialog extends JDialog {
         add(buildButtonPanel(), BorderLayout.SOUTH);
     }
 
-    private JPanel buildContentPanel() {
-        String fileName = image.getImageFileName(28);
+    private JComponent buildContentPanel() {
+        String fileName = image.getImageFileName();
         String fileSize = image.getFileSizePrintable();
         String imgSize = imgWidth + "x" + imgHeight;
         String imgDate = image.getFileDatePrintable(new SimpleDateFormat("yyyy-MM-dd h:mm:ssa"));
 
-        FormPanel formPanel = new FormPanel(Alignment.TOP_CENTER);
-        formPanel.add(createLabelField("Name:", fileName, 24));
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(16);
+        formPanel.add(createLabelField("Path:", image.getImageFile().getParent(), 12));
+        formPanel.add(createLabelField("Name:", fileName));
         formPanel.add(createLabelField("Size:", fileSize + ", " + imgSize));
         formPanel.add(createLabelField("Date:", imgDate));
 
-        return formPanel;
+        return new JScrollPane(formPanel);
     }
 
     private LabelField createLabelField(String label, String text) {
@@ -111,4 +120,31 @@ class ImageInfoDialog extends JDialog {
         return panel;
     }
 
+    /**
+     * The underlying window manager (at least on linux) ignored any maximum dimensions you try to set
+     * on a JDialog, so we have to do this manual workaround to enforce a maximum size on the dialog.
+     */
+    private void addMaxSizeListener(final int maxWidth, final int maxHeight) {
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                int width = getWidth();
+                int height = getHeight();
+                boolean needsResize = false;
+
+                if (width > maxWidth) {
+                    width = maxWidth;
+                    needsResize = true;
+                }
+                if (height > maxHeight) {
+                    height = maxHeight;
+                    needsResize = true;
+                }
+
+                if (needsResize) {
+                    setSize(width, height);
+                }
+            }
+        });
+    }
 }
