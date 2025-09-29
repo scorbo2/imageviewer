@@ -48,6 +48,7 @@ public final class ThumbContainerPanel extends JPanel {
      */
     private static final List<String> alienExclusionExtensions;
 
+    private final MainWindow.BrowseMode browseMode;
     private final List<ThumbContainerPanelListener> listeners;
     private List<File> imageFileList;
     private List<File> alienFileList;
@@ -91,12 +92,13 @@ public final class ThumbContainerPanel extends JPanel {
     /**
      * Constructor is private to force factory method access.
      */
-    private ThumbContainerPanel() {
+    private ThumbContainerPanel(MainWindow.BrowseMode browseMode) {
         alienFileList = new ArrayList<>();
         listeners = new ArrayList<>();
         loadedThumbPanels = new ArrayList<>();
         selectedPanelIndex = -1;
         thumbWidth = thumbHeight = AppConfig.getInstance().getThumbnailSize();
+        this.browseMode = browseMode;
         initComponents();
     }
 
@@ -105,8 +107,15 @@ public final class ThumbContainerPanel extends JPanel {
      *
      * @return The new instance.
      */
-    public static ThumbContainerPanel createThumbContainer() {
-        return new ThumbContainerPanel();
+    public static ThumbContainerPanel createThumbContainer(MainWindow.BrowseMode browseMode) {
+        return new ThumbContainerPanel(browseMode);
+    }
+
+    /**
+     * Returns the BrowseMode that this thumb panel was created to serve.
+     */
+    public MainWindow.BrowseMode getBrowseMode() {
+        return browseMode;
     }
 
     /**
@@ -472,7 +481,9 @@ public final class ThumbContainerPanel extends JPanel {
                 candidate.setSelected(true);
                 fireThumbSelectedEvent(candidate);
                 ThumbContainerPanel containerPanel = (ThumbContainerPanel)candidate.getParent();
-                containerPanel.scrollRectToVisible(candidate.getBounds());
+                if (containerPanel != null) {
+                    containerPanel.scrollRectToVisible(candidate.getBounds());
+                }
             }
             else {
                 candidate.setSelected(false);

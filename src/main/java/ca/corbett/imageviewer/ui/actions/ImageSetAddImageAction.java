@@ -7,6 +7,7 @@ import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,6 +44,14 @@ public class ImageSetAddImageAction extends AbstractAction {
             log.log(Level.INFO, "addToImageSet: {0} added to image set {1}",
                     new Object[]{file.getAbsolutePath(), imageSet.getFullyQualifiedName()});
             MainWindow.getInstance().rebuildMenus();
+
+            // If this image set is currently selected in the image set browser tab, we need to force a reload of it:
+            Optional<ImageSet> selectedImageSet = MainWindow.getInstance().getImageSetPanel().getSelectedImageSet();
+            if (selectedImageSet.isPresent()) {
+                if (imageSet.getFullyQualifiedName().equals(selectedImageSet.get().getFullyQualifiedName())) {
+                    MainWindow.getInstance().reloadCurrentImageSet();
+                }
+            }
         }
     }
 }

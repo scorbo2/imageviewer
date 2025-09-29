@@ -53,6 +53,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -318,7 +319,6 @@ public final class MainWindow extends JFrame implements UIReloadable {
      */
     public void selectedImageRemoved() {
         thumbContainerPanelMap.get(getBrowseMode()).removeSelected();
-        imageSetPanel.resync();
         updateStatusBar();
     }
 
@@ -377,7 +377,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
         imageSetPanel = new ImageSetPanel();
 
         for (BrowseMode mode : BrowseMode.values()) {
-            ThumbContainerPanel thumbContainerPanel = ThumbContainerPanel.createThumbContainer();
+            ThumbContainerPanel thumbContainerPanel = ThumbContainerPanel.createThumbContainer(mode);
             thumbContainerPanel.setMinimumSize(new Dimension(180, 100));
             thumbContainerPanel.addListener(new ThumbPanelListener());
             JScrollPane thumbScrollPane = new JScrollPane(thumbContainerPanel);
@@ -842,6 +842,17 @@ public final class MainWindow extends JFrame implements UIReloadable {
         thumbContainerPanelMap.get(getBrowseMode()).setImageSet(set); // handles nulls
     }
 
+    /**
+     * If an ImageSet is currently selected, a reload is forced, so that
+     * any changes to that ImageSet are reflected in the thumbnail panel.
+     */
+    public void reloadCurrentImageSet() {
+        Optional<ImageSet> selectedImageSet = imageSetPanel.getSelectedImageSet();
+        if (selectedImageSet.isPresent()) {
+            thumbContainerPanelMap.get(BrowseMode.IMAGE_SET).setImageSet(selectedImageSet.get());
+        }
+    }
+
     public void showMessageDialog(String title, String message) {
         getMessageUtil().info(title, message);
     }
@@ -902,6 +913,9 @@ public final class MainWindow extends JFrame implements UIReloadable {
         @Override
         public void thumbnailSelected(ThumbContainerPanel source, ThumbPanel pn) {
             final MainWindow mw = MainWindow.getInstance();
+            if (source.getBrowseMode() != mw.getBrowseMode()) {
+                return; // ignore events fired from a browse tab that isn't visible
+            }
 
             // Flush the old image if present:
             if (mw.imagePanel.getImage() != null) {
@@ -910,6 +924,12 @@ public final class MainWindow extends JFrame implements UIReloadable {
             // Load the new image:
             try {
                 File imgFile = pn.getFile();
+                if (!pn.getFile().exists()) {
+                    mw.getMessageUtil().info("Image not found",
+                                             "The image file was not found. It was possibly moved or deleted.");
+                    source.removeSelected();
+                    return;
+                }
                 if (imgFile.getName().toLowerCase().endsWith(".gif")) {
                     ImageIcon icon = ImageUtil.loadImageIcon(imgFile);
                     mw.imagePanel.setImageIcon(icon);
@@ -930,6 +950,10 @@ public final class MainWindow extends JFrame implements UIReloadable {
         @Override
         public void selectionCleared(ThumbContainerPanel source) {
             final MainWindow mw = MainWindow.getInstance();
+            if (source.getBrowseMode() != mw.getBrowseMode()) {
+                return; // ignore events fired from a browse tab that isn't visible
+            }
+
             mw.imagePanel.setImage(null);
             mw.imagePanel.setExtraAttribute("srcFile", null);
             ImageViewerExtensionManager.getInstance().imageSelected(mw.getSelectedImage());

@@ -42,6 +42,6 @@ public class ImageSetRemoveImageAction extends AbstractAction {
         imageSet.removeImageFilePath(currentImage.getImageFile().getAbsolutePath());
         log.log(Level.INFO, "removeFromImageSet: {0} removed from image set {1}",
                 new Object[]{currentImage.getImageFile().getAbsolutePath(), imageSet.getFullyQualifiedName()});
-        MainWindow.getInstance().getImageSetPanel().resync();
+        MainWindow.getInstance().selectedImageRemoved();
     }
 }
