@@ -1,7 +1,7 @@
 ImageViewer Release Notes
 Author: Steve Corbett
 
-Version 2.2 [TODO] - Image sets
+Version 2.2 [2025-10-01] - Image sets
   #50 - keep image set tab in sync with file system tab
   #49 - Allow randomization in image set edit dialog
   #48 - More options in image set destination chooser
@@ -48,9 +48,9 @@ Version 2.2 [TODO] - Image sets
   #2 - Add support for virtual directories (image sets)
   #1 - Upgrade to swing-extras 2.4
 
-Version 2.1 [2025-07-22] - Migrate to github/maven
+Version 2.1 [2025-07-22] - Migrate to GitHub/Maven
   Upgrade to swing-extras 2.3
-  Migrate project to github/maven
+  Migrate project to GitHub/Maven
 
 Version 2.0 [2023-12-31] - Ground-up rewrite with extension support
   [IMGVIEW-89] - Add "Undo last move" option
