@@ -4,12 +4,12 @@ import ca.corbett.extensions.AppExtensionInfo;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.imageviewer.Version;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
+import ca.corbett.imageviewer.ui.MainWindow;
 
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,7 +17,7 @@ import java.util.List;
  * the last image operation, whether it was a move, a copy, or a symlink (note that delete
  * operations can't be undone).
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public class RepeatUndoExtension extends ImageViewerExtension {
 
@@ -28,6 +28,7 @@ public class RepeatUndoExtension extends ImageViewerExtension {
                 .setAuthor("steve@corbett.ca")
                 .setTargetAppName(Version.APPLICATION_NAME)
                 .setTargetAppVersion(Version.VERSION)
+                .setVersion(Version.VERSION)
                 .setShortDescription("Repeat and undo move, copy, or symlink actions.")
                 .setLongDescription("Allows you to repeat the last move, copy, or symlink action "
                                             + "by pressing Ctrl+R. Delete operations can't be repeated.\n\n"
@@ -49,22 +50,13 @@ public class RepeatUndoExtension extends ImageViewerExtension {
     }
 
     @Override
-    public List<JMenuItem> getMenuItems(String topLevelMenu) {
-        if ("Edit".equals(topLevelMenu)) {
-            List<JMenuItem> list = new ArrayList<>();
-            list.add(buildRepeatMenuItem());
-            list.add(buildUndoMenuItem());
-            return list;
-        }
-        return null;
+    public List<JMenuItem> getMenuItems(String topLevelMenu, MainWindow.BrowseMode browseMode) {
+        return "Edit".equals(topLevelMenu) ? List.of(buildRepeatMenuItem(), buildUndoMenuItem()) : null;
     }
 
     @Override
-    public List<JMenuItem> getPopupMenuItems() {
-        List<JMenuItem> list = new ArrayList<>();
-        list.add(buildRepeatMenuItem());
-        list.add(buildUndoMenuItem());
-        return list;
+    public List<JMenuItem> getPopupMenuItems(MainWindow.BrowseMode browseMode) {
+        return List.of(buildRepeatMenuItem(), buildUndoMenuItem());
     }
 
     private JMenuItem buildRepeatMenuItem() {
@@ -78,5 +70,4 @@ public class RepeatUndoExtension extends ImageViewerExtension {
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
         return menuItem;
     }
-
 }

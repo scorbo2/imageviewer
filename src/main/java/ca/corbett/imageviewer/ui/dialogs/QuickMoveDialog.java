@@ -247,7 +247,7 @@ public class QuickMoveDialog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 QuickMoveManager.getInstance().saveQuickMoveTree(rootNode);
-                MainWindow.getInstance().rebuildQuickMoveMenus();
+                MainWindow.getInstance().rebuildMenus();
                 ImageViewerExtensionManager.getInstance().quickMoveTreeChanged();
                 dispose();
             }

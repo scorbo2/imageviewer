@@ -55,7 +55,7 @@ public class ThumbPanel extends JPanel {
         PROPS = ImagePanelConfig.createSimpleReadOnlyProperties();
         PROPS.setRenderingQuality(ImagePanelConfig.Quality.QUICK_AND_DIRTY);
         PROPS.setDisplayMode(ImagePanelConfig.DisplayMode.CENTER);
-        PROPS.setBgColor(LookAndFeelManager.getLafColor("Panel.background", Color.LIGHT_GRAY));
+        PROPS.setBgColor(LookAndFeelManager.getLafColor("Button.background", Color.LIGHT_GRAY));
     }
 
     /**
@@ -120,7 +120,7 @@ public class ThumbPanel extends JPanel {
     private void initComponents() {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-        setBackground(LookAndFeelManager.getLafColor("Panel.background", Color.LIGHT_GRAY));
+        setBackground(LookAndFeelManager.getLafColor("Button.background", Color.LIGHT_GRAY));
         setPreferredSize(new Dimension(width, height));
 
         // If invalidImage has not yet been generated, do it now.
@@ -129,9 +129,9 @@ public class ThumbPanel extends JPanel {
             int thumbSize = AppConfig.getInstance().getThumbnailSize();
             invalidImage = new BufferedImage(thumbSize - 20, thumbSize - 20, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g = invalidImage.createGraphics();
-            g.setColor(LookAndFeelManager.getLafColor("Panel.background", Color.LIGHT_GRAY));
+            g.setColor(LookAndFeelManager.getLafColor("Button.background", Color.LIGHT_GRAY));
             g.fillRect(0, 0, thumbSize, thumbSize);
-            g.setColor(LookAndFeelManager.getLafColor("textHighlightText", Color.WHITE));
+            g.setColor(LookAndFeelManager.getLafColor("Button.foreground", Color.WHITE));
             g.setFont(new Font("SansSerif", 0, 64));
             int textWidth = (int)g.getFontMetrics().stringWidth("?");
             int textHeight = (int)g.getFontMetrics().getLineMetrics("?", g).getAscent();
@@ -171,10 +171,10 @@ public class ThumbPanel extends JPanel {
             imageLabel.setForeground(LookAndFeelManager.getLafColor("textHighlightText", Color.LIGHT_GRAY));
         }
         else {
-            Color bg = LookAndFeelManager.getLafColor("Panel.background", Color.LIGHT_GRAY);
+            Color bg = LookAndFeelManager.getLafColor("Button.background", Color.LIGHT_GRAY);
             setBackground(bg);
             imagePanel.setBackground(bg);
-            imageLabel.setForeground(LookAndFeelManager.getLafColor("textHighlightText", Color.BLACK));
+            imageLabel.setForeground(LookAndFeelManager.getLafColor("Button.foreground", Color.BLACK));
         }
         ImageViewerExtensionManager.getInstance().thumbPanelSelectionChanged(this, isSelected);
         repaint();

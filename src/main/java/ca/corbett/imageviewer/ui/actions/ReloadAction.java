@@ -13,7 +13,7 @@ public class ReloadAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        MainWindow.getInstance().reloadCurrentDirectory();
+        MainWindow.getInstance().reload();
     }
 
 }

@@ -1,9 +1,56 @@
 ImageViewer Release Notes
 Author: Steve Corbett
 
-Version 2.1 [2025-07-22] - Migrate to github/maven
+Version 2.2 [2025-10-01] - Image sets
+  #50 - keep image set tab in sync with file system tab
+  #49 - Allow randomization in image set edit dialog
+  #48 - More options in image set destination chooser
+  #47 - Log image set copy, move, create, and delete operations
+  #46 - Improvements to image information dialog
+  #45 - Image set editor: provide sorting options
+  #44 - Don't force a full reload when switching browse modes
+  #43 - Fix null pointer exception in thumbnail pregeneration
+  #39 - Image set editor: allow setting transient and locked
+  #38 - Re-query for extra panels on reloadUI()
+  #37 - Dynamic main menu based on browse mode
+  #36 - Fix image panel nesting on main window
+  #35 - Allow extensions to supply image set toolbar buttons
+  #34 - Standardize icons across the app+extensions
+  #33 - Thorough javadoc pass
+  #32 - Allow extensions to change current image tab
+  #31 - Handle ImageSet deletion
+  #30 - Handle dynamic image tab panels
+  #29 - Handle image set locking
+  #28 - Rename/Move image set
+  #27 - Add ImageSet transient option
+  #26 - Image set refactoring
+  #25 - Add popup dialog for image set chooser
+  #24 - Add all images in current dir to image set
+  #23 - Keyboard shortcuts for image source
+  #22 - Add browse to source dir option for image sets
+  #21 - Image operations need to update ImageSetManager
+  #20 - Cosmetic fix in AboutDialog
+  #19 - Image set dirty checking
+  #18 - Allow removing images from image sets
+  #17 - Move/Copy image to other image set
+  #16 - Intelligently change options based on view mode
+  #15 - Improve MenuManager
+  #14 - Image sets terminology
+  #13 - Image sets persistence
+  #12 - Make global keyboard support a bit smarter
+  #11 - Image set persistence dir must be configurable
+  #10 - Handle dead images in image set load
+  #9 - Image set editor
+  #8 - Right click and add to image set
+  #7 - Context flipping between file system and image sets
+  #6 - Image sets tree
+  #3 - Add extension support for image tabs
+  #2 - Add support for virtual directories (image sets)
+  #1 - Upgrade to swing-extras 2.4
+
+Version 2.1 [2025-07-22] - Migrate to GitHub/Maven
   Upgrade to swing-extras 2.3
-  Migrate project to github/maven
+  Migrate project to GitHub/Maven
 
 Version 2.0 [2023-12-31] - Ground-up rewrite with extension support
   [IMGVIEW-89] - Add "Undo last move" option

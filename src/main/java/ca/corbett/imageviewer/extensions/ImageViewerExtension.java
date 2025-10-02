@@ -5,6 +5,7 @@ import ca.corbett.extras.dirtree.DirTree;
 import ca.corbett.extras.logging.LogConsoleStyle;
 import ca.corbett.imageviewer.ImageOperation;
 import ca.corbett.imageviewer.ui.ImageInstance;
+import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.ThumbPanel;
 
 import javax.swing.AbstractAction;
@@ -12,6 +13,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
@@ -20,7 +22,7 @@ import java.util.List;
 
 /**
  * The starting point for ImageViewer extensions. Extend this adapter class and place the
- * resulting class file with dependencies in a jar file, and stick that in the dependencies
+ * resulting class file with dependencies in a jar file, and stick that in the extensions
  * directory, either in the app install location, or in the user settings dir.
  * There, it can be detected and picked up by ImageViewer.
  *
@@ -62,9 +64,10 @@ public abstract class ImageViewerExtension extends AppExtension {
      * menus.
      *
      * @param topLevelMenu The name of the top-level menu being built: File, Edit, View, or Help.
+     * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
      * @return an optional list of menu items to insert into the given menu, or null for nothing.
      */
-    public List<JMenuItem> getMenuItems(String topLevelMenu) {
+    public List<JMenuItem> getMenuItems(String topLevelMenu, MainWindow.BrowseMode browseMode) {
         return null;
     }
 
@@ -72,9 +75,10 @@ public abstract class ImageViewerExtension extends AppExtension {
      * Invoked when the application wants to know if the extension has its own top-level
      * menu to add to the MainWindow's main menu.
      *
+     * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
      * @return an optional list of JMenu objects for the main menu, or null for none.
      */
-    public List<JMenu> getTopLevelMenus() {
+    public List<JMenu> getTopLevelMenus(MainWindow.BrowseMode browseMode) {
         return null;
     }
 
@@ -83,9 +87,10 @@ public abstract class ImageViewerExtension extends AppExtension {
      * panel, also used in the toolbar and in the MainMenu. Extensions can add menu items
      * here if they pertain to the current image or current directory of images.
      *
+     * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
      * @return An optional list of menu items to insert into the popup menu, or null for none.
      */
-    public List<JMenuItem> getPopupMenuItems() {
+    public List<JMenuItem> getPopupMenuItems(MainWindow.BrowseMode browseMode) {
         return null;
     }
 
@@ -96,7 +101,18 @@ public abstract class ImageViewerExtension extends AppExtension {
      *
      * @return A List of JButtons, or null.
      */
-    public List<JButton> getToolBarButtons() {
+    public List<JButton> getMainToolBarButtons() {
+        return null;
+    }
+
+    /**
+     * Invoked when the application is building the ImageSetPanel ToolBar - extensions can add
+     * buttons to this toolbar by returning them here. Use ToolBarManager.buildButton() and
+     * ImageSetPanel.loadImageIcon() as convenience methods.
+     *
+     * @return A List of JButtons, or null.
+     */
+    public List<JButton> getImageSetToolBarButtons() {
         return null;
     }
 
@@ -179,6 +195,13 @@ public abstract class ImageViewerExtension extends AppExtension {
      * @param newLocation The new location of this directory
      */
     public void directoryWasMoved(File oldLocation, File newLocation) {
+    }
+
+    /**
+     * Informational message to inform extensions that the current browse mode has changed.
+     * Extensions can use this to re-render whatever UI component may need to change as a result.
+     */
+    public void browseModeChanged(MainWindow.BrowseMode newBrowseMode) {
     }
 
     /**
@@ -299,6 +322,16 @@ public abstract class ImageViewerExtension extends AppExtension {
      * @param selectedImage An ImageInstance containing the new image, if there is one.
      */
     public void imageSelected(ImageInstance selectedImage) {
+    }
+
+    /**
+     * Extensions may return zero or more JPanel instances which will be added as tabs
+     * to the main image tab panel. The default return here is an empty list. If no
+     * extension returns anything from this method, the main image tab panel is hidden.
+     * Note: use setName() on your panel to give the resulting tab a meaningful name.
+     */
+    public List<JPanel> getImageTabPanels() {
+        return List.of();
     }
 
 }

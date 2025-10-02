@@ -18,6 +18,7 @@ import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
@@ -27,7 +28,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,9 +44,14 @@ public final class ToolBarManager {
     public static final int iconSize = 26;
 
     private static JPopupMenu quickMovePopupMenu;
+    private static JPopupMenu deletePopupMenu;
 
     private ToolBarManager() {
 
+    }
+
+    public static JButton buildButton(BufferedImage iconImage, String toolTip, AbstractAction action) {
+        return buildButton(iconImage, toolTip, action, 30);
     }
 
     /**
@@ -59,9 +64,7 @@ public final class ToolBarManager {
      * @param action    An optional Action to attach to the button.
      * @return A JButton that can be added to a toolbar.
      */
-    public static JButton buildButton(BufferedImage iconImage, String toolTip, AbstractAction action) {
-        final int btnSize = 30;
-
+    public static JButton buildButton(BufferedImage iconImage, String toolTip, AbstractAction action, int btnSize) {
         JButton button = new JButton(action);
         button.setText("");
         button.setFocusPainted(false);
@@ -85,22 +88,23 @@ public final class ToolBarManager {
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
         JPanel wrapper = new JPanel();
-        wrapper.setBackground(UIManager.getDefaults().getColor("ColorPalette.primaryBackground"));
+        wrapper.setBackground(UIManager.getDefaults().getColor("Button.background"));
         wrapper.setLayout(new FlowLayout(FlowLayout.LEFT, 4, 4));
         wrapper.setPreferredSize(new Dimension(500, 38));
 
         wrapper.add(new JLabel(" "));
 
         try {
-            wrapper.add(buildButton(loadIconImage("icon-previous.png"), "Previous image", new PreviousImageAction()));
-            wrapper.add(buildButton(loadIconImage("icon-next.png"), "Next image", new NextImageAction()));
+            wrapper.add(
+                    buildButton(loadIconImage("icon-go-previous.png"), "Previous image", new PreviousImageAction()));
+            wrapper.add(buildButton(loadIconImage("icon-go-next.png"), "Next image", new NextImageAction()));
 
             wrapper.add(new JLabel(" "));
 
-            wrapper.add(buildButton(loadIconImage("icon-zoom-in.png"), "Zoom in", new ImagePanelZoomInAction()));
-            wrapper.add(buildButton(loadIconImage("icon-zoom-out.png"), "Zoom out", new ImagePanelZoomOutAction()));
-            wrapper.add(buildButton(loadIconImage("icon-best-fit.png"), "Best fit", new ImagePanelBestFitAction()));
-            wrapper.add(buildButton(loadIconImage("icon-actual-size.png"), "Actual size",
+            wrapper.add(buildButton(loadIconImage("icon-zoom-in2.png"), "Zoom in", new ImagePanelZoomInAction()));
+            wrapper.add(buildButton(loadIconImage("icon-zoom-out2.png"), "Zoom out", new ImagePanelZoomOutAction()));
+            wrapper.add(buildButton(loadIconImage("icon-best-fit2.png"), "Best fit", new ImagePanelBestFitAction()));
+            wrapper.add(buildButton(loadIconImage("icon-actual-size2.png"), "Actual size",
                                     new ImagePanelActualSizeAction()));
 
             wrapper.add(new JLabel(" "));
@@ -109,38 +113,39 @@ public final class ToolBarManager {
 
             wrapper.add(new JLabel(" "));
 
-            final JButton moveButton = buildButton(loadIconImage("icon-quickmove.png"), "Quick Move...", null);
+            final JButton moveButton = buildButton(loadIconImage("icon-document-upload.png"), "Quick Move...", null);
             wrapper.add(moveButton);
-            final JButton deleteButton = buildButton(loadIconImage("icon-delete.png"), "Delete...", null);
+            final JButton deleteButton = buildButton(loadIconImage("icon-x.png"), "Delete...", null);
             wrapper.add(deleteButton);
 
             // Create a popup menu for the quick move button and attach it:
             quickMovePopupMenu = new JPopupMenu();
-            for (Component c : MenuManager.buildQuickMoveMenuItems()) {
+            for (Component c : MainWindow.getInstance().getMenuManager().buildImageMovementMenuItems()) {
                 quickMovePopupMenu.add(c);
             }
             moveButton.addActionListener(e -> quickMovePopupMenu.show(moveButton, 0, moveButton.getHeight()));
 
             // Create a popup menu for the delete button and attach it:
-            final JPopupMenu deleteMenu = new JPopupMenu();
-            for (Component c : MenuManager.buildDeleteMenuItems()) {
-                deleteMenu.add(c);
+            deletePopupMenu = new JPopupMenu();
+            for (Component c : MainWindow.getInstance().getMenuManager().buildImageRemovalMenuItems()) {
+                deletePopupMenu.add(c);
             }
-            deleteButton.addActionListener(e -> deleteMenu.show(deleteButton, 0, deleteButton.getHeight()));
+            deleteButton.addActionListener(e -> deletePopupMenu.show(deleteButton, 0, deleteButton.getHeight()));
 
             // Insert any buttons supplied by extensions, if any:
-            for (JButton extensionBtn : ImageViewerExtensionManager.getInstance().getToolBarButtons()) {
+            for (JButton extensionBtn : ImageViewerExtensionManager.getInstance().getMainToolBarButtons()) {
                 wrapper.add(extensionBtn);
             }
 
             wrapper.add(new JLabel(" "));
 
-            wrapper.add(buildButton(loadIconImage("icon-preferences.png"), "Preferences", new PreferencesAction()));
-            wrapper.add(buildButton(loadIconImage("icon-extensions.png"), "Extensions", new ManageExtensionsAction()));
+            wrapper.add(buildButton(loadIconImage("icon-settings.png"), "Preferences", new PreferencesAction()));
+            wrapper.add(buildButton(loadIconImage("icon-image-information.png"), "Extensions",
+                                    new ManageExtensionsAction()));
 
             wrapper.add(new JLabel(" "));
 
-            wrapper.add(buildButton(loadIconImage("icon-help.png"), "About", new AboutAction()));
+            wrapper.add(buildButton(loadIconImage("icon-help2.png"), "About", new AboutAction()));
 
             toolBar.add(wrapper);
         }
@@ -156,11 +161,15 @@ public final class ToolBarManager {
      * Invoked when the quick move tree changes at runtime - this method will regenerate
      * our quick move popup menu.
      */
-    public static void reloadQuickMovePopupMenu() {
+    public static void rebuildMenus() {
         quickMovePopupMenu.removeAll();
-        List<Component> menuItems = MenuManager.buildQuickMoveMenuItems();
-        for (Component c : menuItems) {
-            quickMovePopupMenu.add(c);
+        for (JMenuItem i : MainWindow.getInstance().getMenuManager().buildImageMovementMenuItems()) {
+            quickMovePopupMenu.add(i);
+        }
+
+        deletePopupMenu.removeAll();
+        for (JMenuItem i : MainWindow.getInstance().getMenuManager().buildImageRemovalMenuItems()) {
+            deletePopupMenu.add(i);
         }
     }
 

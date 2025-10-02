@@ -4,6 +4,7 @@ import ca.corbett.extras.io.FileSystemUtil;
 import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.dialogs.AlienDialog;
+import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 import ca.corbett.imageviewer.ui.layout.WrapLayout;
 import ca.corbett.imageviewer.ui.threads.ThumbLoaderThread;
 
@@ -47,6 +48,7 @@ public final class ThumbContainerPanel extends JPanel {
      */
     private static final List<String> alienExclusionExtensions;
 
+    private final MainWindow.BrowseMode browseMode;
     private final List<ThumbContainerPanelListener> listeners;
     private List<File> imageFileList;
     private List<File> alienFileList;
@@ -90,12 +92,13 @@ public final class ThumbContainerPanel extends JPanel {
     /**
      * Constructor is private to force factory method access.
      */
-    private ThumbContainerPanel() {
+    private ThumbContainerPanel(MainWindow.BrowseMode browseMode) {
         alienFileList = new ArrayList<>();
         listeners = new ArrayList<>();
         loadedThumbPanels = new ArrayList<>();
         selectedPanelIndex = -1;
         thumbWidth = thumbHeight = AppConfig.getInstance().getThumbnailSize();
+        this.browseMode = browseMode;
         initComponents();
     }
 
@@ -104,9 +107,15 @@ public final class ThumbContainerPanel extends JPanel {
      *
      * @return The new instance.
      */
-    public static ThumbContainerPanel createThumbContainer() {
-        ThumbContainerPanel panel = new ThumbContainerPanel();
-        return panel;
+    public static ThumbContainerPanel createThumbContainer(MainWindow.BrowseMode browseMode) {
+        return new ThumbContainerPanel(browseMode);
+    }
+
+    /**
+     * Returns the BrowseMode that this thumb panel was created to serve.
+     */
+    public MainWindow.BrowseMode getBrowseMode() {
+        return browseMode;
     }
 
     /**
@@ -218,7 +227,7 @@ public final class ThumbContainerPanel extends JPanel {
     }
 
     /**
-     * Intended to be invoked when the thumbnail dimsensions are changed in preferences.
+     * Intended to be invoked when the thumbnail dimensions are changed in preferences.
      * If any thumbnails are currently showing, the list will be regenerated at the new
      * size. The new size will also be used going forward.
      */
@@ -288,8 +297,28 @@ public final class ThumbContainerPanel extends JPanel {
      */
     public void setDirectory(File dir) {
         currentDir = dir;
+        if (dir == null) {
+            clear();
+            return;
+        }
         setImageList(FileSystemUtil.findFiles(dir, false, imageExtensions));
         alienFileList = findAlienFiles(dir);
+    }
+
+    // TODO experimental
+    public void setImageSet(ImageSet imageSet) {
+        if (imageSet == null) {
+            clear();
+            return;
+        }
+        //TODO what does currentDir get set to here? Maybe nothing?
+        List<String> imageFilePaths = imageSet.getImageFilePaths();
+        List<File> imageFiles = new ArrayList<>(imageFilePaths.size());
+        for (String path : imageFilePaths) {
+            imageFiles.add(new File(path));
+        }
+        setImageList(imageFiles);
+        //TODO do we worry about alien files in an image set? likely not, how would they get in there...
     }
 
     /**
@@ -452,7 +481,9 @@ public final class ThumbContainerPanel extends JPanel {
                 candidate.setSelected(true);
                 fireThumbSelectedEvent(candidate);
                 ThumbContainerPanel containerPanel = (ThumbContainerPanel)candidate.getParent();
-                containerPanel.scrollRectToVisible(candidate.getBounds());
+                if (containerPanel != null) {
+                    containerPanel.scrollRectToVisible(candidate.getBounds());
+                }
             }
             else {
                 candidate.setSelected(false);
@@ -576,6 +607,20 @@ public final class ThumbContainerPanel extends JPanel {
         // very last one, so clear all selection:
         else {
             fireSelectionClearedEvent();
+        }
+    }
+
+    /**
+     * Tells this thumb container panel to re-fire the selection event for whatever is
+     * currently selected (or a selection cleared event if nothing is selected).
+     */
+    public void reselectCurrent() {
+        ThumbPanel thumbPanel = selectedPanelIndex >= 0 ? loadedThumbPanels.get(selectedPanelIndex) : null;
+        if (thumbPanel == null) {
+            fireSelectionClearedEvent();
+        }
+        else {
+            fireThumbSelectedEvent(thumbPanel);
         }
     }
 

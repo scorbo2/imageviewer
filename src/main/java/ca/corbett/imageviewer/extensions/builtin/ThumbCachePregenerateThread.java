@@ -12,7 +12,7 @@ import java.util.List;
  * A worker thread to go through a directory recursively, automatically generating
  * thumbnails for all images found, and adding them to the ThumbnailCache.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 1.1 (moved to ThumbCache extension for ImageViewer 2.0)
  */
 class ThumbCachePregenerateThread implements Runnable {

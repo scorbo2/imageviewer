@@ -1,0 +1,506 @@
+package ca.corbett.imageviewer.ui.imagesets;
+
+import ca.corbett.imageviewer.AppConfig;
+import ca.corbett.imageviewer.ui.MainWindow;
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Manages loading and saving of ImageSets, and provides central management for the
+ * ImageSet tree.
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ * @since ImageViewer 2.2
+ */
+public class ImageSetManager {
+
+    private static final Logger log = Logger.getLogger(ImageSetManager.class.getName());
+
+    public final static char PATH_DELIMITER = '/';
+
+    private final List<ImageSet> imageSets;
+    private boolean isDirty;
+
+    public ImageSetManager() {
+        imageSets = new ArrayList<>();
+        isDirty = false;
+    }
+
+    /**
+     * Indicates whether a save is needed. If false, there have been no changes to this ImageSetManager
+     * or to any ImageSet that it manages.
+     */
+    public boolean isDirty() {
+        File saveFile = new File(AppConfig.getInstance().getImageSetSaveLocation(), "imageSets.json");
+        // If our save destination doesn't exist, the answer is yes with no further checking needed:
+        if (!saveFile.exists()) {
+            isDirty = true;
+            return true;
+        }
+
+        // The result is true if we are dirty or if any of our image sets are dirty:
+        boolean result = isDirty;
+        for (ImageSet set : imageSets) {
+            if (set.isTransient()) {
+                continue; // don't include transient sets in the check
+            }
+            result = result || set.isDirty();
+        }
+        return result;
+    }
+
+    private void setDirty(boolean dirty) {
+        isDirty = dirty;
+        if (!dirty) {
+            for (ImageSet set : imageSets) {
+                set.setDirty(false);
+            }
+        }
+    }
+
+    /**
+     * Adds the given ImageSet to this ImageSetManager, OR adds all the images from the
+     * given ImageSet to an existing ImageSet, if there is one with the same fully qualified name.
+     */
+    public void addImageSet(ImageSet set) {
+        // See if we already have this one:
+        ImageSet existingSet = findImageSet(set.getFullyQualifiedName()).orElse(null);
+
+        // If there's an existing set with that path, add all of this new set's images to that existing one.
+        // The imageset will weed out duplicates automatically.
+        if (existingSet != null) {
+            for (String imagePath : set.getImageFilePaths()) {
+                existingSet.addImageFilePath(imagePath);
+            }
+        }
+
+        // If this set wasn't pre-existing, just add it.
+        else {
+            imageSets.add(set);
+        }
+
+        if (!set.isTransient()) {
+            isDirty = true;
+        }
+    }
+
+    /**
+     * Searches for and returns an ImageSet with the given fully qualified name, if it exists.
+     */
+    public Optional<ImageSet> findImageSet(String fullyQualifiedName) {
+        for (ImageSet imageSet : imageSets) {
+            if (imageSet.getFullyQualifiedName().equals(parseFullyQualifiedName(fullyQualifiedName))) {
+                return Optional.of(imageSet);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Searches for an ImageSet with the given fully qualified name, returning it if found,
+     * and creating it if not found. Either way, the result will be an ImageSet instance.
+     */
+    public ImageSet findOrCreateImageSet(String fullyQualifiedName) {
+        String parsedName = parseFullyQualifiedName(fullyQualifiedName);
+        if (parsedName.isBlank()) {
+            return null;
+        }
+        Optional<ImageSet> set = findImageSet(parsedName);
+        if (set.isEmpty()) {
+            ImageSet newSet = new ImageSet();
+            newSet.setFullyQualifiedName(fullyQualifiedName);
+            imageSets.add(newSet);
+            log.log(Level.INFO, "createImageSet: {0}", new Object[]{newSet.getFullyQualifiedName()});
+            isDirty = true;
+            return newSet;
+        }
+
+        return set.get();
+    }
+
+    /**
+     * Remove the given ImageSet and all nodes underneath it in the tree.
+     */
+    public void remove(ImageSet set) {
+        imageSets.remove(set);
+        remove(set.getFullyQualifiedName());
+    }
+
+    /**
+     * Reports whether the given path is locked and should not be deleted, moved, or renamed.
+     * A given path is considered locked if the node it describes or <b>any node underneath
+     * that node</b> is marked as locked. We also check the direct-line parentage up to but not
+     * including the root node. The result will be that the branch is considered locked if any
+     * node on that path is locked.
+     */
+    public boolean isBranchLocked(String fullyQualifiedPath) {
+        String path = parseFullyQualifiedName(fullyQualifiedPath);
+        if (path.length() <= 1) {
+            return false;
+        }
+
+        // If any image set at or below this path is locked, the branch is locked:
+        for (ImageSet candidate : imageSets) {
+            if (candidate.getFullyQualifiedName().startsWith(path) && candidate.isLocked()) {
+                return true;
+            }
+        }
+
+        // Also check any direct-line parent nodes:
+        String parentPath = parseParent(path);
+        while (!"/".equals(parentPath)) {
+            Optional<ImageSet> parentSet = findImageSet(parentPath);
+            if (parentSet.isPresent() && parentSet.get().isLocked()) {
+                return true;
+            }
+            parentPath = parseParent(parentPath);
+        }
+
+        return false;
+    }
+
+    /**
+     * Removes all nodes at or under the given tree path.
+     */
+    public void remove(String path) {
+        path = parseFullyQualifiedName(path);
+        // Ignore dumb requests:
+        if (path.length() <= 1) {
+            return;
+        }
+
+        // First remove the given target path if it is an image set:
+        isDirty = true;
+        findImageSet(path).ifPresent(imageSets::remove);
+        log.log(Level.INFO, "deleteImageSet: " + path);
+
+        // Now remove any child nodes, if any:
+        List<ImageSet> survivors = new ArrayList<>(imageSets.size());
+        for (ImageSet candidate : imageSets) {
+            if (!candidate.getFullyQualifiedName().startsWith(path + PATH_DELIMITER)) {
+                survivors.add(candidate);
+            }
+            else {
+                log.log(Level.INFO, "deleteImageSet: " + candidate.getFullyQualifiedName());
+            }
+        }
+
+        // If nothing got removed, we're done:
+        if (survivors.size() == imageSets.size()) {
+            return;
+        }
+
+        // Otherwise, keep only those ImageSets that survives the deletion:
+        imageSets.clear();
+        imageSets.addAll(survivors);
+    }
+
+    /**
+     * Renames the given branch and everything under it. Use with caution as this may
+     * have unexpected results in the case of a collision:
+     * <ul>
+     * <li>/test1/test2/hi
+     * <li>/blah/hi
+     * </ul>
+     * <pre>renameBranch("/test1/test2", "blah");</pre> will introduce a collision, in that
+     * there will be two separate ImageSets both with the fully qualified name /blah/hi.
+     * To resolve this collision, this code will merge the two image sets into one - that is,
+     * all images from the renamed set will be added to the existing image set, with duplicates
+     * removed.
+     */
+    public void renameBranch(String oldPath, String newPath) {
+        String exactOldPath = parseFullyQualifiedName(oldPath);
+        String exactNewPath = parseFullyQualifiedName(newPath);
+        oldPath = exactOldPath + PATH_DELIMITER;
+        newPath = exactNewPath + PATH_DELIMITER;
+
+        List<ImageSet> deadImageSets = new ArrayList<>(imageSets.size());
+
+        for (ImageSet candidate : imageSets) {
+            Optional<ImageSet> existingSet = findImageSet(newPath + candidate.getName());
+
+            if (candidate.getFullyQualifiedName().startsWith(oldPath)) {
+                // Merge with existing set if present:
+                if (existingSet.isPresent()) {
+                    for (String imagePath : candidate.getImageFilePaths()) {
+                        existingSet.get().addImageFilePath(imagePath);
+                    }
+                    deadImageSets.add(candidate);
+                }
+
+                // Just move existing set if not present:
+                else {
+                    candidate.setFullyQualifiedName(candidate.getFullyQualifiedName().replace(oldPath, newPath));
+                }
+                isDirty = true;
+            }
+            else if (candidate.getFullyQualifiedName().equals(exactOldPath)) {
+                // Merge with existing set if present:
+                if (existingSet.isPresent()) {
+                    for (String imagePath : candidate.getImageFilePaths()) {
+                        existingSet.get().addImageFilePath(imagePath);
+                    }
+                    deadImageSets.add(candidate);
+                }
+
+                // move existing set if not present:
+                else {
+                    candidate.setFullyQualifiedName(exactNewPath);
+                }
+                isDirty = true;
+            }
+        }
+
+        // If we "killed" any image sets, remove them:
+        if (!deadImageSets.isEmpty()) {
+            isDirty = true;
+            imageSets.removeAll(deadImageSets);
+        }
+
+        log.log(Level.INFO, "moveImageSet: {0} -> {1}", new Object[]{oldPath, newPath});
+    }
+
+    public List<ImageSet> getImageSets() {
+        return imageSets.stream().sorted(Comparator.comparing(ImageSet::getFullyQualifiedName)).toList();
+    }
+
+    /**
+     * Use this to indicate that the given image file has moved to the given destination.
+     * If this ImageSet contained srcFile, it will be updated to destFile, otherwise nothing happens.
+     */
+    public void imageMoved(File srcFile, File destFile) {
+        for (ImageSet imageSet : imageSets) {
+            imageSet.imageMoved(srcFile.getAbsolutePath(), destFile.getAbsolutePath());
+        }
+    }
+
+    /**
+     * Use this to indicate that a given image file has been removed. If this ImageSet contained
+     * a reference to that file, it is dropped from this ImageSet.
+     */
+    public void imageDeleted(File srcFile) {
+        for (ImageSet imageSet : imageSets) {
+            imageSet.imageDeleted(srcFile.getAbsolutePath());
+        }
+    }
+
+    /**
+     * Use this to indicate that a file system directory has been moved. This ImageSet will
+     * go through all images it contains and update their paths as needed.
+     */
+    public void directoryMoved(File srcDir, File destDir) {
+        for (ImageSet imageSet : imageSets) {
+            imageSet.directoryMoved(srcDir.getAbsolutePath(), destDir.getAbsolutePath());
+        }
+    }
+
+    public void save() {
+        if (!isDirty()) {
+            log.info("Skipping image set save as no save is needed.");
+            return; // don't save if not needed
+        }
+
+        File saveFile = new File(AppConfig.getInstance().getImageSetSaveLocation(), "imageSets.json");
+        log.info("Saving image sets to " + saveFile.getAbsolutePath());
+        DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
+        prettyPrinter.indentArraysWith(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE);
+        List<ImageSet> imageSetsToSave = imageSets
+                .stream()
+                .filter(item -> !item.isTransient())
+                .toList();
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            mapper.writer(prettyPrinter).writeValue(saveFile, imageSetsToSave);
+            setDirty(false);
+            log.info("Saved " + imageSetsToSave.size() + " image sets.");
+        }
+        catch (IOException e) {
+            log.log(Level.SEVERE, "ImageSetManager.save(): " + e.getMessage(), e);
+        }
+    }
+
+    public void load() {
+        imageSets.clear();
+
+        File saveFile = new File(AppConfig.getInstance().getImageSetSaveLocation(), "imageSets.json");
+        log.info("Loading image sets from " + saveFile.getAbsolutePath());
+        if (!saveFile.exists()) {
+            log.info("No image sets to load.");
+            isDirty = false;
+            return; // not a fatal error - there simply are no favorites
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            ImageSet[] favorites = mapper.readValue(saveFile, ImageSet[].class);
+            for (ImageSet set : favorites) {
+                // Dead image handling:
+                for (String filePath : set.getImageFilePaths()) {
+                    if (!new File(filePath).exists()) {
+                        log.warning("Image set load: skipping non-existing file "
+                                            + filePath
+                                            + " in set "
+                                            + set.getFullyQualifiedName());
+                        set.removeImageFilePath(filePath);
+                    }
+                }
+
+                addImageSet(set);
+            }
+
+            MainWindow.getInstance().getImageSetPanel().resync();
+            log.info("Loaded " + imageSets.size() + " saved image sets.");
+            MainWindow.getInstance().rebuildMenus();
+            setDirty(false);
+        }
+        catch (IOException e) {
+            log.log(Level.SEVERE, "Error saving image sets: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Parses the given input into a delimited String value. Multiple delimiters and empty
+     * delimiters are removed. For example, all of the following examples will be parsed
+     * into "/hello/there":
+     * <ul>
+     *     <li>hello/there</li>
+     *     <li>/hello/there</li>
+     *     <li>/hello/there/</li>
+     *     <li>//////hello//////there/////</li>
+     * </ul>
+     * Note that the returned string will start with the delimiter and will not
+     * end with the delimiter. The exception is that any input that evaluates to an
+     * empty string will return an empty string. For example, all of the following inputs
+     * will return the empty string:
+     * <ul>
+     *     <li>null</li>
+     *     <li>""</li>
+     *     <li>" "</li>
+     *     <li>"/"</li>
+     *     <li>"////////////////"</li>
+     * </ul>
+     */
+    public static String parseFullyQualifiedName(String input) {
+        String[] nodes = parsePathNodes(input);
+        if (nodes.length == 0) {
+            return "";
+        }
+
+        // Our fully qualified path starts with the delimiter and includes
+        // each distinct item in the given newName, including the last one:
+        StringBuilder sb = new StringBuilder();
+        sb.append(PATH_DELIMITER);
+        for (int i = 0; i < nodes.length; i++) {
+            sb.append(nodes[i]);
+            if (i != nodes.length - 1) {
+                sb.append(PATH_DELIMITER);
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Parses just the name out of the given input path. The name is the last
+     * delimited token in the given path, or the path itself if no delimiters are given.
+     * For example, all of the following will return "hello":
+     * <ul>
+     *     <li>"hello"</li>
+     *     <li>"/hello"</li>
+     *     <li>"/parent/path/hello"</li>
+     *     <li>"/////////hello"</li>
+     * </ul>
+     */
+    public static String parseName(String input) {
+        String[] nodes = parsePathNodes(input);
+        if (nodes.length == 0) {
+            return "";
+        }
+
+        // Our name is the final element in whatever path we were given:
+        // (if we were given just a name with no path, then that is our name)
+        return nodes[nodes.length-1];
+    }
+
+    /**
+     * Parses the given input and returns all path elements EXCEPT the last one.
+     * This is the inverse of the getName() method. If there are no delimiters
+     * present, this will return "/". For example, all of the following will
+     * return "/Folder1":
+     * <ul>
+     *     <li>"Folder1/test"</li>
+     *     <li>"/Folder1/test"</li>
+     *     <li>"/Folder1///////test"</li>
+     * </ul>
+     */
+    public static String parseParent(String input) {
+        String[] nodes = parsePathNodes(input);
+        if (nodes.length == 0) {
+            return String.valueOf(PATH_DELIMITER);
+        }
+
+        // The path starts with the delimiter and includes each item in the
+        // given newName, not including the last one. This string will end
+        // with the delimiter character.
+        StringBuilder sb = new StringBuilder();
+        sb.append(PATH_DELIMITER);
+        for (int i = 0; i < nodes.length - 1; i++) {
+            sb.append(nodes[i]);
+            sb.append(PATH_DELIMITER);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Given a delimited String, will return a String array containing all the non-blank elements
+     * in the input. Leading and trailing delimiters are ignored, as are repeated delimiters.
+     * So: "hello/////there", "hello//there", "/hello/there/" and "hello/there" all return
+     * an array of length 2 with the elements "hello" and "there". If the input String is
+     * empty or null, you get an empty array.
+     */
+    public static String[] parsePathNodes(String input) {
+        if (input == null || input.isBlank()) {
+            return new String[0];
+        }
+
+        List<String> parts = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+
+            if (c == PATH_DELIMITER) {
+                // If we have accumulated characters, add them as a part
+                if (!current.isEmpty()) {
+                    String candidate = current.toString().trim();
+                    if (!candidate.isBlank()) {
+                        parts.add(candidate);
+                    }
+                    current.setLength(0); // Clear the StringBuilder
+                }
+                // Otherwise, ignore the delimiter (handles consecutive delimiters)
+            }
+            else {
+                current.append(c);
+            }
+        }
+
+        // Add the last part if it's not empty
+        if (!current.isEmpty()) {
+            String candidate = current.toString().trim();
+            if (!candidate.isBlank()) {
+                parts.add(candidate);
+            }
+        }
+
+        return parts.toArray(new String[0]);
+    }
+}

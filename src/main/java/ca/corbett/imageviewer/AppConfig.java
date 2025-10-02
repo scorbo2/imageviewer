@@ -4,11 +4,14 @@ import ca.corbett.extensions.AppProperties;
 import ca.corbett.extras.MessageUtil;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.BooleanProperty;
+import ca.corbett.extras.properties.ComboProperty;
 import ca.corbett.extras.properties.DecimalProperty;
 import ca.corbett.extras.properties.DirectoryProperty;
 import ca.corbett.extras.properties.EnumProperty;
 import ca.corbett.extras.properties.IntegerProperty;
 import ca.corbett.extras.properties.LookAndFeelProperty;
+import ca.corbett.forms.fields.ComboField;
+import ca.corbett.forms.fields.FormField;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
@@ -25,7 +28,8 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
     protected static AppConfig instance;
     private MessageUtil messageUtil;
 
-    private IntegerProperty sideSplitPanePositionProp;
+    private IntegerProperty fileSystemVerticalSplitPanePositionProp;
+    private IntegerProperty imageSetVerticalSplitPanePositionProp;
     private IntegerProperty mainSplitPanePositionProp;
     private IntegerProperty mainWindowWidthProp;
     private IntegerProperty mainWindowHeightProp;
@@ -46,6 +50,8 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
     private EnumProperty<ThumbSize> thumbSizeProp;
     private EnumProperty<ThumbPageSize> thumbPageSizeProp;
 
+    private ComboProperty<String> imageSetSaveLocation;
+    private DirectoryProperty imageSetSaveLocationOverride;
 
     protected AppConfig() {
         super(Version.APPLICATION_NAME + " " + Version.VERSION,
@@ -61,12 +67,20 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         return instance;
     }
 
-    public int getSideSplitPanePosition() {
-        return sideSplitPanePositionProp.getValue();
+    public int getFileSystemVerticalSplitPanePosition() {
+        return fileSystemVerticalSplitPanePositionProp.getValue();
     }
 
-    public void setSideSplitPanePosition(int value) {
-        sideSplitPanePositionProp.setValue(value);
+    public int getImageSetVerticalSplitPanePosition() {
+        return imageSetVerticalSplitPanePositionProp.getValue();
+    }
+
+    public void setFileSystemVerticalSplitPanePosition(int value) {
+        fileSystemVerticalSplitPanePositionProp.setValue(value);
+    }
+
+    public void setImageSetVerticalSplitPanePosition(int value) {
+        imageSetVerticalSplitPanePositionProp.setValue(value);
     }
 
     public int getMainSplitPanePosition() {
@@ -129,6 +143,22 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         return thumbPageSizeProp.getSelectedItem().getSize();
     }
 
+    public File getImageSetSaveLocation() {
+        //noinspection unchecked
+        ComboProperty<String> prop = (ComboProperty<String>)getPropertiesManager().getProperty(
+                imageSetSaveLocation.getFullyQualifiedName());
+        if (prop.getSelectedIndex() == 0) {
+            return Version.SETTINGS_DIR;
+        }
+        return imageSetSaveLocationOverride.getDirectory();
+    }
+
+    // for unit tests only
+    public void setImageSetSaveLocation(File saveLocation) {
+        imageSetSaveLocation.setSelectedIndex(1);
+        imageSetSaveLocationOverride.setDirectory(saveLocation);
+    }
+
     public boolean isQuickMoveEnabled() {
         return enableQuickMoveProp.getValue();
     }
@@ -150,10 +180,17 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
     protected List<AbstractProperty> createInternalProperties() {
         List<AbstractProperty> list = new ArrayList<>();
 
-        sideSplitPanePositionProp = new IntegerProperty("UI.Main Window.sideSplitPanePosition", "sideSplitPanePosition",
-                                                        400, 1, 9999, 1);
-        sideSplitPanePositionProp.setExposed(false);
-        list.add(sideSplitPanePositionProp);
+        fileSystemVerticalSplitPanePositionProp = new IntegerProperty(
+                "UI.Main Window.fileSystemVerticalSplitPanePosition",
+                "sideSplitPanePosition", 400, 1, 9999, 1);
+        fileSystemVerticalSplitPanePositionProp.setExposed(false);
+        list.add(fileSystemVerticalSplitPanePositionProp);
+
+        imageSetVerticalSplitPanePositionProp = new IntegerProperty(
+                "UI.Main Window.imageSetVerticalSplitPanePosition",
+                "sideSplitPanePosition", 400, 1, 9999, 1);
+        imageSetVerticalSplitPanePositionProp.setExposed(false);
+        list.add(imageSetVerticalSplitPanePositionProp);
 
         mainSplitPanePositionProp = new IntegerProperty("UI.Main Window.mainSplitPanePosition", "mainSplitPanePosition",
                                                         180, 1, 9999, 1);
@@ -189,6 +226,27 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         lookAndFeelProp = new LookAndFeelProperty("UI.Look and Feel.Look and Feel", "Look and Feel:",
                                                   FlatDarkLaf.class.getName());
         list.add(lookAndFeelProp);
+
+        imageSetSaveLocation = new ComboProperty<>("UI.Image sets.imageSetSaveLocation", "Persistence:",
+                                                   List.of("Use application settings directory",
+                                                           "Choose a specific directory..."), 0, false);
+        list.add(imageSetSaveLocation);
+        imageSetSaveLocationOverride = new DirectoryProperty("UI.Image sets.imageSetSaveDirectoryOverride",
+                                                             "Persistence dir:", false, Version.SETTINGS_DIR);
+        boolean initiallyVisible = false;
+        String currentOption = peek(Version.APP_CONFIG_FILE, "UI.Image sets.imageSetSaveLocation");
+        if (currentOption != null && currentOption.equals("Choose a specific directory...")) {
+            initiallyVisible = true;
+        }
+        imageSetSaveLocationOverride.setInitiallyVisible(initiallyVisible);
+        list.add(imageSetSaveLocationOverride);
+
+        // Set up a listener to make the override visible/invisible as needed:
+        imageSetSaveLocation.addFormFieldChangeListener(event -> {
+            int index = ((ComboField)event.formField()).getSelectedIndex();
+            FormField field = event.formPanel().getFormField("UI.Image sets.imageSetSaveDirectoryOverride");
+            field.setVisible(index == 1);
+        });
 
         thumbSizeProp = new EnumProperty<>("Thumbnails.General.thumbSize", "Thumb size", ThumbSize.Normal);
         list.add(thumbSizeProp);

@@ -1,8 +1,8 @@
-# imageviewer
+# ImageViewer
 
-This is "imageviewer", a 100% Java music player with a UI written in Java Swing.
+This is "ImageViewer", a 100% Java image viewer with a UI written in Java Swing.
 
-![ImageViewer](imageviewer.png "ImageViewer")
+![ImageViewer](imageviewer.jpg "ImageViewer")
 
 Features:
 - extremely customizable via Java extension classes
@@ -19,7 +19,7 @@ git clone https://github.com/scorbo2/imageviewer.git
 cd imageviewer
 mvn package
 cd target
-java -jar imageviewer-2.1.jar
+java -jar imageviewer-2.2.jar
 ```
 
 If you have [install-scripts](https://github.com/scorbo2/install-scripts) installed, you can also
@@ -51,6 +51,7 @@ Out of the box, ImageViewer comes with the following extensions:
 - **Crop image** - easily crop images using a rectangular selection.
 - **Add border** - easily add a configurable border to a single images or a directory of images.
 - **Add watermark** - easily add a watermark with configurable position and transparency to an image or a directory of images.
+- [ICE](https://github.com/scorbo2/ext-iv-ice) - tag images semantically and search for images by tag
 
 ### Create your own extension!
 

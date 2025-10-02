@@ -7,6 +7,7 @@ import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.ImageOperation;
 import ca.corbett.imageviewer.Version;
 import ca.corbett.imageviewer.ui.ImageInstance;
+import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.ThumbPanel;
 
 import javax.swing.AbstractAction;
@@ -14,6 +15,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
@@ -131,12 +133,13 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
      * to one of our built-in top-level menus.
      *
      * @param topLevelMenu The name of the top-level menu: File, Edit, View, or Help.
+     * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
      * @return A list of 0 or more menu items supplied by enabled extensions.
      */
-    public List<JMenuItem> getMenuItems(String topLevelMenu) {
+    public List<JMenuItem> getMenuItems(String topLevelMenu, MainWindow.BrowseMode browseMode) {
         List<JMenuItem> list = new ArrayList<>();
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            List<JMenuItem> toAdd = extension.getMenuItems(topLevelMenu);
+            List<JMenuItem> toAdd = extension.getMenuItems(topLevelMenu, browseMode);
             if (toAdd != null) {
                 list.addAll(toAdd);
             }
@@ -148,12 +151,13 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
      * Interrogates extensions to see if they have any top-level menus that they want
      * to add to the MainWindow's main menu.
      *
+     * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
      * @return A list of 0 or more JMenus supplied by enabled extensions.
      */
-    public List<JMenu> getTopLevelMenus() {
+    public List<JMenu> getTopLevelMenus(MainWindow.BrowseMode browseMode) {
         List<JMenu> list = new ArrayList<>();
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            List<JMenu> toAdd = extension.getTopLevelMenus();
+            List<JMenu> toAdd = extension.getTopLevelMenus(browseMode);
             if (toAdd != null) {
                 list.addAll(toAdd);
             }
@@ -167,10 +171,10 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
      *
      * @return A list of 0 or more menu items supplied by enabled extensions.
      */
-    public List<JMenuItem> getPopupMenuItems() {
+    public List<JMenuItem> getPopupMenuItems(MainWindow.BrowseMode browseMode) {
         List<JMenuItem> list = new ArrayList<>();
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            List<JMenuItem> toAdd = extension.getPopupMenuItems();
+            List<JMenuItem> toAdd = extension.getPopupMenuItems(browseMode);
             if (toAdd != null) {
                 list.addAll(toAdd);
             }
@@ -179,14 +183,30 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     }
 
     /**
-     * Interrogates extensions to see if they have any toolbar buttons to add to the toolbar.
+     * Interrogates extensions to see if they have any toolbar buttons to add to the main toolbar.
      *
      * @return A list of 0 or more buttons supplied by enabled extensions.
      */
-    public List<JButton> getToolBarButtons() {
+    public List<JButton> getMainToolBarButtons() {
         List<JButton> list = new ArrayList<>();
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            List<JButton> toAdd = extension.getToolBarButtons();
+            List<JButton> toAdd = extension.getMainToolBarButtons();
+            if (toAdd != null) {
+                list.addAll(toAdd);
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Interrogates extensions to see if they have any toolbar buttons to add to the image set panel toolbar.
+     *
+     * @return A list of 0 or more buttons supplied by enabled extensions.
+     */
+    public List<JButton> getImageSetToolBarButtons() {
+        List<JButton> list = new ArrayList<>();
+        for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
+            List<JButton> toAdd = extension.getImageSetToolBarButtons();
             if (toAdd != null) {
                 list.addAll(toAdd);
             }
@@ -198,11 +218,14 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
      * Gives all enabled extensions a chance to handle the given keyboard shortcut.
      *
      * @param e The KeyEvent in question.
+     * @return true if any extension reports that it handled the event
      */
-    public void handleKeyboardShortcut(KeyEvent e) {
+    public boolean handleKeyboardShortcut(KeyEvent e) {
+        boolean wasHandled = false;
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            extension.handleKeyboardShortcut(e); // we could stop if one returns true...
+            wasHandled = wasHandled || extension.handleKeyboardShortcut(e); // we could stop if one returns true...
         }
+        return wasHandled;
     }
 
     /**
@@ -296,6 +319,16 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     public void directoryWasMoved(File oldLocation, File newLocation) {
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
             extension.directoryWasMoved(oldLocation, newLocation);
+        }
+    }
+
+    /**
+     * Informational message to inform extensions that the current browse mode has changed.
+     * Extensions can use this to re-render whatever UI component may need to change as a result.
+     */
+    public void browseModeChanged(MainWindow.BrowseMode newBrowseMode) {
+        for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
+            extension.browseModeChanged(newBrowseMode);
         }
     }
 
@@ -466,4 +499,16 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
         }
     }
 
+    /**
+     * Returns a combined list of all JPanels returned by all extensions to be displayed as
+     * tabs in the main image tab panel. If no extension returns anything, the main image
+     * tab panel is hidden.
+     */
+    public List<JPanel> getImageTabPanels() {
+        List<JPanel> list = new ArrayList<>();
+        for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
+            list.addAll(extension.getImageTabPanels());
+        }
+        return list;
+    }
 }

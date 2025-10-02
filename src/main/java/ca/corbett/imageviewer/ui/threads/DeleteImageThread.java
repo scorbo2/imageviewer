@@ -116,6 +116,8 @@ public final class DeleteImageThread implements Runnable {
                             // leave behind no stragglers.
                             ImageViewerExtensionManager.getInstance()
                                                        .postImageOperation(ImageOperation.Type.DELETE, file);
+
+                            MainWindow.getInstance().getImageSetManager().imageDeleted(file);
                         }
 
                         for (File f : companions) {
@@ -187,6 +189,7 @@ public final class DeleteImageThread implements Runnable {
                 okay = okay && file.delete();
                 if (okay) {
                     ImageViewerExtensionManager.getInstance().postImageOperation(ImageOperation.Type.DELETE, file);
+                    MainWindow.getInstance().getImageSetManager().imageDeleted(file);
                 }
                 long elapsedTimeDelete = System.currentTimeMillis() - startTime;
                 monitor.setProgress(i++);

@@ -7,8 +7,9 @@ import java.awt.event.ActionEvent;
 
 /**
  * This action is a wrapper around ImageOperationHandler.repeatLastOperation().
+ * If the last ImageOperation was repeatable, this action will do it again with the current image.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public class RepeatAction extends AbstractAction {
 

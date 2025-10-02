@@ -2,6 +2,7 @@ package ca.corbett.imageviewer;
 
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
+import ca.corbett.imageviewer.ui.actions.ImageSetRemoveImageAction;
 import ca.corbett.imageviewer.ui.actions.RenameAction;
 
 import java.awt.KeyEventDispatcher;
@@ -37,6 +38,7 @@ public final class KeyboardManager {
                     return false; // don't capture keystrokes if a popup dialog is showing.
                 }
 
+                boolean wasHandled = false;
                 if (e.getID() == KeyEvent.KEY_PRESSED) {
 
                     switch (e.getKeyCode()) {
@@ -45,22 +47,45 @@ public final class KeyboardManager {
                         case KeyEvent.VK_LEFT:
                         case KeyEvent.VK_UP:
                             instance.selectPreviousImage();
+                            wasHandled = true;
                             break;
 
                         // Right or down arrow for "next image":
                         case KeyEvent.VK_RIGHT:
                         case KeyEvent.VK_DOWN:
                             instance.selectNextImage();
+                            wasHandled = true;
                             break;
 
                         // Delete key to delete current image:
                         case KeyEvent.VK_DELETE:
-                            ImageOperationHandler.deleteImage();
+                            if (MainWindow.getInstance().getBrowseMode() == MainWindow.BrowseMode.FILE_SYSTEM) {
+                                ImageOperationHandler.deleteImage();
+                            }
+                            else {
+                                new ImageSetRemoveImageAction("Remove image from image set").actionPerformed(null);
+                            }
+                            wasHandled = true;
                             break;
 
                         // F2 to rename current image:
                         case KeyEvent.VK_F2:
                             new RenameAction().actionPerformed(null);
+                            wasHandled = true;
+                            break;
+
+                        // ALT+1 for File system browsing:
+                        case KeyEvent.VK_1:
+                            if (e.isAltDown()) {
+                                MainWindow.getInstance().setBrowseMode(MainWindow.BrowseMode.FILE_SYSTEM, true);
+                            }
+                            break;
+
+                        // ALT+2 for File system browsing:
+                        case KeyEvent.VK_2:
+                            if (e.isAltDown()) {
+                                MainWindow.getInstance().setBrowseMode(MainWindow.BrowseMode.IMAGE_SET, true);
+                            }
                             break;
 
                         default:
@@ -68,11 +93,11 @@ public final class KeyboardManager {
                     }
 
                     // Give extensions a chance to handle this shortcut:
-                    ImageViewerExtensionManager.getInstance().handleKeyboardShortcut(e);
+                    wasHandled = wasHandled || ImageViewerExtensionManager.getInstance().handleKeyboardShortcut(e);
                 }
 
-                //Allow the event to be redispatched
-                return false;
+                // Allow the event to be redispatched if it wasn't handled here.
+                return wasHandled;
             }
 
         });

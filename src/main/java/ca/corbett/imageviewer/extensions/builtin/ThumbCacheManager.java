@@ -31,10 +31,11 @@ import java.util.logging.Logger;
  * Caching can be enabled or disabled for the entire application via the extension
  * manager dialog, by just disabling this extension. Disabling the extension does not
  * clear the cache dir, so re-enabling it later will allow the use of whatever
- * thumbnails were already cached before it was disabled.
+ * thumbnails were already cached before it was disabled. A separate action is available
+ * to allow clearing the thumbnail cache.
  * </p>
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 1.1
  */
 final class ThumbCacheManager {
@@ -47,7 +48,6 @@ final class ThumbCacheManager {
     }
 
     public static class CacheStats {
-
         int thumbnailCount;
         int fileCount;
         long totalSize;
@@ -57,31 +57,24 @@ final class ThumbCacheManager {
             return thumbnailCount + " thumbnails in " + fileCount + " files, " + getPrintableSize(
                     totalSize) + " total.";
         }
+    }
 
-        public String getPrintableSize(long size) {
-            String suffix = " bytes";
-            if (size > 1024) {
-                size /= 1024;
-                suffix = "KB";
+    public static String getPrintableSize(long size) {
+        String[] units = {"bytes", "KB", "MB", "GB", "TB", "PB"};
+        int unitIndex = 0;
+        double sizeDouble = size;
 
-                if (size > 1024) {
-                    size /= 1024;
-                    suffix = "MB";
-
-                    if (size > 1024) {
-                        size /= 1024;
-                        suffix = "GB";
-
-                        if (size > 1024) {
-                            size /= 1024;
-                            suffix = "TB";
-                        }
-                    }
-                }
-            }
-            return size + suffix;
+        while (sizeDouble >= 1024 && unitIndex < units.length - 1) {
+            sizeDouble /= 1024.0;
+            unitIndex++;
         }
 
+        if (unitIndex == 0) {
+            return String.format("%d %s", (long)sizeDouble, units[unitIndex]);
+        }
+        else {
+            return String.format("%.1f %s", sizeDouble, units[unitIndex]);
+        }
     }
 
     private ThumbCacheManager() {
