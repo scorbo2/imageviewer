@@ -42,6 +42,10 @@ public class ImageInfoExtension extends ImageViewerExtension {
     }
 
     @Override
+    public void loadJarResources() {
+    }
+
+    @Override
     protected List<AbstractProperty> createConfigProperties() {
         return List.of();
     }
