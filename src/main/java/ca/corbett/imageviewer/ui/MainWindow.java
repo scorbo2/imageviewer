@@ -6,6 +6,7 @@ import ca.corbett.extras.dirtree.DirTreeListener;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.ImageUtil;
+import ca.corbett.extras.io.FileSystemUtil;
 import ca.corbett.extras.logging.LogConsole;
 import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.ImageOperationHandler;
@@ -21,6 +22,10 @@ import ca.corbett.imageviewer.ui.actions.ReloadUIAction;
 import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 import ca.corbett.imageviewer.ui.imagesets.ImageSetManager;
 import ca.corbett.imageviewer.ui.imagesets.ImageSetPanel;
+import ca.corbett.updates.UpdateManager;
+import ca.corbett.updates.UpdateSources;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.commons.io.FileUtils;
 
 import javax.swing.ImageIcon;
@@ -89,6 +94,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
     private final ImageSetManager imageSetManager;
     private final MenuManager menuManager;
     private JToolBar toolBar;
+    private UpdateManager updateManager;
 
     private BrowseMode browseMode;
     private JTabbedPane imgSrcTabPane;
@@ -518,8 +524,9 @@ public final class MainWindow extends JFrame implements UIReloadable {
 
                     logger.info("MainWindow ready.");
                 }
-
             });
+
+            parseUpdateSources();
         }
     }
 
@@ -535,6 +542,10 @@ public final class MainWindow extends JFrame implements UIReloadable {
      */
     public void enableDirTree() {
         dirTree.setEnabled(true);
+    }
+
+    public UpdateManager getUpdateManager() {
+        return updateManager;
     }
 
     /**
@@ -589,6 +600,28 @@ public final class MainWindow extends JFrame implements UIReloadable {
         }
 
         prefs.save();
+    }
+
+    private void parseUpdateSources() {
+        if (Version.UPDATE_SOURCES_FILE != null) {
+            try {
+                Gson gson = new GsonBuilder().create();
+                UpdateSources updateSources = gson.fromJson(
+                        FileSystemUtil.readFileToString(Version.UPDATE_SOURCES_FILE),
+                        UpdateSources.class);
+                updateManager = new UpdateManager(updateSources);
+                logger.info("Update sources provided. Dynamic extension discovery is enabled.");
+            }
+            catch (Exception e) {
+                logger.log(Level.SEVERE,
+                           "Unable to parse update sources. Extension download will not be available. Error: "
+                                   + e.getMessage(),
+                           e);
+            }
+        }
+        else {
+            logger.log(Level.INFO, "No update sources provided. Dynamic extension discovery disabled.");
+        }
     }
 
     /**

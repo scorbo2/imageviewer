@@ -63,6 +63,13 @@ public final class Version {
      */
     public static final File EXTENSIONS_DIR;
 
+    /**
+     * If we were packed with an update sources json file,
+     * it will be located in the application install directory,
+     * with an optional override in the user settings dir.
+     */
+    public static final File UPDATE_SOURCES_FILE;
+
     /** The file containing our saved application config. **/
     public static final File APP_CONFIG_FILE;
 
@@ -101,5 +108,13 @@ public final class Version {
         }
 
         APP_CONFIG_FILE = new File(SETTINGS_DIR, APPLICATION_NAME + ".prefs");
+
+        // We may optionally have been provided an update sources file in user settings dir:
+        File updateSourcesFile = new File(SETTINGS_DIR, "update_sources.json");
+        if (!updateSourcesFile.exists() && INSTALL_DIR != null) {
+            // If it's not in user settings, try again in the installation dir:
+            updateSourcesFile = new File(INSTALL_DIR, "update_sources.json");
+        }
+        UPDATE_SOURCES_FILE = updateSourcesFile.exists() ? updateSourcesFile : null;
     }
 }
