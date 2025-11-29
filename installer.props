@@ -10,8 +10,8 @@ FORMAT="tarball"
 APPLICATION="ImageViewer"
 VERSION="2.3-SNAPSHOT"
 
-# An optional project URL to put into a README:
 PROJECT_URL="https://github.com/scorbo2/imageviewer"
+OUTPUT_DIR=target
 
 # Extra memory settings like Xmx and Xms can be specified here:
 JAVAMEM=
@@ -21,5 +21,6 @@ JAR="target/imageviewer-${VERSION}.jar"
 
 # Space-separated list of files and dirs to include:
 TO_COPY="target/lib"
+TO_COPY="${TO_COPY} update_sources.json"
 TO_COPY="${TO_COPY} src/main/resources/ca/corbett/imageviewer/ReleaseNotes.txt"
 TO_COPY="${TO_COPY} src/main/resources/ca/corbett/imageviewer/images/logo.png"

@@ -1,0 +1,12 @@
+{
+  "applicationName": "ImageViewer",
+  "updateSources": [
+    {
+      "name": "local",
+      "baseUrl": "file:${user.home}/Software/sc-releases/ImageViewer/dist",
+      "versionManifest": "version_manifest.json",
+      "publicKey": "public.key"
+    }
+  ],
+  "isAllowSnapshots": false
+}

@@ -6,7 +6,6 @@ import ca.corbett.extras.dirtree.DirTreeListener;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.ImageUtil;
-import ca.corbett.extras.io.FileSystemUtil;
 import ca.corbett.extras.logging.LogConsole;
 import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.ImageOperationHandler;
@@ -24,8 +23,6 @@ import ca.corbett.imageviewer.ui.imagesets.ImageSetManager;
 import ca.corbett.imageviewer.ui.imagesets.ImageSetPanel;
 import ca.corbett.updates.UpdateManager;
 import ca.corbett.updates.UpdateSources;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.apache.commons.io.FileUtils;
 
 import javax.swing.ImageIcon;
@@ -165,10 +162,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
                  */
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    instance.saveUIState();
-                    ImageViewerExtensionManager.getInstance().deactivateAll();
-                    QuickMoveManager.getInstance().close();
-                    instance.imageSetManager.save();
+                    cleanup();
                     logger.info("Application windowClosing(): finished cleanup.");
                 }
 
@@ -179,10 +173,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
                  */
                 @Override
                 public void windowClosed(WindowEvent e) {
-                    instance.saveUIState();
-                    ImageViewerExtensionManager.getInstance().deactivateAll();
-                    QuickMoveManager.getInstance().close();
-                    instance.imageSetManager.save();
+                    cleanup();
                     logger.info("Application windowClosed(): finished cleanup.");
                 }
 
@@ -366,6 +357,20 @@ public final class MainWindow extends JFrame implements UIReloadable {
         imageTabPane.invalidate();
         imageTabPane.revalidate();
         imageTabPane.repaint();
+    }
+
+    /**
+     * Perform normal shutdown tasks before the application exits.
+     */
+    private static void cleanup() {
+        if (instance != null) {
+            instance.saveUIState();
+        }
+        ImageViewerExtensionManager.getInstance().deactivateAll();
+        QuickMoveManager.getInstance().close();
+        if (instance != null) {
+            instance.imageSetManager.save();
+        }
     }
 
     /**
@@ -605,12 +610,17 @@ public final class MainWindow extends JFrame implements UIReloadable {
     private void parseUpdateSources() {
         if (Version.UPDATE_SOURCES_FILE != null) {
             try {
-                Gson gson = new GsonBuilder().create();
-                UpdateSources updateSources = gson.fromJson(
-                        FileSystemUtil.readFileToString(Version.UPDATE_SOURCES_FILE),
-                        UpdateSources.class);
-                updateManager = new UpdateManager(updateSources);
-                logger.info("Update sources provided. Dynamic extension discovery is enabled.");
+                UpdateSources updateSources = UpdateSources.fromFile(Version.UPDATE_SOURCES_FILE);
+
+                // Check to make sure there are non-pruned sources:
+                if (!updateSources.getUpdateSources().isEmpty()) {
+                    updateManager = new UpdateManager(updateSources);
+                    updateManager.registerShutdownHook(MainWindow::cleanup);
+                    logger.info("Update sources provided. Dynamic extension discovery is enabled.");
+                }
+                else {
+                    logger.info("No valid update sources were found. Dynamic extension discovery disabled.");
+                }
             }
             catch (Exception e) {
                 logger.log(Level.SEVERE,
