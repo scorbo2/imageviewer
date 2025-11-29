@@ -144,4 +144,39 @@
         </plugins>
     </build>
 
+    <!-- If the user has make_installer.sh installed, we can auto-generate -->
+    <!-- an installer package after each successful build.                 -->
+    <!-- See https://github.com/scorbo2/install-scripts/ for more info!    -->
+    <profiles>
+        <profile>
+            <id>make-installer</id>
+            <activation>
+                <file>
+                    <exists>${user.home}/bin/make-installer</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <executions>
+                            <execution>
+                                <id>make-installer</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>${user.home}/bin/make-installer</executable>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>
