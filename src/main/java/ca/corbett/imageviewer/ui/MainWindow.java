@@ -674,7 +674,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
             imageTabPane.setTabHeaderVisible(false);
         }
 
-        reload();
+        reload(true);
     }
 
     /**
@@ -683,18 +683,37 @@ public final class MainWindow extends JFrame implements UIReloadable {
      * If nothing is selected, the thumb panel is cleared.
      */
     public void reload() {
-        if (browseMode == BrowseMode.FILE_SYSTEM) {
+        reload(false);
+    }
+
+    /**
+     * Same as reload(), except you can optionally specify whether you want to
+     * force a reload of BOTH thumb container panels (file system view and
+     * image set view). If force == false, will behave the same way as reload(),
+     * and just reload whichever one is currently visible.
+     */
+    public void reload(boolean force) {
+        BrowseMode oldBrowseMode = browseMode;
+
+        if (browseMode == BrowseMode.FILE_SYSTEM || force) {
             thumbContainerPanelMap.get(BrowseMode.FILE_SYSTEM).removeAll();
             thumbContainerPanelMap.get(BrowseMode.FILE_SYSTEM).reloadThumbSizePreference();
             if (dirTree.getCurrentDir() != null) {
                 dirTreeChangeListener.selectionChanged(dirTree, dirTree.getCurrentDir());
             }
         }
-        else {
+
+        if (browseMode == BrowseMode.IMAGE_SET || force) {
             thumbContainerPanelMap.get(BrowseMode.IMAGE_SET).removeAll();
             thumbContainerPanelMap.get(BrowseMode.IMAGE_SET).reloadThumbSizePreference();
             setImageSet(imageSetPanel.getSelectedImageSet().orElse(null));
         }
+
+        // Keep the view where it was even if we were forced to reload both views:
+        if (force) {
+            setBrowseMode(oldBrowseMode, false);
+        }
+
         updateStatusBar();
     }
 
