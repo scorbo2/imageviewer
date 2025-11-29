@@ -1,6 +1,7 @@
 package ca.corbett.imageviewer.ui;
 
 import ca.corbett.extras.MessageUtil;
+import ca.corbett.extras.ToggleableTabbedPane;
 import ca.corbett.extras.dirtree.DirTree;
 import ca.corbett.extras.dirtree.DirTreeListener;
 import ca.corbett.extras.image.ImagePanel;

@@ -4,6 +4,7 @@ Author: Steve Corbett
 Version 2.3 [TODO] - Maintenance release
   #57 - Include update_sources.json with install
   #55 - Better logging of extension load on startup
+  #54 - Moving ToggleableTabbedPane up to swing-extras
   #53 - Upgrade to swing-extras 2.5
 
 Version 2.2 [2025-10-01] - Image sets
