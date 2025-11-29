@@ -155,6 +155,10 @@ public abstract class ImageViewerExtension extends AppExtension {
      * with the original file, as it may or may not still exist after the operation.
      * To receive notification AFTER the operation has completed, you can use
      * postImageOperation() instead.
+     * <p>
+     *     Note that some operations, like delete, do not have a "destination" per se.
+     *     The destFile parameter will be null in those cases.
+     * </p>
      *
      * @param opType   The type of operation that is about to happen
      * @param srcFile  The File which is about to be operated on.
@@ -165,15 +169,19 @@ public abstract class ImageViewerExtension extends AppExtension {
 
     /**
      * Informational message that an ImageOperation has just been conducted on the given image.
-     * This message is sent AFTER the operation completes, and the given image file is the file
-     * as it exists now (i.e. if it was moved, the given file is the new location, not the
-     * original location). To receive notification BEFORE the operation happens, you can
-     * use preImageOperation instead.
+     * This message is sent AFTER the operation completes, so the srcFile may no longer exist
+     * (as in the case of an image move). If you want to be notified BEFORE the operation is
+     * completed, so you can do something with the srcFile, you can use preImageOperation() instead.
+     * <p>
+     *     Note that some operations, like delete, do not have a "destination" per se.
+     *     The destFile parameter will be null in those cases.
+     * </p>
      *
-     * @param opType    The type of operation that was conducted.
-     * @param imageFile The resulting image file now that the operation has completed.
+     * @param opType   The type of operation that was conducted.
+     * @param srcFile  The original File which was operating on (may no longer exist).
+     * @param destFile The File in its current, post-operation state (may be null).
      */
-    public void postImageOperation(ImageOperation.Type opType, File imageFile) {
+    public void postImageOperation(ImageOperation.Type opType, File srcFile, File destFile) {
     }
 
     /**
