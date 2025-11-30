@@ -12,7 +12,12 @@ Features:
 
 ## How do I get it?
 
-The easiest way is to clone the repo, build it with Maven, and run the jar file:
+An installer tarball is available for linux-based systems. Just download, extract, and run
+the installer script to install the application:
+
+TODO url here
+
+Alternatively, you can clone the repo, build it with Maven, and run the jar file:
 
 ```shell
 git clone https://github.com/scorbo2/imageviewer.git
@@ -23,7 +28,8 @@ java -jar imageviewer-2.3.jar
 ```
 
 If you have [install-scripts](https://github.com/scorbo2/install-scripts) installed, you can also
-just run the `make-installer` command from the project root. This will (on linux) generate a tarball
+just run the `make-installer` command from the project root (this will happen automatically during a maven
+build if you have the make-installer script in ${user.home}/bin). This script will (on linux) generate a tarball
 containing an installer script and will provide a launcher script for more easily launching the application.
 
 ## User guide
@@ -58,7 +64,8 @@ Out of the box, ImageViewer comes with the following extensions:
 Because ImageViewer full source is available and is reasonably well documented, you can create your own extension
 to do whatever image operation you'd like. A great starting point for this would be to pick any of the extensions above
 (the source for which is also freely available) and use it as a template to see what kind of things are possible
-to do in an extension.
+to do in an extension. Or, take a look at the [ImageViewerExtension class](https://github.com/scorbo2/imageviewer/blob/master/src/main/java/ca/corbett/imageviewer/extensions/ImageViewerExtension.java)
+and its associated Javadocs, to see the extension points that your extension can hook into.
 
 ## License
 
