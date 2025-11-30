@@ -2,8 +2,14 @@
   "applicationName": "ImageViewer",
   "updateSources": [
     {
-      "name": "local",
-      "baseUrl": "file:${user.home}/Software/sc-releases/ImageViewer/dist",
+      "name": "www.corbett.ca",
+      "baseUrl": "http://www.corbett.ca/apps/ImageViewer",
+      "versionManifest": "version_manifest.json",
+      "publicKey": "public.key"
+    },
+    {
+      "name": "local filesystem",
+      "baseUrl": "file:${user.home}/Software/sc-releases/apps/ImageViewer",
       "versionManifest": "version_manifest.json",
       "publicKey": "public.key"
     }
