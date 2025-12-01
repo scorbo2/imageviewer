@@ -617,6 +617,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
                 if (!updateSources.getUpdateSources().isEmpty()) {
                     updateManager = new UpdateManager(updateSources);
                     updateManager.registerShutdownHook(MainWindow::cleanup);
+                    Version.aboutInfo.updateManager = updateManager;
                     logger.info("Update sources provided. Dynamic extension discovery is enabled.");
                 }
                 else {
