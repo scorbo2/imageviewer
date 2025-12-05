@@ -154,6 +154,9 @@
                 <file>
                     <exists>${user.home}/bin/make-installer</exists>
                 </file>
+                <os>
+                    <name>Linux</name>
+                </os>
             </activation>
             <build>
                 <plugins>
