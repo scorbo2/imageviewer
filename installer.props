@@ -8,7 +8,7 @@ FORMAT="tarball"
 
 # Application name/version will also be used for the jar file name.
 APPLICATION="ImageViewer"
-VERSION="2.3-SNAPSHOT"
+VERSION="2.3"
 
 PROJECT_URL="https://github.com/scorbo2/imageviewer"
 OUTPUT_DIR=target

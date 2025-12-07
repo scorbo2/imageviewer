@@ -15,33 +15,43 @@ Features:
 An installer tarball is available for linux-based systems. Just download, extract, and run
 the installer script to install the application:
 
-TODO url here
+- [ImageViewer-2.3.tar.gz](http://www.corbett.ca/apps/ImageViewer-2.3.tar.gz)
+- 20MB
+- SHA-1: `cb75136ada6b57b4340e98afab1985e6c9984a6e`
 
-Alternatively, you can clone the repo, build it with Maven, and run the jar file:
+Alternatively, you can clone this repo and build it with Maven (Java 17 or higher required):
 
 ```shell
 git clone https://github.com/scorbo2/imageviewer.git
 cd imageviewer
 mvn package
+
+# Run manually:
 cd target
 java -jar imageviewer-2.3.jar
 ```
 
-If you have [install-scripts](https://github.com/scorbo2/install-scripts) installed, you can also
-just run the `make-installer` command from the project root (this will happen automatically during a maven
-build if you have the make-installer script in ${user.home}/bin). This script will (on linux) generate a tarball
-containing an installer script and will provide a launcher script for more easily launching the application.
+If you have [install-scripts](https://github.com/scorbo2/install-scripts) installed and you are running the build
+on a Linux system, the installer tarball will be generated for you automatically during the build
+and placed in the target directory. 
+
+Using the installer tarball is preferable to running manually from the command line, as you get
+a launcher script that sets environment variables properly, and you get a desktop icon for easy access.
 
 ## User guide
 
 Out of the box, ImageViewer is useful for browsing and viewing images. The real power of ImageViewer comes
 from the application extension mechanism, which allows additional functionality to be added.
+Visit the extension manager dialog and switch to the "Available" tab to see a list of extensions that are
+available for download:
+
+![Extension manager](extension_manager.jpg "Extension manager")
 
 ### Built-in extensions
 
-Out of the box, ImageViewer comes with the following extensions:
+Out of the box, ImageViewer comes with the following built-in extensions:
 
-- **ImageInformation** - provides a popup with information about the image file.
+- **Image information** - provides a popup with information about the image file.
 - **Repeat and undo** - allows you to repeat the previous image move/copy/symlink option, or undo it.
 - **Statistics tracker** - tracks statistics on image operations and reports on them.
 - **Thumbnail caching** - caches thumbnails automatically to speed up access to frequently-visited directories.
@@ -73,6 +83,4 @@ imageviewer is made available under the MIT license: https://opensource.org/lice
 
 ## Revision history
 
-Originally written in 2017.  
-
-[Full release notes](src/main/resources/ca/corbett/imageviewer/ReleaseNotes.txt)
+[Full release notes and version history](src/main/resources/ca/corbett/imageviewer/ReleaseNotes.txt)
