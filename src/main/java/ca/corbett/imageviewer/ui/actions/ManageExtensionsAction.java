@@ -17,7 +17,8 @@ public class ManageExtensionsAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (AppConfig.getInstance().showExtensionDialog(MainWindow.getInstance())) {
+        if (AppConfig.getInstance().showExtensionDialog(MainWindow.getInstance(),
+                                                        MainWindow.getInstance().getUpdateManager())) {
             ReloadUIAction.getInstance().actionPerformed(e);
         }
     }

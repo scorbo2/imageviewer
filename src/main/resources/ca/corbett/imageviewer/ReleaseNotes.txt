@@ -1,6 +1,15 @@
 ImageViewer Release Notes
 Author: Steve Corbett
 
+Version 2.3 [2025-12-07] - Dynamic extensions
+  #57 - Include update_sources.json with install
+  #55 - Better logging of extension load on startup
+  #54 - Moving ToggleableTabbedPane up to swing-extras
+  #53 - Upgrade to swing-extras 2.5
+  #52 - ThumbPanel: don't send out unneeded change events
+  #51 - Fix thumbnail size changing UI reload issue
+  #42 - Slight adjustment to postImageOperation() message
+
 Version 2.2 [2025-10-01] - Image sets
   #50 - keep image set tab in sync with file system tab
   #49 - Allow randomization in image set edit dialog

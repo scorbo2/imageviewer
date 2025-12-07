@@ -159,11 +159,12 @@ public class ThumbPanel extends JPanel {
      * @param selected Whether to select this panel or not.
      */
     public void setSelected(boolean selected) {
+        // Don't process this and send out a change event if this request is a no-op:
+        if (selected == this.isSelected) {
+            return;
+        }
+
         this.isSelected = selected;
-        // TODO is this still needed? seems to work okay without it
-        //if (!MainWindow.getInstance().isFullscreenActive()) {
-        //  this.requestFocus();
-        // }
         if (isSelected) {
             Color selectedBg = LookAndFeelManager.getLafColor("textHighlight", Color.BLUE);
             setBackground(selectedBg);

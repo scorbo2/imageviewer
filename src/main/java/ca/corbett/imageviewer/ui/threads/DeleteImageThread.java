@@ -115,7 +115,7 @@ public final class DeleteImageThread implements Runnable {
                             // It's okay, as the call to deleteDirectory() down below ensures that we
                             // leave behind no stragglers.
                             ImageViewerExtensionManager.getInstance()
-                                                       .postImageOperation(ImageOperation.Type.DELETE, file);
+                                                       .postImageOperation(ImageOperation.Type.DELETE, file, null);
 
                             MainWindow.getInstance().getImageSetManager().imageDeleted(file);
                         }
@@ -182,13 +182,17 @@ public final class DeleteImageThread implements Runnable {
                     break;
                 }
                 long startTime = System.currentTimeMillis();
-                ImageViewerExtensionManager.getInstance().preImageOperation(ImageOperation.Type.DELETE, file, null);
+                ImageViewerExtensionManager
+                        .getInstance()
+                        .preImageOperation(ImageOperation.Type.DELETE, file, null);
                 long elapsedTimeLog = System.currentTimeMillis() - startTime;
                 startTime = System.currentTimeMillis();
                 logger.log(Level.INFO, "deleteImage: {0}", file.getAbsolutePath());
                 okay = okay && file.delete();
                 if (okay) {
-                    ImageViewerExtensionManager.getInstance().postImageOperation(ImageOperation.Type.DELETE, file);
+                    ImageViewerExtensionManager
+                            .getInstance()
+                            .postImageOperation(ImageOperation.Type.DELETE, file, null);
                     MainWindow.getInstance().getImageSetManager().imageDeleted(file);
                 }
                 long elapsedTimeDelete = System.currentTimeMillis() - startTime;

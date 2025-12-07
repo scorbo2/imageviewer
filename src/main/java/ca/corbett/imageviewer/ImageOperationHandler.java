@@ -244,7 +244,7 @@ public final class ImageOperationHandler {
             }
 
             // Notify extensions of what just happened:
-            ImageViewerExtensionManager.getInstance().postImageOperation(operation, destFile);
+            ImageViewerExtensionManager.getInstance().postImageOperation(operation, srcFile, destFile);
 
             // Also notify the ImageSetManager if it was a MOVE operation:
             if (operation == ImageOperation.Type.MOVE) {
@@ -701,7 +701,7 @@ public final class ImageOperationHandler {
                 f.renameTo(new File(srcFile.getParentFile(), renamedCompanion.getName()));
             }
         }
-        ImageViewerExtensionManager.getInstance().postImageOperation(ImageOperation.Type.MOVE, newFile);
+        ImageViewerExtensionManager.getInstance().postImageOperation(ImageOperation.Type.MOVE, srcFile, newFile);
 
         // Notify the ImageSetManager that this has happened
         // Note we can't use srcFile here as it has been renamed... we need the original file
@@ -743,7 +743,7 @@ public final class ImageOperationHandler {
         }
 
         // Notify extensions that we deleted the file (this is debatable since srcFile no longer exists, but eh).
-        ImageViewerExtensionManager.getInstance().postImageOperation(ImageOperation.Type.DELETE, srcFile);
+        ImageViewerExtensionManager.getInstance().postImageOperation(ImageOperation.Type.DELETE, srcFile, null);
 
         // Also notify ImageSetManager:
         MainWindow.getInstance().getImageSetManager().imageDeleted(srcFile);
@@ -1064,7 +1064,7 @@ public final class ImageOperationHandler {
                             FileUtils.moveFile(f, new File(destFile.getParentFile(), f.getName()));
                         }
                         ImageViewerExtensionManager.getInstance()
-                                                   .postImageOperation(ImageOperation.Type.MOVE, destFile);
+                                                   .postImageOperation(ImageOperation.Type.MOVE, file, destFile);
                     }
                     catch (IOException ioe) {
                         getMessageUtil().error("Undo last operation",
@@ -1076,13 +1076,17 @@ public final class ImageOperationHandler {
 
             case COPY:
                 for (File file : affectedFiles) {
-                    ImageViewerExtensionManager.getInstance().preImageOperation(ImageOperation.Type.DELETE, file, null);
+                    ImageViewerExtensionManager
+                            .getInstance()
+                            .preImageOperation(ImageOperation.Type.DELETE, file, null);
                     List<File> companions = ImageViewerExtensionManager.getInstance().getCompanionFiles(file);
                     FileUtils.deleteQuietly(file);
                     for (File f : companions) {
                         FileUtils.deleteQuietly(f);
                     }
-                    ImageViewerExtensionManager.getInstance().postImageOperation(ImageOperation.Type.DELETE, file);
+                    ImageViewerExtensionManager
+                            .getInstance()
+                            .postImageOperation(ImageOperation.Type.DELETE, file, null);
                 }
                 break;
 

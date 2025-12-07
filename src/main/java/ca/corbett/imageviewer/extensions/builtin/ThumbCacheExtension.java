@@ -58,6 +58,10 @@ public class ThumbCacheExtension extends ImageViewerExtension {
     }
 
     @Override
+    public void loadJarResources() {
+    }
+
+    @Override
     protected List<AbstractProperty> createConfigProperties() {
         return List.of(new LabelProperty("Thumbnails.Caching.label", "Thumbnail caching extension is active."));
     }
@@ -127,12 +131,9 @@ public class ThumbCacheExtension extends ImageViewerExtension {
     /**
      * We hook into this so that we can move, copy, symlink, and delete thumbnails as their
      * master image gets moved, copied, symlinked, or deleted.
-     * Note this should be in postImageOperation but there's
-     * an <a href="https://github.com/scorbo2/imageviewer/issues/42">issue</a> in the way.
-     * TODO clean this up when issue 42 is resolved.
      */
     @Override
-    public void preImageOperation(ImageOperation.Type opType, File srcFile, File destFile) {
+    public void postImageOperation(ImageOperation.Type opType, File srcFile, File destFile) {
         switch (opType) {
             case COPY:
             case SYMLINK:

@@ -1,6 +1,7 @@
 package ca.corbett.imageviewer.ui;
 
 import ca.corbett.extras.MessageUtil;
+import ca.corbett.extras.ToggleableTabbedPane;
 import ca.corbett.extras.dirtree.DirTree;
 import ca.corbett.extras.dirtree.DirTreeListener;
 import ca.corbett.extras.image.ImagePanel;
@@ -21,6 +22,8 @@ import ca.corbett.imageviewer.ui.actions.ReloadUIAction;
 import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 import ca.corbett.imageviewer.ui.imagesets.ImageSetManager;
 import ca.corbett.imageviewer.ui.imagesets.ImageSetPanel;
+import ca.corbett.updates.UpdateManager;
+import ca.corbett.updates.UpdateSources;
 import org.apache.commons.io.FileUtils;
 
 import javax.swing.ImageIcon;
@@ -89,6 +92,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
     private final ImageSetManager imageSetManager;
     private final MenuManager menuManager;
     private JToolBar toolBar;
+    private UpdateManager updateManager;
 
     private BrowseMode browseMode;
     private JTabbedPane imgSrcTabPane;
@@ -159,10 +163,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
                  */
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    instance.saveUIState();
-                    ImageViewerExtensionManager.getInstance().deactivateAll();
-                    QuickMoveManager.getInstance().close();
-                    instance.imageSetManager.save();
+                    cleanup();
                     logger.info("Application windowClosing(): finished cleanup.");
                 }
 
@@ -173,10 +174,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
                  */
                 @Override
                 public void windowClosed(WindowEvent e) {
-                    instance.saveUIState();
-                    ImageViewerExtensionManager.getInstance().deactivateAll();
-                    QuickMoveManager.getInstance().close();
-                    instance.imageSetManager.save();
+                    cleanup();
                     logger.info("Application windowClosed(): finished cleanup.");
                 }
 
@@ -363,6 +361,20 @@ public final class MainWindow extends JFrame implements UIReloadable {
     }
 
     /**
+     * Perform normal shutdown tasks before the application exits.
+     */
+    private static void cleanup() {
+        if (instance != null) {
+            instance.saveUIState();
+        }
+        ImageViewerExtensionManager.getInstance().deactivateAll();
+        QuickMoveManager.getInstance().close();
+        if (instance != null) {
+            instance.imageSetManager.save();
+        }
+    }
+
+    /**
      * Internal method to set up the main window and all its components.
      */
     private void initComponents() {
@@ -518,8 +530,9 @@ public final class MainWindow extends JFrame implements UIReloadable {
 
                     logger.info("MainWindow ready.");
                 }
-
             });
+
+            parseUpdateSources();
         }
     }
 
@@ -535,6 +548,10 @@ public final class MainWindow extends JFrame implements UIReloadable {
      */
     public void enableDirTree() {
         dirTree.setEnabled(true);
+    }
+
+    public UpdateManager getUpdateManager() {
+        return updateManager;
     }
 
     /**
@@ -591,6 +608,34 @@ public final class MainWindow extends JFrame implements UIReloadable {
         prefs.save();
     }
 
+    private void parseUpdateSources() {
+        if (Version.UPDATE_SOURCES_FILE != null) {
+            try {
+                UpdateSources updateSources = UpdateSources.fromFile(Version.UPDATE_SOURCES_FILE);
+
+                // Check to make sure there are non-pruned sources:
+                if (!updateSources.getUpdateSources().isEmpty()) {
+                    updateManager = new UpdateManager(updateSources);
+                    updateManager.registerShutdownHook(MainWindow::cleanup);
+                    Version.aboutInfo.updateManager = updateManager;
+                    logger.info("Update sources provided. Dynamic extension discovery is enabled.");
+                }
+                else {
+                    logger.info("No valid update sources were found. Dynamic extension discovery disabled.");
+                }
+            }
+            catch (Exception e) {
+                logger.log(Level.SEVERE,
+                           "Unable to parse update sources. Extension download will not be available. Error: "
+                                   + e.getMessage(),
+                           e);
+            }
+        }
+        else {
+            logger.log(Level.INFO, "No update sources provided. Dynamic extension discovery disabled.");
+        }
+    }
+
     /**
      * Reloads all extension-configurable elements of the UI, which is most of them.
      * The main menu will be rebuilt, all popup menus (ImagePanel and ToolBar) will be
@@ -630,7 +675,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
             imageTabPane.setTabHeaderVisible(false);
         }
 
-        reload();
+        reload(true);
     }
 
     /**
@@ -639,18 +684,37 @@ public final class MainWindow extends JFrame implements UIReloadable {
      * If nothing is selected, the thumb panel is cleared.
      */
     public void reload() {
-        if (browseMode == BrowseMode.FILE_SYSTEM) {
+        reload(false);
+    }
+
+    /**
+     * Same as reload(), except you can optionally specify whether you want to
+     * force a reload of BOTH thumb container panels (file system view and
+     * image set view). If force == false, will behave the same way as reload(),
+     * and just reload whichever one is currently visible.
+     */
+    public void reload(boolean force) {
+        BrowseMode oldBrowseMode = browseMode;
+
+        if (browseMode == BrowseMode.FILE_SYSTEM || force) {
             thumbContainerPanelMap.get(BrowseMode.FILE_SYSTEM).removeAll();
             thumbContainerPanelMap.get(BrowseMode.FILE_SYSTEM).reloadThumbSizePreference();
             if (dirTree.getCurrentDir() != null) {
                 dirTreeChangeListener.selectionChanged(dirTree, dirTree.getCurrentDir());
             }
         }
-        else {
+
+        if (browseMode == BrowseMode.IMAGE_SET || force) {
             thumbContainerPanelMap.get(BrowseMode.IMAGE_SET).removeAll();
             thumbContainerPanelMap.get(BrowseMode.IMAGE_SET).reloadThumbSizePreference();
             setImageSet(imageSetPanel.getSelectedImageSet().orElse(null));
         }
+
+        // Keep the view where it was even if we were forced to reload both views:
+        if (force) {
+            setBrowseMode(oldBrowseMode, false);
+        }
+
         updateStatusBar();
     }
 

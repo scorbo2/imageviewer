@@ -470,6 +470,12 @@ public final class ThumbContainerPanel extends JPanel {
      * @param pn The ThumbPanel to select.
      */
     private void setSelectedThumb(ThumbPanel pn) {
+        // If the given panel is already selected, there's no need to process this request:
+        if (pn.isSelected()) {
+            return;
+        }
+
+        // Otherwise, select it, and deselect all others:
         selectedPanelIndex = -1;
         for (int i = 0; i < loadedThumbPanels.size(); i++) {
             ThumbPanel candidate = loadedThumbPanels.get(i);

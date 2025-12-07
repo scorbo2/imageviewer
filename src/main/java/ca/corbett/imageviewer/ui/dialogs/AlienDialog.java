@@ -124,10 +124,14 @@ public final class AlienDialog extends JDialog {
         try {
             for (int i : selectedIndeces) {
                 File file = files.get(i);
-                ImageViewerExtensionManager.getInstance().preImageOperation(ImageOperation.Type.DELETE, file, null);
+                ImageViewerExtensionManager
+                        .getInstance()
+                        .preImageOperation(ImageOperation.Type.DELETE, file, null);
                 okay = okay && file.delete();
                 if (okay) {
-                    ImageViewerExtensionManager.getInstance().postImageOperation(ImageOperation.Type.DELETE, file);
+                    ImageViewerExtensionManager
+                            .getInstance()
+                            .postImageOperation(ImageOperation.Type.DELETE, file, null);
                 }
             }
             rescanDir();
@@ -181,10 +185,14 @@ public final class AlienDialog extends JDialog {
         try {
             boolean okay = true;
             for (File file : files) {
-                ImageViewerExtensionManager.getInstance().preImageOperation(ImageOperation.Type.DELETE, file, null);
+                ImageViewerExtensionManager
+                        .getInstance()
+                        .preImageOperation(ImageOperation.Type.DELETE, file, null);
                 okay = okay && file.delete();
                 if (okay) {
-                    ImageViewerExtensionManager.getInstance().postImageOperation(ImageOperation.Type.DELETE, file);
+                    ImageViewerExtensionManager
+                            .getInstance()
+                            .postImageOperation(ImageOperation.Type.DELETE, file, null);
                 }
             }
             rescanDir();

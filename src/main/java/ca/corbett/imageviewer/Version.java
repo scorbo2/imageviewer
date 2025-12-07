@@ -22,7 +22,7 @@ public final class Version {
     public static final int VERSION_MAJOR = 2;
 
     /** The minor (patch) version. **/
-    public static final int VERSION_MINOR = 2;
+    public static final int VERSION_MINOR = 3;
 
     /** A user-friendly version string in the form "MAJOR.MINOR" (example: "1.0"). **/
     public static final String VERSION = VERSION_MAJOR + "." + VERSION_MINOR;
@@ -63,6 +63,13 @@ public final class Version {
      */
     public static final File EXTENSIONS_DIR;
 
+    /**
+     * If we were packed with an update sources json file,
+     * it will be located in the application install directory,
+     * with an optional override in the user settings dir.
+     */
+    public static final File UPDATE_SOURCES_FILE;
+
     /** The file containing our saved application config. **/
     public static final File APP_CONFIG_FILE;
 
@@ -88,7 +95,8 @@ public final class Version {
         INSTALL_DIR = installDir == null ? null : new File(installDir);
 
         String appDir = System.getProperty("SETTINGS_DIR",
-                                           new File(System.getProperty("user.home"), "." + NAME).getAbsolutePath());
+                                           new File(System.getProperty("user.home"),
+                                                    "." + APPLICATION_NAME).getAbsolutePath());
         SETTINGS_DIR = new File(appDir);
         if (!SETTINGS_DIR.exists()) {
             SETTINGS_DIR.mkdirs();
@@ -101,5 +109,13 @@ public final class Version {
         }
 
         APP_CONFIG_FILE = new File(SETTINGS_DIR, APPLICATION_NAME + ".prefs");
+
+        // We may optionally have been provided an update sources file in user settings dir:
+        File updateSourcesFile = new File(SETTINGS_DIR, "update_sources.json");
+        if (!updateSourcesFile.exists() && INSTALL_DIR != null) {
+            // If it's not in user settings, try again in the installation dir:
+            updateSourcesFile = new File(INSTALL_DIR, "update_sources.json");
+        }
+        UPDATE_SOURCES_FILE = updateSourcesFile.exists() ? updateSourcesFile : null;
     }
 }
