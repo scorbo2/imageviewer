@@ -95,7 +95,8 @@ public final class Version {
         INSTALL_DIR = installDir == null ? null : new File(installDir);
 
         String appDir = System.getProperty("SETTINGS_DIR",
-                                           new File(System.getProperty("user.home"), "." + NAME).getAbsolutePath());
+                                           new File(System.getProperty("user.home"),
+                                                    "." + APPLICATION_NAME).getAbsolutePath());
         SETTINGS_DIR = new File(appDir);
         if (!SETTINGS_DIR.exists()) {
             SETTINGS_DIR.mkdirs();
