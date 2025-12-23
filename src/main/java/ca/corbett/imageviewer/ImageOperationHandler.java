@@ -917,6 +917,7 @@ public final class ImageOperationHandler {
                 try {
                     FileUtils.moveDirectory(targetDir, newDir);
                     ImageViewerExtensionManager.getInstance().directoryWasMoved(targetDir, newDir);
+                    MainWindow.getInstance().getImageSetManager().directoryMoved(targetDir, newDir);
                 }
                 catch (IOException ioe) {
                     getMessageUtil().error("Caught exception while moving directory: " + ioe.getMessage(), ioe);
@@ -1065,6 +1066,9 @@ public final class ImageOperationHandler {
                         }
                         ImageViewerExtensionManager.getInstance()
                                                    .postImageOperation(ImageOperation.Type.MOVE, file, destFile);
+                        
+                        // Also notify the ImageSetManager that the file was moved back:
+                        MainWindow.getInstance().getImageSetManager().imageMoved(file, destFile);
                     }
                     catch (IOException ioe) {
                         getMessageUtil().error("Undo last operation",
