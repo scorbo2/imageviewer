@@ -2,6 +2,7 @@ ImageViewer Release Notes
 Author: Steve Corbett
 
 Version 2.4 [2025-12-31] - Maintenance release
+  #64 - Add "view as text" option on alien dialog
   #62 - Bug: undo operations weren't updating image sets
 
 Version 2.3 [2025-12-07] - Dynamic extensions
