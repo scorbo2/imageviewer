@@ -2,6 +2,7 @@ package ca.corbett.imageviewer.ui.dialogs;
 
 import ca.corbett.extras.MessageUtil;
 import ca.corbett.extras.PopupTextDialog;
+import ca.corbett.extras.io.FileSystemUtil;
 import ca.corbett.extras.io.TextFileDetector;
 import ca.corbett.imageviewer.ImageOperation;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
@@ -45,12 +46,15 @@ public final class AlienDialog extends JDialog {
     private static final Logger logger = Logger.getLogger(AlienDialog.class.getName());
     public static final String DARWIN_METADATA_FILENAME = ".00darwin-metadata"; // TODO wtf is this doing here
 
+    private static final long VIEW_AS_TEXT_MAX_FILE_SIZE = 256 * 1024; // 256KB arbitrary default
+
     private MessageUtil messageUtil;
     private static AlienDialog instance;
     private JList alienList;
     private DefaultListModel listModel;
     private File directory;
     private List<File> files;
+    private long viewAsTextMaxFileSize = VIEW_AS_TEXT_MAX_FILE_SIZE;
 
     private AlienDialog() {
         super(MainWindow.getInstance(), "Aliens detected", true);
@@ -84,6 +88,21 @@ public final class AlienDialog extends JDialog {
             setLocationRelativeTo(MainWindow.getInstance());
         }
         super.setVisible(visible);
+    }
+
+    /**
+     * Returns the maximum file size (in bytes) that can be viewed as text.
+     */
+    public long getViewAsTextMaxFileSize() {
+        return viewAsTextMaxFileSize;
+    }
+
+    /**
+     * Sets the maximum file size (in bytes) that can be viewed as text.
+     * The default is 256KB.
+     */
+    public void setViewAsTextMaxFileSize(long viewAsTextMaxFileSize) {
+        this.viewAsTextMaxFileSize = viewAsTextMaxFileSize;
     }
 
     /**
@@ -228,8 +247,14 @@ public final class AlienDialog extends JDialog {
 
         // First make sure the file isn't unreasonably large:
         File file = files.get(selectedIndices[0]);
-        if (file.length() > 256 * 1024) { // 256KB is arbitrary but seems reasonable
-            getMessageUtil().info("View as text", "The selected file is too large to view as text.");
+        if (file.length() > viewAsTextMaxFileSize) {
+            getMessageUtil().info("View as text",
+                                  "The selected file is too large to view as text.\n"
+                                          + "Maximum size is "
+                                          + FileSystemUtil.getPrintableSize(viewAsTextMaxFileSize)
+                                          + ", this file is "
+                                          + FileSystemUtil.getPrintableSize(file.length())
+                                          + ".");
             return;
         }
 
