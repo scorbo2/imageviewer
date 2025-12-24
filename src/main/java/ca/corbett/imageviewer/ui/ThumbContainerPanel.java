@@ -284,7 +284,11 @@ public final class ThumbContainerPanel extends JPanel {
         if (imageFileList == null) {
             imageFileList = new ArrayList<>();
         }
-        alienFileList.clear();
+
+        // Note that we don't clear alienFileList here, because that list
+        // likely hasn't changed. (we haven't changed directories).
+
+        // Reset our load offset and begin loading this list:
         loadOffset = 0;
         loadMoreImages();
     }
