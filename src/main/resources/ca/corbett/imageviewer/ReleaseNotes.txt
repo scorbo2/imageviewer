@@ -4,6 +4,7 @@ Author: Steve Corbett
 Version 2.4 [2025-12-31] - Maintenance release
   #64 - Add "view as text" option on alien dialog
   #62 - Bug: undo operations weren't updating image sets
+  #59 - Added DirectoryInfoDialog to the image info extension
 
 Version 2.3 [2025-12-07] - Dynamic extensions
   #57 - Include update_sources.json with install
