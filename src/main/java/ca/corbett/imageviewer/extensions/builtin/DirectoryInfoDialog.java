@@ -44,6 +44,7 @@ public class DirectoryInfoDialog extends JDialog {
     private final LabelField companionFilesField;
     private final LabelField alienFilesField;
     private final LabelField totalFilesField;
+    private boolean isScanInProgress = false;
 
     public DirectoryInfoDialog(Frame owner, File dir) {
         super(owner, "Directory information", true);
@@ -70,6 +71,7 @@ public class DirectoryInfoDialog extends JDialog {
         add(buildButtonPanel(), BorderLayout.SOUTH);
 
         setSize(400, 300);
+        setResizable(false);
         setLocationRelativeTo(owner);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
@@ -81,6 +83,15 @@ public class DirectoryInfoDialog extends JDialog {
             log.warning("No directory selected for DirectoryInfoDialog.");
             return;
         }
+
+        // If a scan is already in progress, ignore this request
+        if (isScanInProgress) {
+            log.fine("Scan already in progress, ignoring rescan request.");
+            return;
+        }
+
+        // Set the flag to prevent concurrent scans
+        isScanInProgress = true;
 
         // Fire off a worker thread as the scan may take some time:
         boolean isRecursive = recursiveField.isChecked();
@@ -175,6 +186,11 @@ public class DirectoryInfoDialog extends JDialog {
                 });
             }
             finally {
+                // Clear the flag to allow future scans:
+                SwingUtilities.invokeLater(() -> {
+                    isScanInProgress = false;
+                });
+
                 // Don't forget to fire complete event!
                 // Otherwise, the progress dialog hangs around.
                 fireProgressComplete();
