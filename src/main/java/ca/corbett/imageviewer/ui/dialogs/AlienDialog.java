@@ -301,7 +301,10 @@ public final class AlienDialog extends JDialog {
      * Programmatically selects all items in the alien list.
      */
     private void selectAll() {
-        alienList.setSelectionInterval(0, listModel.getSize() - 1);
+        int size = listModel.getSize();
+        if (size > 0) {
+            alienList.setSelectionInterval(0, size - 1);
+        }
     }
 
     /**
