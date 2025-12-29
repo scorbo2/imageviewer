@@ -211,7 +211,7 @@ public final class AlienDialog extends JDialog {
                 }
             }
             catch (IOException ioe) {
-                getMessageUtil().error("Deletion error", "Problem renaming file: " + ioe.getMessage(), ioe);
+                getMessageUtil().error("Rename error", "Problem renaming file: " + ioe.getMessage(), ioe);
             }
         }
     }
