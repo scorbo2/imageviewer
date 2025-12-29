@@ -205,7 +205,7 @@ public final class AlienDialog extends JDialog {
                 for (int listIndex = 0; listIndex < alienList.getModel().getSize(); listIndex++) {
                     if (alienList.getModel().getElementAt(listIndex).toString().startsWith(file.getName() + " ")) {
                         String prettySize = FileUtils.byteCountToDisplaySize(file.length());
-                        listModel.set(i, newName + " (" + prettySize + ")");
+                        listModel.set(listIndex, newName + " (" + prettySize + ")");
                         break;
                     }
                 }
