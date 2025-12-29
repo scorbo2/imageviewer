@@ -36,7 +36,8 @@ import java.util.logging.Logger;
 
 /**
  * A simple dialog for viewing and optionally deleting "alien" files in a given directory.
- * An alien is any file that does not have a recognized extension.
+ * An alien file is any file that is not recognized (either by the application code itself
+ * or by any enabled extension) as an image file or a companion file.
  *
  * @author scorbo2
  * @since 2017-11-24
@@ -132,6 +133,11 @@ public final class AlienDialog extends JDialog {
             String prettySize = FileUtils.byteCountToDisplaySize(file.length());
             listModel.addElement(file.getName() + " (" + prettySize + ")");
         }
+
+        // As a convenience, if we have at least one file in the list, select the first one:
+        if (files.size() > 0) {
+            alienList.setSelectedIndex(0);
+        }
     }
 
     /**
@@ -184,17 +190,30 @@ public final class AlienDialog extends JDialog {
                     }
                 }
                 else {
-                    isOkay = true; // User canceled this one, move on
+                    return; // if user hits "cancel" on any of them, abort the whole batch rename.
                 }
             } while (!isOkay);
             try {
+                // Note: we don't update extensions here, because this is an alien file,
+                //       not an image file or a companion file. So, extensions don't care.
                 FileUtils.moveFile(file, new File(file.getParentFile(), newName));
+
+                // Also update the list with this new name:
+                // (we do this surgically instead of rescanDir() because we're in the middle of a batch operation,
+                //  so we don't want to rescan after each rename, but also because rescanDir() will reset the selection,
+                //  which is annoying for the user)
+                for (int listIndex = 0; listIndex < alienList.getModel().getSize(); listIndex++) {
+                    if (alienList.getModel().getElementAt(listIndex).toString().startsWith(file.getName() + " ")) {
+                        String prettySize = FileUtils.byteCountToDisplaySize(file.length());
+                        listModel.set(i, newName + " (" + prettySize + ")");
+                        break;
+                    }
+                }
             }
             catch (IOException ioe) {
                 getMessageUtil().error("Deletion error", "Problem renaming file: " + ioe.getMessage(), ioe);
             }
         }
-        rescanDir();
     }
 
     /**
@@ -279,6 +298,13 @@ public final class AlienDialog extends JDialog {
     }
 
     /**
+     * Programmatically selects all items in the alien list.
+     */
+    private void selectAll() {
+        alienList.setSelectionInterval(0, listModel.getSize() - 1);
+    }
+
+    /**
      * Rescans the current directory looking for alien files.
      */
     private void rescanDir() {
@@ -312,7 +338,7 @@ public final class AlienDialog extends JDialog {
         constraints.fill = GridBagConstraints.BOTH;
         constraints.weightx = 1;
         constraints.weighty = 1;
-        constraints.gridheight = 6;
+        constraints.gridheight = 7;
         JScrollPane scrollPane = new JScrollPane(alienList);
         scrollPane.setPreferredSize(new Dimension(200, 200));
         panel.add(scrollPane, constraints);
@@ -335,11 +361,14 @@ public final class AlienDialog extends JDialog {
         panel.add(buildActionButton("View as text", e -> viewAsText()), constraints);
 
         constraints.gridy = 4;
+        panel.add(buildActionButton("Select all", e -> selectAll()), constraints);
+
+        constraints.gridy = 5;
         panel.add(buildActionButton("Rescan", e -> rescanDir()), constraints);
 
         // Add a filler label to take up remaining space:
         JLabel dummy = new JLabel("");
-        constraints.gridy = 5;
+        constraints.gridy = 6;
         constraints.weighty = 1;
         panel.add(dummy, constraints);
 
