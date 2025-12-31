@@ -284,7 +284,11 @@ public final class ThumbContainerPanel extends JPanel {
         if (imageFileList == null) {
             imageFileList = new ArrayList<>();
         }
-        alienFileList.clear();
+
+        // Note that we don't clear alienFileList here, because that list
+        // likely hasn't changed. (we haven't changed directories).
+
+        // Reset our load offset and begin loading this list:
         loadOffset = 0;
         loadMoreImages();
     }
@@ -705,6 +709,38 @@ public final class ThumbContainerPanel extends JPanel {
         for (ThumbContainerPanelListener listener : listeners) {
             listener.loadCompleted(this);
         }
+    }
+
+    /**
+     * I hate that these static utility methods live in a UI class.
+     * <a href="https://github.com/scorbo2/imageviewer/issues/66">Issue 66</a>
+     * will move these to a better location, but it will be an extension-breaking change,
+     * so I don't want to do it until version 3.0.
+     */
+    public static boolean isImageFile(File file) {
+        String name = file.getName().toLowerCase();
+        for (String ext : imageExtensions) {
+            if (name.endsWith("." + ext)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * I hate that these static utility methods live in a UI class.
+     * <a href="https://github.com/scorbo2/imageviewer/issues/66">Issue 66</a>
+     * will move these to a better location, but it will be an extension-breaking change,
+     * so I don't want to do it until version 3.0.
+     */
+    public static boolean isAlienExcludedFile(File file) {
+        String name = file.getName().toLowerCase();
+        for (String ext : alienExclusionExtensions) {
+            if (name.endsWith("." + ext)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static List<File> findAlienFiles(File dir) {

@@ -1,6 +1,9 @@
 package ca.corbett.imageviewer.ui.dialogs;
 
 import ca.corbett.extras.MessageUtil;
+import ca.corbett.extras.PopupTextDialog;
+import ca.corbett.extras.io.FileSystemUtil;
+import ca.corbett.extras.io.TextFileDetector;
 import ca.corbett.imageviewer.ImageOperation;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
@@ -24,7 +27,6 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +36,8 @@ import java.util.logging.Logger;
 
 /**
  * A simple dialog for viewing and optionally deleting "alien" files in a given directory.
- * An alien is any file that does not have a recognized extension.
+ * An alien file is any file that is not recognized (either by the application code itself
+ * or by any enabled extension) as an image file or a companion file.
  *
  * @author scorbo2
  * @since 2017-11-24
@@ -44,17 +47,20 @@ public final class AlienDialog extends JDialog {
     private static final Logger logger = Logger.getLogger(AlienDialog.class.getName());
     public static final String DARWIN_METADATA_FILENAME = ".00darwin-metadata"; // TODO wtf is this doing here
 
+    private static final long VIEW_AS_TEXT_MAX_FILE_SIZE = 256 * 1024; // 256KB arbitrary default
+
     private MessageUtil messageUtil;
     private static AlienDialog instance;
     private JList alienList;
     private DefaultListModel listModel;
     private File directory;
     private List<File> files;
+    private long viewAsTextMaxFileSize = VIEW_AS_TEXT_MAX_FILE_SIZE;
 
     private AlienDialog() {
         super(MainWindow.getInstance(), "Aliens detected", true);
-        setSize(320, 320);
-        setMinimumSize(new Dimension(320, 320));
+        setSize(400, 360);
+        setMinimumSize(new Dimension(400, 320));
         initComponents();
     }
 
@@ -86,6 +92,21 @@ public final class AlienDialog extends JDialog {
     }
 
     /**
+     * Returns the maximum file size (in bytes) that can be viewed as text.
+     */
+    public long getViewAsTextMaxFileSize() {
+        return viewAsTextMaxFileSize;
+    }
+
+    /**
+     * Sets the maximum file size (in bytes) that can be viewed as text.
+     * The default is 256KB.
+     */
+    public void setViewAsTextMaxFileSize(long viewAsTextMaxFileSize) {
+        this.viewAsTextMaxFileSize = viewAsTextMaxFileSize;
+    }
+
+    /**
      * Sets the directory to scan for alien files.
      *
      * @param dir The directory in question.
@@ -111,6 +132,11 @@ public final class AlienDialog extends JDialog {
         for (File file : files) {
             String prettySize = FileUtils.byteCountToDisplaySize(file.length());
             listModel.addElement(file.getName() + " (" + prettySize + ")");
+        }
+
+        // As a convenience, if we have at least one file in the list, select the first one:
+        if (files.size() > 0) {
+            alienList.setSelectedIndex(0);
         }
     }
 
@@ -164,17 +190,30 @@ public final class AlienDialog extends JDialog {
                     }
                 }
                 else {
-                    isOkay = true; // User canceled this one, move on
+                    return; // if user hits "cancel" on any of them, abort the whole batch rename.
                 }
             } while (!isOkay);
             try {
+                // Note: we don't update extensions here, because this is an alien file,
+                //       not an image file or a companion file. So, extensions don't care.
                 FileUtils.moveFile(file, new File(file.getParentFile(), newName));
+
+                // Also update the list with this new name:
+                // (we do this surgically instead of rescanDir() because we're in the middle of a batch operation,
+                //  so we don't want to rescan after each rename, but also because rescanDir() will reset the selection,
+                //  which is annoying for the user)
+                for (int listIndex = 0; listIndex < alienList.getModel().getSize(); listIndex++) {
+                    if (alienList.getModel().getElementAt(listIndex).toString().startsWith(file.getName() + " ")) {
+                        String prettySize = FileUtils.byteCountToDisplaySize(file.length());
+                        listModel.set(listIndex, newName + " (" + prettySize + ")");
+                        break;
+                    }
+                }
             }
             catch (IOException ioe) {
-                getMessageUtil().error("Deletion error", "Problem renaming file: " + ioe.getMessage(), ioe);
+                getMessageUtil().error("Rename error", "Problem renaming file: " + ioe.getMessage(), ioe);
             }
         }
-        rescanDir();
     }
 
     /**
@@ -202,6 +241,69 @@ public final class AlienDialog extends JDialog {
         }
         finally {
             this.setCursor(Cursor.getDefaultCursor());
+            setVisible(false);
+        }
+    }
+
+    /**
+     * If the selected file is smaller than a certain threshold and appears to be a text
+     * file, we'll attempt to load and show it in a simple text viewer.
+     */
+    private void viewAsText() {
+        int[] selectedIndices = alienList.getSelectedIndices();
+
+        // Must select something:
+        if (selectedIndices.length == 0) {
+            getMessageUtil().info("View as text", "Please select a file to view.");
+            return;
+        }
+
+        // One at a time, please:
+        if (selectedIndices.length > 1) {
+            getMessageUtil().info("View as text", "Please select only one file to view at a time.");
+            return;
+        }
+
+        // First make sure the file isn't unreasonably large:
+        File file = files.get(selectedIndices[0]);
+        if (file.length() > viewAsTextMaxFileSize) {
+            getMessageUtil().info("View as text",
+                                  "The selected file is too large to view as text.\n"
+                                          + "Maximum size is "
+                                          + FileSystemUtil.getPrintableSize(viewAsTextMaxFileSize)
+                                          + ", this file is "
+                                          + FileSystemUtil.getPrintableSize(file.length())
+                                          + ".");
+            return;
+        }
+
+        try {
+            // Is it a text file? We can use the new TextFileDetector in swing-extras 2.6 for this:
+            if (TextFileDetector.isTextFile(file, 8192, 0.05)) {
+                // Load and show it:
+                String content = FileUtils.readFileToString(file, "UTF-8");
+                PopupTextDialog dialog = new PopupTextDialog(this, "Viewing: " + file.getName(),
+                                                             content, false);
+                dialog.setReadOnly(true); // should we allow saving edits? Eh, we're just viewing the file...
+                dialog.setLocationRelativeTo(MainWindow.getInstance());
+                dialog.setVisible(true);
+            }
+            else {
+                getMessageUtil().info("View as text", "The selected file does not appear to be a text file.");
+            }
+        }
+        catch (IOException ioe) {
+            getMessageUtil().error("View as text", "Problem reading file: " + ioe.getMessage(), ioe);
+        }
+    }
+
+    /**
+     * Programmatically selects all items in the alien list.
+     */
+    private void selectAll() {
+        int size = listModel.getSize();
+        if (size > 0) {
+            alienList.setSelectionInterval(0, size - 1);
         }
     }
 
@@ -209,7 +311,6 @@ public final class AlienDialog extends JDialog {
      * Rescans the current directory looking for alien files.
      */
     private void rescanDir() {
-        List<String> extensions = ThumbContainerPanel.getImageExtensions();
         setAlienList(ThumbContainerPanel.findAlienFiles(directory));
     }
 
@@ -240,98 +341,62 @@ public final class AlienDialog extends JDialog {
         constraints.fill = GridBagConstraints.BOTH;
         constraints.weightx = 1;
         constraints.weighty = 1;
-        constraints.gridheight = 5;
+        constraints.gridheight = 7;
         JScrollPane scrollPane = new JScrollPane(alienList);
         scrollPane.setPreferredSize(new Dimension(200, 200));
         panel.add(scrollPane, constraints);
 
-        JButton deleteBtn = new JButton("Delete");
-        deleteBtn.setPreferredSize(new Dimension(110, 28));
-        deleteBtn.setMinimumSize(new Dimension(110, 28));
-        constraints.insets = new Insets(0, 4, 0, 4);
+        constraints.insets = new Insets(4, 4, 4, 4);
         constraints.gridx = 1;
         constraints.weightx = 0;
         constraints.weighty = 0;
         constraints.fill = GridBagConstraints.NONE;
         constraints.gridheight = 1;
-        deleteBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                deleteSelected();
-            }
+        panel.add(buildActionButton("Delete", e -> deleteSelected()), constraints);
 
-        });
-        panel.add(deleteBtn, constraints);
-
-        JButton deleteAllBtn = new JButton("Delete all");
-        deleteAllBtn.setPreferredSize(new Dimension(110, 28));
-        deleteAllBtn.setMinimumSize(new Dimension(110, 28));
         constraints.gridy = 1;
-        deleteAllBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                deleteAll();
-                setVisible(false);
-            }
+        panel.add(buildActionButton("Delete all", e -> deleteAll()), constraints);
 
-        });
-        panel.add(deleteAllBtn, constraints);
-
-        JButton renameBtn = new JButton("Rename");
-        renameBtn.setPreferredSize(new Dimension(110, 28));
-        renameBtn.setMinimumSize(new Dimension(110, 28));
         constraints.gridy = 2;
-        renameBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                renameSelected();
-            }
+        panel.add(buildActionButton("Rename", e -> renameSelected()), constraints);
 
-        });
-        panel.add(renameBtn, constraints);
-
-        JButton rescanBtn = new JButton("Rescan");
-        rescanBtn.setPreferredSize(new Dimension(110, 28));
-        rescanBtn.setMinimumSize(new Dimension(110, 28));
         constraints.gridy = 3;
-        rescanBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                rescanDir();
-            }
+        panel.add(buildActionButton("View as text", e -> viewAsText()), constraints);
 
-        });
-        panel.add(rescanBtn, constraints);
-
-        JLabel dummy = new JLabel("");
         constraints.gridy = 4;
-        constraints.fill = GridBagConstraints.BOTH;
+        panel.add(buildActionButton("Select all", e -> selectAll()), constraints);
+
+        constraints.gridy = 5;
+        panel.add(buildActionButton("Rescan", e -> rescanDir()), constraints);
+
+        // Add a filler label to take up remaining space:
+        JLabel dummy = new JLabel("");
+        constraints.gridy = 6;
+        constraints.weighty = 1;
         panel.add(dummy, constraints);
 
         return panel;
     }
 
+    private JButton buildActionButton(String text, ActionListener action) {
+        JButton button = new JButton(text);
+        button.setPreferredSize(new Dimension(130, 25));
+        button.addActionListener(action);
+        return button;
+    }
+
     /**
      * Builds and returns the button panel for the bottom of the form.
-     *
-     * @return A panel with an Ok button for closing the form.
      */
-    public JPanel buildButtonPanel() {
+    private JPanel buildButtonPanel() {
         JPanel panel = new JPanel();
         panel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
         panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
         JButton okBtn = new JButton("OK");
-        okBtn.setPreferredSize(new Dimension(90, 28));
-        panel.add(okBtn);
-
         final AlienDialog dialog = this;
-        okBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dialog.setVisible(false);
-            }
-
-        });
+        okBtn.addActionListener(e -> dialog.setVisible(false));
+        okBtn.setPreferredSize(new Dimension(90, 25));
+        panel.add(okBtn);
 
         return panel;
     }

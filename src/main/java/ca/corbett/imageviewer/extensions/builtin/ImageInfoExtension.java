@@ -10,11 +10,13 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * This built-in extension to ImageViewer provides a basic image information dialog that
- * can be summoned for any selected image.
+ * can be summoned for any selected image, and a basic directory information dialog that
+ * can be summoned for any selected directory (with optional recursion).
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
@@ -30,7 +32,7 @@ public class ImageInfoExtension extends ImageViewerExtension {
                 .setTargetAppVersion(Version.VERSION)
                 .setShortDescription("Shows information for the current image.")
                 .setLongDescription("Displays an information dialog for the "
-                                            + "currently selected image.")
+                                            + "currently selected image or directory.")
                 .setReleaseNotes("1.0 - extracted from ImageViewer 1.3")
                 .addCustomField("Keyboard shortcut", "Ctrl+I")
                 .build();
@@ -52,18 +54,38 @@ public class ImageInfoExtension extends ImageViewerExtension {
 
     @Override
     public List<JMenuItem> getMenuItems(String menu, MainWindow.BrowseMode browseMode) {
-        return "View".equals(menu) ? List.of(createMenuItem()) : null;
+        if (!"View".equals(menu)) {
+            return null;
+        }
+
+        List<JMenuItem> items = new ArrayList<>();
+        items.add(createImageInfoMenuItem());
+        if (browseMode == MainWindow.BrowseMode.FILE_SYSTEM) {
+            items.add(createDirectoryInfoMenuItem());
+        }
+        return items;
     }
 
     @Override
     public List<JMenuItem> getPopupMenuItems(MainWindow.BrowseMode browseMode) {
-        return List.of(createMenuItem());
+        List<JMenuItem> items = new ArrayList<>();
+        items.add(createImageInfoMenuItem());
+        if (browseMode == MainWindow.BrowseMode.FILE_SYSTEM) {
+            items.add(createDirectoryInfoMenuItem());
+        }
+        return items;
     }
 
-    private JMenuItem createMenuItem() {
+    private JMenuItem createImageInfoMenuItem() {
         JMenuItem menuItem = new JMenuItem(new ImageInfoAction());
         menuItem.setMnemonic(KeyEvent.VK_I);
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK));
+        return menuItem;
+    }
+
+    private JMenuItem createDirectoryInfoMenuItem() {
+        JMenuItem menuItem = new JMenuItem(new DirectoryInfoAction());
+        menuItem.setMnemonic(KeyEvent.VK_D);
         return menuItem;
     }
 

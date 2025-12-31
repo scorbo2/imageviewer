@@ -22,7 +22,7 @@ public final class Version {
     public static final int VERSION_MAJOR = 2;
 
     /** The minor (patch) version. **/
-    public static final int VERSION_MINOR = 3;
+    public static final int VERSION_MINOR = 4;
 
     /** A user-friendly version string in the form "MAJOR.MINOR" (example: "1.0"). **/
     public static final String VERSION = VERSION_MAJOR + "." + VERSION_MINOR;
