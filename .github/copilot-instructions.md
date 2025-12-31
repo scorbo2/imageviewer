@@ -5,7 +5,7 @@
 **ImageViewer** is a 100% Java desktop image viewer application with a UI written in Java Swing. It is an extensible, highly configurable image browsing and management tool that allows users to sort, rename, move, and symlink images quickly. The application supports a powerful extension mechanism for adding custom functionality.
 
 - **Repository**: https://github.com/scorbo2/imageviewer
-- **Version**: 2.3 is in production 2.4 is in development
+- **Version**: 2.4
 - **License**: MIT
 - **Language**: Java 17+
 - **Build System**: Maven 3.9+
@@ -53,15 +53,15 @@
    - Takes ~30-40 seconds on clean build
    - Takes ~2-5 seconds on incremental build
    - Produces:
-     - `target/imageviewer-2.4-SNAPSHOT.jar` (~308KB) - Main application JAR
-     - `target/imageviewer-2.4-SNAPSHOT-sources.jar` (~205KB) - Source JAR
-     - `target/imageviewer-2.4-SNAPSHOT-javadoc.jar` (~617KB) - Javadoc JAR
+     - `target/imageviewer-2.4.jar` (~308KB) - Main application JAR
+     - `target/imageviewer-2.4-sources.jar` (~205KB) - Source JAR
+     - `target/imageviewer-2.4-javadoc.jar` (~617KB) - Javadoc JAR
      - `target/lib/` - Directory with all dependencies
 
 5. **Run the application**:
    ```bash
    cd target
-   java -jar imageviewer-2.4-SNAPSHOT.jar
+   java -jar imageviewer-2.4.jar
    ```
    - Optional: Add `-v` flag to display version and exit
    - Optional: Add directory path as argument to start in that directory
@@ -137,7 +137,7 @@ src/
 ```
 
 ### Key Dependencies (from pom.xml)
-- **swing-extras 2.6.0-SNAPSHOT**: Custom Swing components (ca.corbett)
+- **swing-extras 2.6.0**: Custom Swing components (ca.corbett)
 - **jackson-databind 2.15.2**: JSON processing
 - **commons-io 2.19.0**: File I/O utilities
 - **sqlite-jdbc 3.41.2.2**: SQLite database support
