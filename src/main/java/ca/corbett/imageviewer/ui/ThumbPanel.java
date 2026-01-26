@@ -246,6 +246,13 @@ public class ThumbPanel extends JPanel {
         }
     }
 
+    /**
+     * Releases image resources associated with this {@code ThumbPanel}.
+     * <p>
+     * This will flush the thumbnail image ({@code thumbImage}) and dispose of the
+     * underlying {@link ImagePanel} ({@code imagePanel}). Call this method when
+     * the {@code ThumbPanel} is no longer needed to help prevent memory leaks.
+     */
     public void dispose() {
         if (thumbImage != null) {
             thumbImage.flush();
