@@ -164,6 +164,11 @@ public class ThumbPanel extends JPanel {
             return;
         }
 
+        // If we've been disposed, just ignore this:
+        if (imagePanel == null) {
+            return;
+        }
+
         this.isSelected = selected;
         if (isSelected) {
             Color selectedBg = LookAndFeelManager.getLafColor("textHighlight", Color.BLUE);
@@ -238,6 +243,16 @@ public class ThumbPanel extends JPanel {
         ImageViewerExtensionManager.getInstance().thumbPanelRenamed(this, newFile);
         if (!title.isEmpty()) {
             setTitle(newFile.getName());
+        }
+    }
+
+    public void dispose() {
+        if (thumbImage != null) {
+            thumbImage.flush();
+        }
+        if (imagePanel != null) {
+            imagePanel.dispose();
+            imagePanel = null;
         }
     }
 
