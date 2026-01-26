@@ -22,7 +22,7 @@ public final class Version {
     public static final int VERSION_MAJOR = 2;
 
     /** The minor (patch) version. **/
-    public static final int VERSION_MINOR = 4;
+    public static final int VERSION_MINOR = 5;
 
     /** A user-friendly version string in the form "MAJOR.MINOR" (example: "1.0"). **/
     public static final String VERSION = VERSION_MAJOR + "." + VERSION_MINOR;
@@ -82,7 +82,7 @@ public final class Version {
     static {
         aboutInfo = new AboutInfo();
         aboutInfo.applicationName = APPLICATION_NAME;
-        aboutInfo.applicationVersion = VERSION;
+        aboutInfo.applicationVersion = VERSION + "-SNAPSHOT";  // TODO remove SNAPSHOT before release
         aboutInfo.copyright = COPYRIGHT;
         aboutInfo.license = LICENSE;
         aboutInfo.projectUrl = PROJECT_URL;
