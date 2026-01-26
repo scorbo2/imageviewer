@@ -33,6 +33,7 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
     private IntegerProperty mainSplitPanePositionProp;
     private IntegerProperty mainWindowWidthProp;
     private IntegerProperty mainWindowHeightProp;
+    private BooleanProperty showHiddenDirsProp;
 
     private DirectoryProperty lockDirectoryProp;
     private DirectoryProperty startupDirectoryProp;
@@ -109,6 +110,14 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
 
     public File getLockDirectory() {
         return lockDirectoryProp.getDirectory();
+    }
+
+    public boolean getShowHiddenDirectories() {
+        return showHiddenDirsProp.getValue();
+    }
+
+    public void setShowHiddenDirectories(boolean show) {
+        showHiddenDirsProp.setValue(show);
     }
 
     public void setLockDirectory(File dir) {
@@ -210,6 +219,11 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         lockDirectoryProp = new DirectoryProperty("UI.Main Window.lockDirectory", "Lock directory", true, null);
         lockDirectoryProp.setExposed(false);
         list.add(lockDirectoryProp);
+
+        showHiddenDirsProp = new BooleanProperty("UI.Main Window.showHiddenDirectories", "Show hidden directories",
+                                                 true);
+        showHiddenDirsProp.setExposed(false); // exposed via dirtree's popup menu
+        list.add(showHiddenDirsProp);
 
         startupDirectoryProp = new DirectoryProperty("UI.Main Window.startupDirectory", "Startup directory", true,
                                                      null);
