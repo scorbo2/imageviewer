@@ -381,7 +381,8 @@ public final class MainWindow extends JFrame implements UIReloadable {
         setSize(MIN_WIDTH, MIN_HEIGHT);
         setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
 
-        dirTree = DirTree.createDirTree();
+        dirTree = new DirTree();
+        dirTree.setShowHiddenDirs(AppConfig.getInstance().getShowHiddenDirectories());
         dirTree.setMinimumSize(new Dimension(180, 100));
         dirTree.setPreferredSize(new Dimension(180, 200));
         dirTree.addDirTreeListener(dirTreeChangeListener);
@@ -597,11 +598,12 @@ public final class MainWindow extends JFrame implements UIReloadable {
         prefs.setMainSplitPanePosition(mainSplitPane.getDividerLocation());
         prefs.setMainWindowWidth(this.getWidth());
         prefs.setMainWindowHeight(this.getHeight());
+        prefs.setShowHiddenDirectories(dirTree.getShowHiddenDirs());
 
         // Only save lock dir and current dir if we were NOT given a startup
-        // directory on the command line. Otherwise our settings were transient.
+        // directory on the command line. Otherwise, our settings were transient.
         if (startupDir == null) {
-            prefs.setLockDirectory(dirTree.getRootDir());
+            prefs.setLockDirectory(dirTree.getLockDir());
             prefs.setStartupDirectory(dirTree.getCurrentDir());
         }
 
@@ -872,7 +874,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
         // Select it in the tree without triggering a change event:
         dirTree.removeDirTreeListener(dirTreeChangeListener);
         if (selectedDir != null) {
-            dirTree.reload(selectedDir); // TODO: https://github.com/scorbo2/swing-extras/issues/123
+            dirTree.reload(); // TODO: https://github.com/scorbo2/swing-extras/issues/123
             //dirTree.selectAndScrollTo(selectedDir);
         }
 
@@ -943,8 +945,17 @@ public final class MainWindow extends JFrame implements UIReloadable {
     private static class DirTreeChangeListener implements DirTreeListener {
 
         @Override
+        public boolean selectionWillChange(DirTree source, File newSelectedDir) {
+            return true; // default allow all changes
+        }
+
+        @Override
         public void selectionChanged(DirTree source, File selectedDir) {
             MainWindow.getInstance().setDirectory(selectedDir);
+        }
+
+        @Override
+        public void showHiddenFilesChanged(DirTree source, boolean showHiddenFiles) {
         }
 
         @Override
