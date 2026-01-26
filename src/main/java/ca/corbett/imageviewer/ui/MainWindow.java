@@ -382,6 +382,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
         setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
 
         dirTree = new DirTree();
+        dirTree.setShowHiddenDirs(AppConfig.getInstance().getShowHiddenDirectories());
         dirTree.setMinimumSize(new Dimension(180, 100));
         dirTree.setPreferredSize(new Dimension(180, 200));
         dirTree.addDirTreeListener(dirTreeChangeListener);
