@@ -274,7 +274,7 @@ public final class ThumbContainerPanel extends JPanel {
         revalidate();
         repaint();
         for (ThumbPanel pn : loadedThumbPanels) {
-            pn.getThumbImage().flush();
+            pn.dispose();
         }
         loadedThumbPanels.clear();
         selectedPanelIndex = -1;

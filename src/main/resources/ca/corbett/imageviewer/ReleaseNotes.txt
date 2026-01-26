@@ -3,6 +3,7 @@ Author: Steve Corbett
 
 Version 3.0 [TODO] - Maintenance release
   #76 - Upgrade to swing-extras 2.7
+  #74 - Ensure image thumbnails are disposed properly
 
 Version 2.4 [2025-12-31] - Maintenance release
   #69 - Fix NullPointerException in AlienDialog

@@ -164,6 +164,11 @@ public class ThumbPanel extends JPanel {
             return;
         }
 
+        // If we've been disposed, just ignore this:
+        if (imagePanel == null) {
+            return;
+        }
+
         this.isSelected = selected;
         if (isSelected) {
             Color selectedBg = LookAndFeelManager.getLafColor("textHighlight", Color.BLUE);
@@ -238,6 +243,23 @@ public class ThumbPanel extends JPanel {
         ImageViewerExtensionManager.getInstance().thumbPanelRenamed(this, newFile);
         if (!title.isEmpty()) {
             setTitle(newFile.getName());
+        }
+    }
+
+    /**
+     * Releases image resources associated with this {@code ThumbPanel}.
+     * <p>
+     * This will flush the thumbnail image ({@code thumbImage}) and dispose of the
+     * underlying {@link ImagePanel} ({@code imagePanel}). Call this method when
+     * the {@code ThumbPanel} is no longer needed to help prevent memory leaks.
+     */
+    public void dispose() {
+        if (thumbImage != null) {
+            thumbImage.flush();
+        }
+        if (imagePanel != null) {
+            imagePanel.dispose();
+            imagePanel = null;
         }
     }
 
