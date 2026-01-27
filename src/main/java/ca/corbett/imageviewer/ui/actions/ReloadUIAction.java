@@ -62,7 +62,7 @@ public class ReloadUIAction extends AbstractAction {
         LookAndFeelManager.switchLaf(AppConfig.getInstance().getLookAndFeelClassname());
 
         // Notify all listeners:
-        for (UIReloadable reloadable : reloadables) {
+        for (UIReloadable reloadable : new HashSet<>(reloadables)) {
             reloadable.reloadUI();
         }
     }

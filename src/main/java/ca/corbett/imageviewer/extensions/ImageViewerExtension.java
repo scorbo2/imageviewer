@@ -1,6 +1,7 @@
 package ca.corbett.imageviewer.extensions;
 
 import ca.corbett.extensions.AppExtension;
+import ca.corbett.extras.EnhancedAction;
 import ca.corbett.extras.logging.LogConsoleStyle;
 import ca.corbett.imageviewer.ImageOperation;
 import ca.corbett.imageviewer.ui.ImageInstance;
@@ -8,7 +9,6 @@ import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.ThumbPanel;
 
 import javax.swing.AbstractAction;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -95,23 +95,21 @@ public abstract class ImageViewerExtension extends AppExtension {
 
     /**
      * Invoked when the application is building the MainWindow ToolBar - extensions can add
-     * buttons to this toolbar by returning them here. Use ToolBarManager.buildButton() to
-     * generate buttons of the correct size.
+     * buttons to this toolbar by returning EnhancedActions here.
      *
-     * @return A List of JButtons, or null.
+     * @return A List of EnhancedActions, or null.
      */
-    public List<JButton> getMainToolBarButtons() {
+    public List<EnhancedAction> getMainToolBarActions() {
         return null;
     }
 
     /**
      * Invoked when the application is building the ImageSetPanel ToolBar - extensions can add
-     * buttons to this toolbar by returning them here. Use ToolBarManager.buildButton() and
-     * ImageSetPanel.loadImageIcon() as convenience methods.
+     * buttons to this toolbar by returning EnhancedActions here.
      *
-     * @return A List of JButtons, or null.
+     * @return A List of EnhancedActions, or null.
      */
-    public List<JButton> getImageSetToolBarButtons() {
+    public List<EnhancedAction> getImageSetToolBarActions() {
         return null;
     }
 

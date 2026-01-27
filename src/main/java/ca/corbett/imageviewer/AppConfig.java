@@ -40,6 +40,11 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
 
     private LookAndFeelProperty lookAndFeelProp;
 
+    private IntegerProperty toolbarIconSizeProp;
+    private IntegerProperty toolbarIconMarginProp;
+    private IntegerProperty miniToolbarIconSizeProp;
+    private IntegerProperty miniToolbarIconMarginProp;
+
     private BooleanProperty imagePanelAutoBestFitProp;
     private DecimalProperty imagePanelZoomIncrementProp;
 
@@ -144,6 +149,22 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         return lookAndFeelProp.getSelectedLafClass();
     }
 
+    public int getToolbarIconSize() {
+        return toolbarIconSizeProp.getValue();
+    }
+
+    public int getToolbarIconMargin() {
+        return toolbarIconMarginProp.getValue();
+    }
+
+    public int getMiniToolbarIconSize() {
+        return miniToolbarIconSizeProp.getValue();
+    }
+
+    public int getMiniToolbarIconMargin() {
+        return miniToolbarIconMarginProp.getValue();
+    }
+
     public int getThumbnailSize() {
         return thumbSizeProp.getSelectedItem().getDimensions();
     }
@@ -240,6 +261,24 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         lookAndFeelProp = new LookAndFeelProperty("UI.Look and Feel.Look and Feel", "Look and Feel:",
                                                   FlatDarkLaf.class.getName());
         list.add(lookAndFeelProp);
+
+        toolbarIconSizeProp = new IntegerProperty("UI.Look and Feel.iconSize", "Main toolbar icons:", 24, 16, 128, 2);
+        toolbarIconSizeProp.setHelpText("Size of icons in the main toolbar.");
+        list.add(toolbarIconSizeProp);
+
+        toolbarIconMarginProp = new IntegerProperty("UI.Look and Feel.iconMargin", "Main toolbar margin:", 4, 2, 32, 2);
+        toolbarIconMarginProp.setHelpText("Margin around icons in the main toolbar.");
+        list.add(toolbarIconMarginProp);
+
+        miniToolbarIconSizeProp = new IntegerProperty("UI.Look and Feel.miniIconSize", "Mini toolbar icons:", 16,
+                                                      16, 64, 2);
+        miniToolbarIconSizeProp.setHelpText("Size of icons in mini toolbars (e.g., image set toolbar).");
+        list.add(miniToolbarIconSizeProp);
+
+        miniToolbarIconMarginProp = new IntegerProperty("UI.Look and Feel.miniIconMargin", "Mini toolbar margin:", 4,
+                                                        2, 16, 2);
+        miniToolbarIconMarginProp.setHelpText("Margin around icons in mini toolbars (e.g., image set toolbar).");
+        list.add(miniToolbarIconMarginProp);
 
         imageSetSaveLocation = new ComboProperty<>("UI.Image sets.imageSetSaveLocation", "Persistence:",
                                                    List.of("Use application settings directory",

@@ -1,10 +1,13 @@
 package ca.corbett.imageviewer.ui.actions;
 
+import ca.corbett.extras.EnhancedAction;
+import ca.corbett.imageviewer.AppConfig;
+import ca.corbett.imageviewer.ImageViewerResources;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.imagesets.ImageSetChooserDialog;
 import ca.corbett.imageviewer.ui.imagesets.ImageSetManager;
 
-import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import java.awt.event.ActionEvent;
 
 /**
@@ -14,10 +17,18 @@ import java.awt.event.ActionEvent;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 2.2
  */
-public class ImageSetRenameAction extends AbstractAction {
+public class ImageSetRenameAction extends EnhancedAction {
 
-    public ImageSetRenameAction(String name) {
-        super(name);
+    private static final String NAME = "Rename/move this image set";
+
+    public ImageSetRenameAction() {
+        this(AppConfig.getInstance().getMiniToolbarIconSize());
+    }
+
+    public ImageSetRenameAction(int iconSize) {
+        super(NAME);
+        setTooltip(NAME);
+        setIcon(new ImageIcon(ImageViewerResources.getIconMoveItem(iconSize)));
     }
 
     @Override
