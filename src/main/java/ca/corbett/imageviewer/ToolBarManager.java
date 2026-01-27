@@ -2,6 +2,7 @@ package ca.corbett.imageviewer;
 
 import ca.corbett.extras.EnhancedAction;
 import ca.corbett.extras.image.ImageUtil;
+import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.actions.AboutAction;
 import ca.corbett.imageviewer.ui.actions.ButtonPopupMenuAction;
@@ -124,6 +125,11 @@ public final class ToolBarManager {
         wrapper.add(buildToolbarButton(new ReloadAction()));
 
         wrapper.add(new JLabel(" "));
+
+        // Insert any buttons supplied by extensions, if any:
+        for (EnhancedAction extensionAction : ImageViewerExtensionManager.getInstance().getMainToolBarActions()) {
+            wrapper.add(buildToolbarButton(extensionAction));
+        }
 
         // Create a popup menu for the quick move button and attach it:
         quickMovePopupMenu = new JPopupMenu();

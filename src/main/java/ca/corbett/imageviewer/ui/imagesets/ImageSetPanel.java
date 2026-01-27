@@ -40,8 +40,6 @@ public class ImageSetPanel extends JPanel {
 
     private static final Logger logger = Logger.getLogger(ImageSetPanel.class.getName());
 
-    private static final int ICON_SIZE = 18; // shoulld this use AppConfig's toolbar size? No, this toolbar should be smaller than the main toolbar
-
     private final ImageSetTree imageSetTree;
     private JToolBar toolBar;
 
