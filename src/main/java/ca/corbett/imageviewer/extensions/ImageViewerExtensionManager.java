@@ -1,7 +1,6 @@
 package ca.corbett.imageviewer.extensions;
 
 import ca.corbett.extensions.ExtensionManager;
-import ca.corbett.extras.dirtree.DirTree;
 import ca.corbett.extras.logging.LogConsoleStyle;
 import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.ImageOperation;
@@ -226,23 +225,6 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
             wasHandled = wasHandled || extension.handleKeyboardShortcut(e); // we could stop if one returns true...
         }
         return wasHandled;
-    }
-
-    /**
-     * Gives all extensions a chance to override the default DirTree instance creation
-     * for the MainWindow.The first extension to return a non-null value here
-     * is what will be used. If all extensions return null, the default instance is used.
-     *
-     * @return A DirTree instance, or null.
-     */
-    public DirTree buildDirTree() {
-        for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            DirTree dirTree = extension.buildDirTree();
-            if (dirTree != null) {
-                return dirTree;
-            }
-        }
-        return null;
     }
 
     /**

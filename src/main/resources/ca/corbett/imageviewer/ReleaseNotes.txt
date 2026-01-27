@@ -2,6 +2,7 @@ ImageViewer Release Notes
 Author: Steve Corbett
 
 Version 3.0 [TODO] - Maintenance release
+  #83 - Remove unused extension point: buildDirTree
   #76 - Upgrade to swing-extras 2.7
   #74 - Ensure image thumbnails are disposed properly
 
