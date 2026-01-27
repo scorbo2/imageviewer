@@ -1,7 +1,6 @@
 package ca.corbett.imageviewer.extensions;
 
 import ca.corbett.extensions.AppExtension;
-import ca.corbett.extras.dirtree.DirTree;
 import ca.corbett.extras.logging.LogConsoleStyle;
 import ca.corbett.imageviewer.ImageOperation;
 import ca.corbett.imageviewer.ui.ImageInstance;
@@ -129,15 +128,6 @@ public abstract class ImageViewerExtension extends AppExtension {
         return false;
     }
 
-    /**
-     * Invoked when MainWindow wants to create the main DirTree - an extension can return
-     * some customized DirTree which will be used in place of the default one.
-     *
-     * @return A DirTree instance, or null.
-     */
-    public DirTree buildDirTree() {
-        return null;
-    }
 
     /**
      * Extensions can return a list of LogConsoleStyles to be applied to the ImageViewer
