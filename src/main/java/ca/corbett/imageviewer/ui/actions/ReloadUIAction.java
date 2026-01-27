@@ -7,6 +7,7 @@ import ca.corbett.imageviewer.ui.UIReloadable;
 import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -62,7 +63,7 @@ public class ReloadUIAction extends AbstractAction {
         LookAndFeelManager.switchLaf(AppConfig.getInstance().getLookAndFeelClassname());
 
         // Notify all listeners:
-        for (UIReloadable reloadable : reloadables) {
+        for (UIReloadable reloadable : List.copyOf(reloadables)) {
             reloadable.reloadUI();
         }
     }

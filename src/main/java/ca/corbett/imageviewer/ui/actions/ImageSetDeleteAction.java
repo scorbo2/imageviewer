@@ -1,9 +1,12 @@
 package ca.corbett.imageviewer.ui.actions;
 
+import ca.corbett.extras.EnhancedAction;
+import ca.corbett.imageviewer.AppConfig;
+import ca.corbett.imageviewer.ImageViewerResources;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.imagesets.ImageSetManager;
 
-import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import java.awt.event.ActionEvent;
 
 /**
@@ -12,10 +15,18 @@ import java.awt.event.ActionEvent;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 2.2
  */
-public class ImageSetDeleteAction extends AbstractAction {
+public class ImageSetDeleteAction extends EnhancedAction {
 
-    public ImageSetDeleteAction(String name) {
-        super(name);
+    private static final String NAME = "Delete this image set";
+
+    public ImageSetDeleteAction() {
+        this(AppConfig.getInstance().getMiniToolbarIconSize());
+    }
+
+    public ImageSetDeleteAction(int iconSize) {
+        super(NAME);
+        setTooltip(NAME);
+        setIcon(new ImageIcon(ImageViewerResources.getIconDelete(iconSize)));
     }
 
     @Override

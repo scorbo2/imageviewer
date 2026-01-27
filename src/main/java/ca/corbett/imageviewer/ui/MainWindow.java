@@ -653,6 +653,9 @@ public final class MainWindow extends JFrame implements UIReloadable {
         toolBar = ToolBarManager.buildToolBar();
         add(toolBar, BorderLayout.PAGE_START);
 
+        // Ditto for image set panel toolbar:
+        imageSetPanel.rebuildToolbar();
+
         // Build up our various menus:
         rebuildMenus();
         ImageViewerExtensionManager.getInstance().quickMoveTreeChanged(); // TODO why do we call this here?

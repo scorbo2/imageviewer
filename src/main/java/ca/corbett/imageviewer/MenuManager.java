@@ -54,6 +54,8 @@ import java.util.List;
  */
 public final class MenuManager {
 
+    private static final int MENU_ICON_SIZE = 18;
+
     private final JMenuBar menuBar;
     private JMenu fileMenu;
     private JMenu editMenu;
@@ -198,22 +200,22 @@ public final class MenuManager {
         }
         editMenu.addSeparator();
 
-        editMenu.add(new JMenuItem(new PreferencesAction()));
+        editMenu.add(new JMenuItem(new PreferencesAction(MENU_ICON_SIZE)));
 
     }
 
     private void rebuildViewMenu() {
         viewMenu.removeAll();
 
-        JMenuItem item = new JMenuItem(new PreviousImageAction());
+        JMenuItem item = new JMenuItem(new PreviousImageAction(MENU_ICON_SIZE));
         item.setMnemonic(KeyEvent.VK_P);
         viewMenu.add(item);
 
-        item = new JMenuItem(new NextImageAction());
+        item = new JMenuItem(new NextImageAction(MENU_ICON_SIZE));
         item.setMnemonic(KeyEvent.VK_N);
         viewMenu.add(item);
 
-        item = new JMenuItem(new ReloadAction());
+        item = new JMenuItem(new ReloadAction(MENU_ICON_SIZE));
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
         viewMenu.add(item);
 
@@ -242,11 +244,11 @@ public final class MenuManager {
 
         // Note... we don't currently allow extensions to add menu items here, but we could.
         // For now, it's just Application preferences and Manage extensions.
-        JMenuItem prefsItem = new JMenuItem(new PreferencesAction());
+        JMenuItem prefsItem = new JMenuItem(new PreferencesAction(MENU_ICON_SIZE));
         prefsItem.setMnemonic(KeyEvent.VK_P);
         settingsMenu.add(prefsItem);
 
-        JMenuItem extensionsItem = new JMenuItem(new ManageExtensionsAction());
+        JMenuItem extensionsItem = new JMenuItem(new ManageExtensionsAction(MENU_ICON_SIZE));
         extensionsItem.setMnemonic(KeyEvent.VK_E);
         settingsMenu.add(extensionsItem);
     }
@@ -263,7 +265,7 @@ public final class MenuManager {
             helpMenu.addSeparator();
         }
 
-        JMenuItem aboutItem = new JMenuItem(new AboutAction());
+        JMenuItem aboutItem = new JMenuItem(new AboutAction(MENU_ICON_SIZE));
         aboutItem.setMnemonic(KeyEvent.VK_A);
         aboutItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK));
         helpMenu.add(aboutItem);
@@ -360,7 +362,7 @@ public final class MenuManager {
 
         else {
             menuList.add(new JMenuItem(new ImageSetRemoveImageAction("Remove this image from image set")));
-            menuList.add(new JMenuItem(new ImageSetDeleteAction("Delete this image set")));
+            menuList.add(new JMenuItem(new ImageSetDeleteAction(MENU_ICON_SIZE)));
         }
 
         return menuList;

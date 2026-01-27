@@ -1,25 +1,21 @@
 package ca.corbett.imageviewer.extensions.builtin;
 
 import ca.corbett.extensions.AppExtensionInfo;
+import ca.corbett.extras.EnhancedAction;
 import ca.corbett.extras.MessageUtil;
-import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.LabelProperty;
 import ca.corbett.imageviewer.ImageOperation;
-import ca.corbett.imageviewer.ToolBarManager;
 import ca.corbett.imageviewer.Version;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.ui.MainWindow;
 
-import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -72,18 +68,9 @@ public class ThumbCacheExtension extends ImageViewerExtension {
     }
 
     @Override
-    public List<JButton> getMainToolBarButtons() {
-        List<JButton> list = new ArrayList<>();
-        try {
-            list.add(ToolBarManager.buildButton(
-                    ImageUtil.loadFromResource(MainWindow.class, "/ca/corbett/imageviewer/images/icon-thumbnails.png",
-                                               ToolBarManager.iconSize, ToolBarManager.iconSize),
-                    "Pre-generate thumbnails...",
-                    new ThumbCachePregenerateAction()));
-        }
-        catch (IOException ioe) {
-            logger.log(Level.SEVERE, "Unable to load image icon for ThumbCacheExtension!", ioe);
-        }
+    public List<EnhancedAction> getMainToolBarActions() {
+        List<EnhancedAction> list = new ArrayList<>();
+        list.add(new ThumbCachePregenerateAction());
         return list;
     }
 

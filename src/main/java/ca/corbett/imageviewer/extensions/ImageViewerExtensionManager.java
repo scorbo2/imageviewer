@@ -1,6 +1,7 @@
 package ca.corbett.imageviewer.extensions;
 
 import ca.corbett.extensions.ExtensionManager;
+import ca.corbett.extras.EnhancedAction;
 import ca.corbett.extras.logging.LogConsoleStyle;
 import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.ImageOperation;
@@ -10,7 +11,6 @@ import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.ThumbPanel;
 
 import javax.swing.AbstractAction;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -182,14 +182,14 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     }
 
     /**
-     * Interrogates extensions to see if they have any toolbar buttons to add to the main toolbar.
+     * Interrogates extensions to see if they have any actions to add to the main toolbar.
      *
-     * @return A list of 0 or more buttons supplied by enabled extensions.
+     * @return A list of 0 or more EnhancedActions supplied by enabled extensions.
      */
-    public List<JButton> getMainToolBarButtons() {
-        List<JButton> list = new ArrayList<>();
+    public List<EnhancedAction> getMainToolBarActions() {
+        List<EnhancedAction> list = new ArrayList<>();
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            List<JButton> toAdd = extension.getMainToolBarButtons();
+            List<EnhancedAction> toAdd = extension.getMainToolBarActions();
             if (toAdd != null) {
                 list.addAll(toAdd);
             }
@@ -198,14 +198,14 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     }
 
     /**
-     * Interrogates extensions to see if they have any toolbar buttons to add to the image set panel toolbar.
+     * Interrogates extensions to see if they have any actions to add to the image set panel toolbar.
      *
-     * @return A list of 0 or more buttons supplied by enabled extensions.
+     * @return A list of 0 or more EnhancedActions supplied by enabled extensions.
      */
-    public List<JButton> getImageSetToolBarButtons() {
-        List<JButton> list = new ArrayList<>();
+    public List<EnhancedAction> getImageSetToolBarActions() {
+        List<EnhancedAction> list = new ArrayList<>();
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            List<JButton> toAdd = extension.getImageSetToolBarButtons();
+            List<EnhancedAction> toAdd = extension.getImageSetToolBarActions();
             if (toAdd != null) {
                 list.addAll(toAdd);
             }

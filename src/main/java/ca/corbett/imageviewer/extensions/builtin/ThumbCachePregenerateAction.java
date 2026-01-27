@@ -1,8 +1,13 @@
 package ca.corbett.imageviewer.extensions.builtin;
 
+import ca.corbett.extras.EnhancedAction;
+import ca.corbett.imageviewer.AppConfig;
+import ca.corbett.imageviewer.ImageViewerResources;
 import ca.corbett.imageviewer.ui.MainWindow;
+import ca.corbett.imageviewer.ui.UIReloadable;
+import ca.corbett.imageviewer.ui.actions.ReloadUIAction;
 
-import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import java.awt.event.ActionEvent;
 
@@ -12,10 +17,13 @@ import java.awt.event.ActionEvent;
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
-class ThumbCachePregenerateAction extends AbstractAction {
+class ThumbCachePregenerateAction extends EnhancedAction implements UIReloadable {
 
     public ThumbCachePregenerateAction() {
         super("Pre-generate thumbnails...");
+        setTooltip("Pre-generate thumbnails...");
+        setIcon(new ImageIcon(ImageViewerResources.getIconThumbnails(AppConfig.getInstance().getToolbarIconSize())));
+        ReloadUIAction.getInstance().registerReloadable(this);
     }
 
     @Override
@@ -39,4 +47,9 @@ class ThumbCachePregenerateAction extends AbstractAction {
         }
     }
 
+    @Override
+    public void reloadUI() {
+        // Our icon size may have changed:
+        setIcon(new ImageIcon(ImageViewerResources.getIconThumbnails(AppConfig.getInstance().getToolbarIconSize())));
+    }
 }

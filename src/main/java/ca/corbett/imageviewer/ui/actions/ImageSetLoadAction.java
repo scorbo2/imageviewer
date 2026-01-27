@@ -1,8 +1,11 @@
 package ca.corbett.imageviewer.ui.actions;
 
+import ca.corbett.extras.EnhancedAction;
+import ca.corbett.imageviewer.AppConfig;
+import ca.corbett.imageviewer.ImageViewerResources;
 import ca.corbett.imageviewer.ui.MainWindow;
 
-import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import java.awt.event.ActionEvent;
 
@@ -14,12 +17,20 @@ import java.awt.event.ActionEvent;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 2.2
  */
-public class ImageSetLoadAction extends AbstractAction {
+public class ImageSetLoadAction extends EnhancedAction {
+
+    private static final String NAME = "Discard changes and reload all image sets";
 
     private final boolean isWarningEnabled;
 
-    public ImageSetLoadAction(String name, boolean enableWarning) {
-        super(name);
+    public ImageSetLoadAction(boolean enableWarning) {
+        this(enableWarning, AppConfig.getInstance().getMiniToolbarIconSize());
+    }
+
+    public ImageSetLoadAction(boolean enableWarning, int iconSize) {
+        super(NAME);
+        setTooltip(NAME);
+        setIcon(new ImageIcon(ImageViewerResources.getIconImageSetReload(iconSize)));
         this.isWarningEnabled = enableWarning;
     }
 
