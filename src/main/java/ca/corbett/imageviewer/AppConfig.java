@@ -280,6 +280,7 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         List<KeyStrokeProperty> list = new ArrayList<>();
 
         // Return our built-ins:
+        list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_EXIT));
         list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_PREVIOUS_IMAGE1));
         list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_PREVIOUS_IMAGE2));
         list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_NEXT_IMAGE1));
@@ -288,6 +289,8 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_DELETE_CURRENT));
         list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_BROWSE_MODE_FILESYSTEM));
         list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_BROWSE_MODE_IMAGE_SET));
+        list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_REFRESH));
+        list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_ABOUT));
 
         // Now ask our extension manager:
         list.addAll(ImageViewerExtensionManager.getInstance().getKeyStrokeProperties());
