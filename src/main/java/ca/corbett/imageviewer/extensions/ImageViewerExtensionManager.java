@@ -183,7 +183,7 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     }
 
     /**
-     * Interrogates extensions to see if they have any menu actioons to add to the
+     * Interrogates extensions to see if they have any menu actions to add to the
      * image popup menu.
      *
      * @return A list of 0 or more EnhancedActions supplied by enabled extensions.
