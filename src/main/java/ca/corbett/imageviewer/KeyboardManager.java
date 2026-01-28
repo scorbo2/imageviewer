@@ -63,7 +63,7 @@ public final class KeyboardManager {
                                 ImageOperationHandler.deleteImage();
                             }
                             else {
-                                new ImageSetRemoveImageAction("Remove image from image set").actionPerformed(null);
+                                new ImageSetRemoveImageAction().actionPerformed(null);
                             }
                             wasHandled = true;
                             break;

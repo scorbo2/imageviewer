@@ -20,7 +20,8 @@ public class ImageViewerResources extends ResourceLoader {
     private static final String ICON_ACTUAL_SIZE = "icon-actual-size2.png";
     private static final String ICON_RELOAD = "icon-reload.png";
     private static final String ICON_MOVE_ITEM = "icon-document-upload.png";
-    private static final String ICON_DELETE = "icon-x.png";
+    private static final String ICON_DELETE = "icon-x.png"; // regular "X"
+    private static final String ICON_NUKE = "icon-delete.png"; // scary red "X"
     private static final String ICON_SETTINGS = "icon-settings.png";
     private static final String ICON_EXT_MANAGER = "icon-image-information.png";
     private static final String ICON_ABOUT = "icon-help2.png";
@@ -28,6 +29,7 @@ public class ImageViewerResources extends ResourceLoader {
     private static final String ICON_SET_EDIT = "icon-document-edit.png";
     private static final String ICON_SET_RELOAD = "icon-reboot.png";
     private static final String ICON_SAVE = "icon-save.png";
+    private static final String ICON_RENAME = "icon-rename.png";
 
     private static final int NO_RESIZE = 0;
     private static final int NATIVE_SIZE = 48;
@@ -65,6 +67,10 @@ public class ImageViewerResources extends ResourceLoader {
         return internalLoad(ICON_DELETE, size);
     }
 
+    public static BufferedImage getIconNuke(int size) {
+        return internalLoad(ICON_NUKE, size);
+    }
+
     public static BufferedImage getIconActualSize(int size) {
         return internalLoad(ICON_ACTUAL_SIZE, size);
     }
@@ -95,6 +101,10 @@ public class ImageViewerResources extends ResourceLoader {
 
     public static BufferedImage getIconSave(int size) {
         return internalLoad(ICON_SAVE, size);
+    }
+
+    public static BufferedImage getIconRename(int size) {
+        return internalLoad(ICON_RENAME, size);
     }
 
     /**

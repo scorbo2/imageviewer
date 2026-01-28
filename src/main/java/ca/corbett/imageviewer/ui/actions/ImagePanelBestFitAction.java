@@ -4,7 +4,6 @@ import ca.corbett.extras.EnhancedAction;
 import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.ImageViewerResources;
 import ca.corbett.imageviewer.ui.MainWindow;
-import ca.corbett.imageviewer.ui.UIReloadable;
 
 import javax.swing.ImageIcon;
 import java.awt.event.ActionEvent;
@@ -14,7 +13,7 @@ import java.awt.event.ActionEvent;
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
-public class ImagePanelBestFitAction extends EnhancedAction implements UIReloadable {
+public class ImagePanelBestFitAction extends EnhancedAction {
 
     private static final String NAME = "Best fit";
 
@@ -26,21 +25,10 @@ public class ImagePanelBestFitAction extends EnhancedAction implements UIReloada
         super(NAME);
         setTooltip(NAME);
         setIcon(new ImageIcon(ImageViewerResources.getIconBestFit(iconSize)));
-        ReloadUIAction.getInstance().registerReloadable(this);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         MainWindow.getInstance().zoomBestFit();
-    }
-
-    @Override
-    public void reloadUI() {
-        if (getIcon() == null) {
-            return;
-        }
-
-        // Our icon size may have changed:
-        setIcon(new ImageIcon(ImageViewerResources.getIconBestFit(AppConfig.getInstance().getToolbarIconSize())));
     }
 }

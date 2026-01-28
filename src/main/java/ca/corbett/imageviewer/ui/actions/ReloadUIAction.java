@@ -1,10 +1,10 @@
 package ca.corbett.imageviewer.ui.actions;
 
+import ca.corbett.extras.EnhancedAction;
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.ui.UIReloadable;
 
-import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 import java.util.HashSet;
 import java.util.List;
@@ -18,9 +18,9 @@ import java.util.logging.Logger;
  * time to reload the UI. You can then respond by redrawing whatever
  * components might have been affected by property changes.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
-public class ReloadUIAction extends AbstractAction {
+public class ReloadUIAction extends EnhancedAction {
 
     private static final Logger logger = Logger.getLogger(ReloadUIAction.class.getName());
 
@@ -29,6 +29,7 @@ public class ReloadUIAction extends AbstractAction {
     private final Set<UIReloadable> reloadables = new HashSet<>();
 
     private ReloadUIAction() {
+        super("Reload UI"); // Never shown in UI so name, tooltip, and icon are not important
     }
 
     public static ReloadUIAction getInstance() {

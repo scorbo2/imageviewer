@@ -1,10 +1,13 @@
 package ca.corbett.imageviewer.ui.actions;
 
+import ca.corbett.extras.EnhancedAction;
 import ca.corbett.imageviewer.ImageOperation;
 import ca.corbett.imageviewer.ImageOperationHandler;
+import ca.corbett.imageviewer.ImageViewerResources;
+import ca.corbett.imageviewer.MenuManager;
 import ca.corbett.imageviewer.ui.MainWindow;
 
-import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -17,10 +20,10 @@ import java.io.File;
  * a directory chooser will be shown (if necessary) to select the destination directory.
  * (Note that delete actions obviously do not require a destination).
  *
- * @author scorbett
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 2.0
  */
-public class ImageOperationAction extends AbstractAction {
+public class ImageOperationAction extends EnhancedAction {
 
     private final ImageOperation operation;
 
@@ -35,6 +38,10 @@ public class ImageOperationAction extends AbstractAction {
     public ImageOperationAction(String label, ImageOperation operation) {
         super(label);
         this.operation = operation;
+        if (operation.isDeleteOperation()) {
+            // Use the scary nuke icon for actual delete operations:
+            setIcon(new ImageIcon(ImageViewerResources.getIconNuke(MenuManager.MENU_ICON_SIZE)));
+        }
     }
 
     @Override
