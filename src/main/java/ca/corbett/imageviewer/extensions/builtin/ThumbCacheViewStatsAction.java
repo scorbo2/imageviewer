@@ -1,8 +1,8 @@
 package ca.corbett.imageviewer.extensions.builtin;
 
+import ca.corbett.extras.EnhancedAction;
 import ca.corbett.imageviewer.ui.MainWindow;
 
-import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 
 /**
@@ -10,7 +10,7 @@ import java.awt.event.ActionEvent;
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
-public class ThumbCacheViewStatsAction extends AbstractAction {
+public class ThumbCacheViewStatsAction extends EnhancedAction {
 
     public ThumbCacheViewStatsAction(String name) {
         super(name);

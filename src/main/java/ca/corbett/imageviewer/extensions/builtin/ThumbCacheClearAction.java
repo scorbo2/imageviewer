@@ -1,8 +1,8 @@
 package ca.corbett.imageviewer.extensions.builtin;
 
+import ca.corbett.extras.EnhancedAction;
 import ca.corbett.imageviewer.ui.MainWindow;
 
-import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import java.awt.event.ActionEvent;
 
@@ -11,7 +11,7 @@ import java.awt.event.ActionEvent;
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
-public class ThumbCacheClearAction extends AbstractAction {
+public class ThumbCacheClearAction extends EnhancedAction {
 
     public ThumbCacheClearAction(String name) {
         super(name);

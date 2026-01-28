@@ -1,8 +1,8 @@
 package ca.corbett.imageviewer.extensions.builtin;
 
+import ca.corbett.extras.EnhancedAction;
 import ca.corbett.imageviewer.ImageOperationHandler;
 
-import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 
 /**
@@ -11,7 +11,7 @@ import java.awt.event.ActionEvent;
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
-public class UndoAction extends AbstractAction {
+public class UndoAction extends EnhancedAction {
 
     public UndoAction() {
         super("Undo last action");

@@ -10,8 +10,6 @@ import ca.corbett.imageviewer.Version;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.ui.MainWindow;
 
-import javax.swing.JMenuItem;
-import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
@@ -75,17 +73,11 @@ public class ThumbCacheExtension extends ImageViewerExtension {
     }
 
     @Override
-    public List<JMenuItem> getMenuItems(String topLevelMenu, MainWindow.BrowseMode browseMode) {
+    public List<EnhancedAction> getMenuActions(String topLevelMenu, MainWindow.BrowseMode browseMode) {
         if ("View".equals(topLevelMenu)) {
-            List<JMenuItem> list = new ArrayList<>();
-            JMenuItem item = new JMenuItem(new ThumbCacheViewStatsAction("View thumbnail cache stats"));
-            item.setMnemonic(KeyEvent.VK_V);
-            list.add(item);
-
-            item = new JMenuItem(new ThumbCacheClearAction("Clear thumbnail cache"));
-            item.setMnemonic(KeyEvent.VK_C);
-            list.add(item);
-
+            List<EnhancedAction> list = new ArrayList<>();
+            list.add(new ThumbCacheViewStatsAction("View thumbnail cache stats"));
+            list.add(new ThumbCacheClearAction("Clear thumbnail cache"));
             return list;
         }
         return null;

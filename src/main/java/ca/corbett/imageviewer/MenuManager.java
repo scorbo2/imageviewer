@@ -1,5 +1,7 @@
 package ca.corbett.imageviewer;
 
+import ca.corbett.extras.EnhancedAction;
+import ca.corbett.extras.io.KeyStrokeManager;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.actions.AboutAction;
@@ -26,7 +28,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.KeyStroke;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
@@ -60,6 +61,7 @@ public final class MenuManager {
      */
     public static final int MENU_ICON_SIZE = 18;
 
+    private final ImageViewerExtensionManager extManager;
     private final JMenuBar menuBar;
     private JMenu fileMenu;
     private JMenu editMenu;
@@ -73,6 +75,7 @@ public final class MenuManager {
      * The result can be retrieved using getMainMenuBar().
      */
     public MenuManager() {
+        extManager = ImageViewerExtensionManager.getInstance();
         browseMode = MainWindow.BrowseMode.FILE_SYSTEM;
         menuBar = new JMenuBar();
         rebuildAll();
@@ -136,12 +139,14 @@ public final class MenuManager {
             imagePanelPopupMenu.add(new JMenuItem(new ImageSetBrowseToSourceDirAction()));
         }
 
-        imagePanelPopupMenu.add(new JMenuItem(new RenameAction()));
+        JMenuItem renameItem = new JMenuItem(new RenameAction());
+        renameItem.setAccelerator(AppConfig.getInstance().getRenameKeyStroke());
+        imagePanelPopupMenu.add(renameItem);
 
         // Add any menu items from our extensions, if any:
-        List<JMenuItem> extensionItems = ImageViewerExtensionManager.getInstance().getPopupMenuItems(browseMode);
-        for (JMenuItem extensionItem : extensionItems) {
-            imagePanelPopupMenu.add(extensionItem);
+        List<EnhancedAction> extensionActions = extManager.getPopupMenuActions(browseMode);
+        for (EnhancedAction action : extensionActions) {
+            imagePanelPopupMenu.add(new JMenuItem(action));
         }
 
         return imagePanelPopupMenu;
@@ -162,9 +167,13 @@ public final class MenuManager {
         menuBar.add(editMenu);
 
         // Any extension-provided top-level menu can go in between Edit and View:
-        List<JMenu> extensionMenus = ImageViewerExtensionManager.getInstance().getTopLevelMenus(browseMode);
-        if (!extensionMenus.isEmpty()) {
-            for (JMenu extensionMenu : extensionMenus) {
+        for (String menuName : extManager.getTopLevelMenus(browseMode)) {
+            JMenu extensionMenu = new JMenu(menuName);
+            List<EnhancedAction> actions = extManager.getMenuActions(menuName, browseMode);
+            if (!actions.isEmpty()) {
+                for (EnhancedAction action : actions) {
+                    extensionMenu.add(new JMenuItem(action));
+                }
                 menuBar.add(extensionMenu);
             }
         }
@@ -189,17 +198,19 @@ public final class MenuManager {
         fileMenu.removeAll();
 
         // Add any items to this list from our extensions, if any:
-        List<JMenuItem> items = ImageViewerExtensionManager.getInstance().getMenuItems("File", browseMode);
-        if (!items.isEmpty()) {
-            for (JMenuItem item : items) {
-                fileMenu.add(item);
+        List<EnhancedAction> actions = extManager.getMenuActions("File", browseMode);
+        if (!actions.isEmpty()) {
+            for (EnhancedAction action : actions) {
+                fileMenu.add(new JMenuItem(action));
             }
             fileMenu.addSeparator();
         }
 
         JMenuItem exitItem = new JMenuItem(new ExitAction());
         exitItem.setMnemonic(KeyEvent.VK_X);
-        exitItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.CTRL_DOWN_MASK));
+        if (AppConfig.getInstance().getExitKeyStroke() != null) {
+            exitItem.setAccelerator(AppConfig.getInstance().getExitKeyStroke());
+        }
         fileMenu.add(exitItem);
     }
 
@@ -221,14 +232,18 @@ public final class MenuManager {
         }
 
         editMenu.addSeparator();
-        editMenu.add(new JMenuItem(new RenameAction()));
+        JMenuItem renameItem = new JMenuItem(new RenameAction());
+        renameItem.setAccelerator(AppConfig.getInstance().getRenameKeyStroke());
+        editMenu.add(renameItem);
 
         // Add any items to this list from our extensions, if any:
-        List<JMenuItem> extensionItems = ImageViewerExtensionManager.getInstance().getMenuItems("Edit", browseMode);
-        for (JMenuItem extensionItem : extensionItems) {
-            editMenu.add(extensionItem);
+        List<EnhancedAction> actions = extManager.getMenuActions("Edit", browseMode);
+        if (!actions.isEmpty()) {
+            for (EnhancedAction action : actions) {
+                editMenu.add(new JMenuItem(action));
+            }
+            editMenu.addSeparator();
         }
-        editMenu.addSeparator();
 
         editMenu.add(new JMenuItem(new PreferencesAction(MENU_ICON_SIZE)));
 
@@ -242,14 +257,18 @@ public final class MenuManager {
 
         JMenuItem item = new JMenuItem(new PreviousImageAction(MENU_ICON_SIZE));
         item.setMnemonic(KeyEvent.VK_P);
+        item.setAccelerator(KeyStrokeManager.parseKeyStroke("left")); // can't be unassigned or reassigned
         viewMenu.add(item);
 
         item = new JMenuItem(new NextImageAction(MENU_ICON_SIZE));
         item.setMnemonic(KeyEvent.VK_N);
+        item.setAccelerator(KeyStrokeManager.parseKeyStroke("right")); // can't be unassigned or reassigned
         viewMenu.add(item);
 
         item = new JMenuItem(new ReloadAction(MENU_ICON_SIZE));
-        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+        if (AppConfig.getInstance().getRefreshKeyStroke() != null) {
+            item.setAccelerator(AppConfig.getInstance().getRefreshKeyStroke());
+        }
         viewMenu.add(item);
 
         if (browseMode == MainWindow.BrowseMode.IMAGE_SET) {
@@ -259,13 +278,14 @@ public final class MenuManager {
         viewMenu.addSeparator();
 
         // Add any items to this list from our extensions, if any:
-        List<JMenuItem> items = ImageViewerExtensionManager.getInstance().getMenuItems("View", browseMode);
-        if (!items.isEmpty()) {
-            for (JMenuItem extensionItem : items) {
-                viewMenu.add(extensionItem);
+        List<EnhancedAction> actions = extManager.getMenuActions("View", browseMode);
+        if (!actions.isEmpty()) {
+            for (EnhancedAction action : actions) {
+                viewMenu.add(new JMenuItem(action));
             }
             viewMenu.addSeparator();
         }
+
 
         item = new JMenuItem(new LogConsoleAction());
         item.setMnemonic(KeyEvent.VK_L);
@@ -296,17 +316,20 @@ public final class MenuManager {
         helpMenu.removeAll();
 
         // Add any items to this list from our extensions, if any:
-        List<JMenuItem> items = ImageViewerExtensionManager.getInstance().getMenuItems("Help", browseMode);
-        if (!items.isEmpty()) {
-            for (JMenuItem extensionItem : items) {
-                helpMenu.add(extensionItem);
+        List<EnhancedAction> actions = extManager.getMenuActions("Help", browseMode);
+        if (!actions.isEmpty()) {
+            for (EnhancedAction action : actions) {
+                helpMenu.add(new JMenuItem(action));
             }
             helpMenu.addSeparator();
         }
 
+
         JMenuItem aboutItem = new JMenuItem(new AboutAction(MENU_ICON_SIZE));
         aboutItem.setMnemonic(KeyEvent.VK_A);
-        aboutItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK));
+        if (AppConfig.getInstance().getAboutKeyStroke() != null) {
+            aboutItem.setAccelerator(AppConfig.getInstance().getAboutKeyStroke());
+        }
         helpMenu.add(aboutItem);
     }
 
@@ -403,8 +426,10 @@ public final class MenuManager {
         List<JMenuItem> menuList = new ArrayList<>();
 
         if (browseMode == MainWindow.BrowseMode.FILE_SYSTEM) {
-            menuList.add(
-                    new JMenuItem(new ImageOperationAction("Delete this image", ImageOperation.deleteSingleImage())));
+            JMenuItem deleteItem = new JMenuItem(
+                    new ImageOperationAction("Delete this image", ImageOperation.deleteSingleImage()));
+            deleteItem.setAccelerator(KeyStrokeManager.parseKeyStroke("del")); // can't be unassigned or reassigned
+            menuList.add(deleteItem);
             menuList.add(new JMenuItem(
                     new ImageOperationAction("Delete all images in this directory", ImageOperation.deleteAllImages())));
             menuList.add(

@@ -1,6 +1,7 @@
 package ca.corbett.imageviewer.extensions.builtin;
 
-import javax.swing.AbstractAction;
+import ca.corbett.extras.EnhancedAction;
+
 import java.awt.event.ActionEvent;
 
 /**
@@ -8,7 +9,7 @@ import java.awt.event.ActionEvent;
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
-public class ViewStatisticsAction extends AbstractAction {
+public class ViewStatisticsAction extends EnhancedAction {
 
     private final StatisticsExtension owner;
 

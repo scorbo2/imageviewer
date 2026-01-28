@@ -7,10 +7,11 @@ import ca.corbett.extras.dirtree.DirTreeListener;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.ImageUtil;
+import ca.corbett.extras.io.KeyStrokeManager;
 import ca.corbett.extras.logging.LogConsole;
+import ca.corbett.extras.properties.KeyStrokeProperty;
 import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.ImageOperationHandler;
-import ca.corbett.imageviewer.KeyboardManager;
 import ca.corbett.imageviewer.LogConsoleManager;
 import ca.corbett.imageviewer.MenuManager;
 import ca.corbett.imageviewer.QuickMoveManager;
@@ -93,6 +94,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
     private final MenuManager menuManager;
     private JToolBar toolBar;
     private UpdateManager updateManager;
+    private KeyStrokeManager keyStrokeManager;
 
     private BrowseMode browseMode;
     private JTabbedPane imgSrcTabPane;
@@ -152,7 +154,8 @@ public final class MainWindow extends JFrame implements UIReloadable {
             instance.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             instance.setTitle(Version.APPLICATION_NAME);
             instance.initComponents();
-            KeyboardManager.addGlobalKeyListener(instance);
+            instance.keyStrokeManager = new KeyStrokeManager(instance);
+            instance.configureKeyStrokes();
 
             instance.addWindowListener(new WindowAdapter() {
                 /**
@@ -680,6 +683,9 @@ public final class MainWindow extends JFrame implements UIReloadable {
             imageTabPane.setTabHeaderVisible(false);
         }
 
+        // Re-initialize keyboard shortcuts:
+        configureKeyStrokes();
+
         reload(true);
     }
 
@@ -826,6 +832,20 @@ public final class MainWindow extends JFrame implements UIReloadable {
         return new ImageInstance((File)imagePanel.getExtraAttribute("srcFile"),
                                  imagePanel.getImage(),
                                  imagePanel.getImageIcon());
+    }
+
+    private void configureKeyStrokes() {
+        keyStrokeManager.clear();
+
+        for (KeyStrokeProperty prop : AppConfig.getInstance().getKeyStrokeProperties()) {
+            // If there's no Action attached, or if there is no keystroke assigned to it, skip it:
+            if (prop.getAction() == null || prop.getKeyStroke() == null) {
+                continue;
+            }
+            
+            // Register it! This will update the shortcut attached to our menu items as well:
+            keyStrokeManager.registerHandler(prop.getKeyStroke(), prop.getAction());
+        }
     }
 
     /**
