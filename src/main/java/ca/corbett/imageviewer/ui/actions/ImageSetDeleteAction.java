@@ -26,6 +26,10 @@ public class ImageSetDeleteAction extends EnhancedAction {
     public ImageSetDeleteAction(int iconSize) {
         super(NAME);
         setTooltip(NAME);
+
+        // Debatable, but let's not use the scary red nuke icon for image set deletions.
+        // We'll use the regular delete icon instead, and reserve the nuke icon for operations
+        // that actually remove image files from disk. This way they are visually distinct.
         setIcon(new ImageIcon(ImageViewerResources.getIconDelete(iconSize)));
     }
 

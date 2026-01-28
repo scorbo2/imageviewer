@@ -1,11 +1,11 @@
 package ca.corbett.imageviewer.ui.actions;
 
+import ca.corbett.extras.EnhancedAction;
 import ca.corbett.imageviewer.ui.ImageInstance;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 import ca.corbett.imageviewer.ui.imagesets.ImageSetChooserDialog;
 
-import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.logging.Level;
@@ -18,19 +18,22 @@ import java.util.logging.Logger;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 2.2
  */
-public class ImageSetCreateAction extends AbstractAction {
+public class ImageSetCreateAction extends EnhancedAction {
+
+    private static final String NAME = "Create new list...";
 
     private static final Logger log = Logger.getLogger(ImageSetCreateAction.class.getName());
 
     public ImageSetCreateAction() {
-        super("Create new list...");
+        super(NAME);
+        setTooltip(NAME);
     }
 
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
         ImageInstance currentImage = MainWindow.getInstance().getSelectedImage();
         if (currentImage.isEmpty()) {
-            MainWindow.getInstance().showMessageDialog("Rename", "Nothing selected.");
+            MainWindow.getInstance().showMessageDialog(NAME, "Nothing selected.");
             return;
         }
         File file = currentImage.getImageFile();

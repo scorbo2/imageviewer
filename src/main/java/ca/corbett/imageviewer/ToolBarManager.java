@@ -36,7 +36,7 @@ import static ca.corbett.imageviewer.ImageViewerResources.getIconMoveItem;
 /**
  * Contains static helper methods for building up a JMenuBar for the main window.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 2.0
  */
 public final class ToolBarManager {
@@ -50,9 +50,8 @@ public final class ToolBarManager {
     }
 
     /**
-     * Creates a toolbar button using the given EnhancedAction. The button's icon and tooltip
-     * will be set according to the given action.
-     * The button will be sized according to current user preferences. If the given BufferedImage
+     * Creates a button for the main application toolbar. The button will be sized
+     * according to current user preferences. If the given BufferedImage
      * is not of the appropriate size, it is resized automatically.
      */
     public static JButton buildToolbarButton(EnhancedAction action) {
@@ -61,12 +60,20 @@ public final class ToolBarManager {
                            AppConfig.getInstance().getToolbarIconMargin());
     }
 
+    /**
+     * Creates a button for use in mini toolbars (such as the one in the image set panel).
+     * The button will be sized according to current user preferences. If the given BufferedImage
+     * is not of the appropriate size, it is resized automatically.
+     */
     public static JButton buildMiniToolbarButton(EnhancedAction action) {
         return buildButton(action,
                            AppConfig.getInstance().getMiniToolbarIconSize(),
                            AppConfig.getInstance().getMiniToolbarIconMargin());
     }
 
+    /**
+     * Invoked internally to build a button of the specified size.
+     */
     private static JButton buildButton(EnhancedAction action, int iconImageSize, int iconMarginSize) {
         int buttonSize = iconImageSize + iconMarginSize;
 

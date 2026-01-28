@@ -61,6 +61,10 @@ public abstract class ImageViewerExtension extends AppExtension {
      * Invoked when the application is building the MainWindow's main menu and wants
      * to know if the extension has anything to add to one of the built-in top-level
      * menus.
+     * <p>
+     *     If your menu items specify icons, please use MenuManager.MENU_ICON_SIZE
+     *     to size your icons appropriately.
+     * </p>
      *
      * @param topLevelMenu The name of the top-level menu being built: File, Edit, View, or Help.
      * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
@@ -73,6 +77,10 @@ public abstract class ImageViewerExtension extends AppExtension {
     /**
      * Invoked when the application wants to know if the extension has its own top-level
      * menu to add to the MainWindow's main menu.
+     * <p>
+     *     If your menu items specify icons, please use MenuManager.MENU_ICON_SIZE
+     *     to size your icons appropriately.
+     * </p>
      *
      * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
      * @return an optional list of JMenu objects for the main menu, or null for none.
@@ -85,6 +93,10 @@ public abstract class ImageViewerExtension extends AppExtension {
      * Invoked when the application is building the popup menu for the MainWindow's image
      * panel, also used in the toolbar and in the MainMenu. Extensions can add menu items
      * here if they pertain to the current image or current directory of images.
+     * <p>
+     *     If your menu items specify icons, please use MenuManager.MENU_ICON_SIZE
+     *     to size your icons appropriately.
+     * </p>
      *
      * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
      * @return An optional list of menu items to insert into the popup menu, or null for none.
