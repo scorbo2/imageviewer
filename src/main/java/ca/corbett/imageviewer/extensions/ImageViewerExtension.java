@@ -10,11 +10,8 @@ import ca.corbett.imageviewer.ui.ThumbPanel;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import java.awt.Color;
-import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
@@ -62,46 +59,44 @@ public abstract class ImageViewerExtension extends AppExtension {
      * to know if the extension has anything to add to one of the built-in top-level
      * menus.
      * <p>
-     *     If your menu items specify icons, please use MenuManager.MENU_ICON_SIZE
+     *     If your actions specify icons, please use MenuManager.MENU_ICON_SIZE
      *     to size your icons appropriately.
      * </p>
      *
      * @param topLevelMenu The name of the top-level menu being built: File, Edit, View, or Help.
      * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
-     * @return an optional list of menu items to insert into the given menu, or null for nothing.
+     * @return an optional list of EnhancedActions to insert into the given menu, or null for nothing.
      */
-    public List<JMenuItem> getMenuItems(String topLevelMenu, MainWindow.BrowseMode browseMode) {
+    public List<EnhancedAction> getMenuActions(String topLevelMenu, MainWindow.BrowseMode browseMode) {
         return null;
     }
 
     /**
      * Invoked when the application wants to know if the extension has its own top-level
-     * menu to add to the MainWindow's main menu.
-     * <p>
-     *     If your menu items specify icons, please use MenuManager.MENU_ICON_SIZE
-     *     to size your icons appropriately.
-     * </p>
+     * menu to add to the MainWindow's main menu. Every name that is returned here will be
+     * added as a top-level menu. It will also be supplied to getMenuItems() calls when
+     * building that menu.
      *
      * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
-     * @return an optional list of JMenu objects for the main menu, or null for none.
+     * @return an optional list of top-level menu names, or null for none.
      */
-    public List<JMenu> getTopLevelMenus(MainWindow.BrowseMode browseMode) {
+    public List<String> getTopLevelMenus(MainWindow.BrowseMode browseMode) {
         return null;
     }
 
     /**
      * Invoked when the application is building the popup menu for the MainWindow's image
-     * panel, also used in the toolbar and in the MainMenu. Extensions can add menu items
+     * panel, also used in the toolbar and in the MainMenu. Extensions can add EnhancedActions
      * here if they pertain to the current image or current directory of images.
      * <p>
-     *     If your menu items specify icons, please use MenuManager.MENU_ICON_SIZE
+     *     If your actions specify icons, please use MenuManager.MENU_ICON_SIZE
      *     to size your icons appropriately.
      * </p>
      *
      * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
-     * @return An optional list of menu items to insert into the popup menu, or null for none.
+     * @return An optional list of EnhancedActions to insert into the popup menu, or null for none.
      */
-    public List<JMenuItem> getPopupMenuItems(MainWindow.BrowseMode browseMode) {
+    public List<EnhancedAction> getPopupMenuActions(MainWindow.BrowseMode browseMode) {
         return null;
     }
 
@@ -124,20 +119,6 @@ public abstract class ImageViewerExtension extends AppExtension {
     public List<EnhancedAction> getImageSetToolBarActions() {
         return null;
     }
-
-    /**
-     * Invoked when the application receives a keyboard shortcut. Extensions can take some
-     * action in response to this keyboard shortcut. Processing does not stop when an extension
-     * handles this call, so in theory multiple extensions could do something with the same
-     * shortcut.
-     *
-     * @param e the KeyEvent in question.
-     * @return true if this extension did something with this event, false otherwise.
-     */
-    public boolean handleKeyboardShortcut(KeyEvent e) {
-        return false;
-    }
-
 
     /**
      * Extensions can return a list of LogConsoleStyles to be applied to the ImageViewer

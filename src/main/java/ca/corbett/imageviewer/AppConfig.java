@@ -2,6 +2,7 @@ package ca.corbett.imageviewer;
 
 import ca.corbett.extensions.AppProperties;
 import ca.corbett.extras.MessageUtil;
+import ca.corbett.extras.io.KeyStrokeManager;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.BooleanProperty;
 import ca.corbett.extras.properties.ComboProperty;
@@ -9,24 +10,73 @@ import ca.corbett.extras.properties.DecimalProperty;
 import ca.corbett.extras.properties.DirectoryProperty;
 import ca.corbett.extras.properties.EnumProperty;
 import ca.corbett.extras.properties.IntegerProperty;
+import ca.corbett.extras.properties.KeyStrokeProperty;
 import ca.corbett.extras.properties.LookAndFeelProperty;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
+import ca.corbett.imageviewer.ui.actions.AboutAction;
+import ca.corbett.imageviewer.ui.actions.DeleteCurrentAction;
+import ca.corbett.imageviewer.ui.actions.ExitAction;
+import ca.corbett.imageviewer.ui.actions.NextImageAction;
+import ca.corbett.imageviewer.ui.actions.PreviousImageAction;
+import ca.corbett.imageviewer.ui.actions.ReloadAction;
+import ca.corbett.imageviewer.ui.actions.RenameAction;
+import ca.corbett.imageviewer.ui.actions.SetBrowseModeAction;
 import com.formdev.flatlaf.FlatDarkLaf;
 
+import javax.swing.KeyStroke;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+
+import static ca.corbett.extras.io.KeyStrokeManager.parseKeyStroke;
 
 public class AppConfig extends AppProperties<ImageViewerExtension> {
 
     private static final Logger logger = Logger.getLogger(AppConfig.class.getName());
     protected static AppConfig instance;
     private MessageUtil messageUtil;
+
+    /**
+     * Extensions can use this prefix when defining their own keystroke properties,
+     * so that they show up on the same properties dialog tab as the other ones.
+     * This is optional! Extensions can opt to keep all of their properties
+     * on their own separate tab if they prefer.
+     * <p>
+     * Suggested format: KEYSTROKE_PREFIX + ExtensionUserFriendlyName + "." + ActionName
+     * </p>
+     */
+    public static final String KEYSTROKE_PREFIX = "Keystrokes.";
+
+    /**
+     * The application reserves these keystrokes for its own use,
+     * so extensions are encouraged to use this reserved list when
+     * creating their own KeyStrokeProperties, to avoid conflicts.
+     */
+    public static final List<KeyStroke> RESERVED_KEYSTROKES = List.of(
+            KeyStrokeManager.parseKeyStroke("up"),
+            KeyStrokeManager.parseKeyStroke("left"),
+            KeyStrokeManager.parseKeyStroke("right"),
+            KeyStrokeManager.parseKeyStroke("down"),
+            KeyStrokeManager.parseKeyStroke("Ctrl+Q"),
+            KeyStrokeManager.parseKeyStroke("Del")
+    );
+
+    private static final String KEY_EXIT = "Keystrokes.General.exit";
+    private static final String KEY_PREVIOUS_IMAGE1 = "Keystrokes.General.previousImage1";
+    private static final String KEY_NEXT_IMAGE1 = "Keystrokes.General.nextImage1";
+    private static final String KEY_PREVIOUS_IMAGE2 = "Keystrokes.General.previousImage2";
+    private static final String KEY_NEXT_IMAGE2 = "Keystrokes.General.nextImage2";
+    private static final String KEY_RENAME = "Keystrokes.General.rename";
+    private static final String KEY_DELETE_CURRENT = "Keystrokes.General.deleteCurrent";
+    private static final String KEY_BROWSE_MODE_FILESYSTEM = "Keystrokes.General.setBrowseModeFileSystem";
+    private static final String KEY_BROWSE_MODE_IMAGE_SET = "Keystrokes.General.setBrowseModeImageSet";
+    private static final String KEY_REFRESH = "Keystrokes.General.refresh";
+    private static final String KEY_ABOUT = "Keystrokes.General.about";
 
     private IntegerProperty fileSystemVerticalSplitPanePositionProp;
     private IntegerProperty imageSetVerticalSplitPanePositionProp;
@@ -206,6 +256,45 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         return preserveDateTimeProp.getValue();
     }
 
+    public KeyStroke getRenameKeyStroke() {
+        KeyStrokeProperty prop = (KeyStrokeProperty)getPropertiesManager().getProperty(KEY_RENAME);
+        return prop.getKeyStroke();
+    }
+
+    public KeyStroke getExitKeyStroke() {
+        KeyStrokeProperty prop = (KeyStrokeProperty)getPropertiesManager().getProperty(KEY_EXIT);
+        return prop.getKeyStroke();
+    }
+
+    public KeyStroke getRefreshKeyStroke() {
+        KeyStrokeProperty prop = (KeyStrokeProperty)getPropertiesManager().getProperty(KEY_REFRESH);
+        return prop.getKeyStroke();
+    }
+
+    public KeyStroke getAboutKeyStroke() {
+        KeyStrokeProperty prop = (KeyStrokeProperty)getPropertiesManager().getProperty(KEY_ABOUT);
+        return prop.getKeyStroke();
+    }
+
+    public List<KeyStrokeProperty> getKeyStrokeProperties() {
+        List<KeyStrokeProperty> list = new ArrayList<>();
+
+        // Return our built-ins:
+        list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_PREVIOUS_IMAGE1));
+        list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_PREVIOUS_IMAGE2));
+        list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_NEXT_IMAGE1));
+        list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_NEXT_IMAGE2));
+        list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_RENAME));
+        list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_DELETE_CURRENT));
+        list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_BROWSE_MODE_FILESYSTEM));
+        list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_BROWSE_MODE_IMAGE_SET));
+
+        // Now ask our extension manager:
+        list.addAll(ImageViewerExtensionManager.getInstance().getKeyStrokeProperties());
+
+        return list;
+    }
+
     @Override
     protected List<AbstractProperty> createInternalProperties() {
         List<AbstractProperty> list = new ArrayList<>();
@@ -301,6 +390,8 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
             field.setVisible(index == 1);
         });
 
+        list.addAll(createKeyboardProperties());
+
         thumbSizeProp = new EnumProperty<>("Thumbnails.General.thumbSize", "Thumb size", ThumbSize.Normal);
         list.add(thumbSizeProp);
 
@@ -318,6 +409,71 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         list.add(preserveDateTimeProp);
 
         return list;
+    }
+
+    private List<AbstractProperty> createKeyboardProperties() {
+        List<AbstractProperty> props = new ArrayList<>();
+
+        // Non-configurable:
+        props.add(new KeyStrokeProperty(KEY_EXIT,
+                                        "Exit application:",
+                                        parseKeyStroke("Ctrl+Q"),
+                                        new ExitAction())
+                          .setInitiallyEditable(false));
+        props.add(new KeyStrokeProperty(KEY_PREVIOUS_IMAGE1,
+                                        "Previous image:",
+                                        parseKeyStroke("left"),
+                                        new PreviousImageAction(MenuManager.MENU_ICON_SIZE))
+                          .setInitiallyEditable(false));
+        props.add(new KeyStrokeProperty(KEY_PREVIOUS_IMAGE2,
+                                        "Previous image:",
+                                        parseKeyStroke("up"),
+                                        new PreviousImageAction(MenuManager.MENU_ICON_SIZE))
+                          .setInitiallyEditable(false));
+        props.add(new KeyStrokeProperty(KEY_NEXT_IMAGE1,
+                                        "Next image:",
+                                        parseKeyStroke("right"),
+                                        new NextImageAction(MenuManager.MENU_ICON_SIZE))
+                          .setInitiallyEditable(false));
+        props.add(new KeyStrokeProperty(KEY_NEXT_IMAGE2,
+                                        "Next image:",
+                                        parseKeyStroke("down"),
+                                        new NextImageAction(MenuManager.MENU_ICON_SIZE))
+                          .setInitiallyEditable(false));
+        props.add(new KeyStrokeProperty(KEY_DELETE_CURRENT,
+                                        "Delete image:",
+                                        parseKeyStroke("del"),
+                                        new DeleteCurrentAction())
+                          .setInitiallyEditable(false));
+
+        // Configurable:
+        props.add(new KeyStrokeProperty(KEY_REFRESH,
+                                        "Refresh:",
+                                        parseKeyStroke("F5"),
+                                        new ReloadAction(MenuManager.MENU_ICON_SIZE))
+                          .setAllowBlank(true));
+        props.add(new KeyStrokeProperty(KEY_RENAME,
+                                        "Rename image:",
+                                        parseKeyStroke("F2"),
+                                        new RenameAction(MenuManager.MENU_ICON_SIZE))
+                          .setAllowBlank(true));
+        props.add(new KeyStrokeProperty(KEY_BROWSE_MODE_FILESYSTEM,
+                                        "Filesystem mode:",
+                                        parseKeyStroke("alt+1"),
+                                        new SetBrowseModeAction(MainWindow.BrowseMode.FILE_SYSTEM))
+                          .setAllowBlank(true));
+        props.add(new KeyStrokeProperty(KEY_BROWSE_MODE_IMAGE_SET,
+                                        "Image set mode:",
+                                        parseKeyStroke("alt+2"),
+                                        new SetBrowseModeAction(MainWindow.BrowseMode.IMAGE_SET))
+                          .setAllowBlank(true));
+        props.add(new KeyStrokeProperty(KEY_ABOUT,
+                                        "About dialog:",
+                                        parseKeyStroke("Ctrl+A"),
+                                        new AboutAction(MenuManager.MENU_ICON_SIZE))
+                          .setAllowBlank(true));
+
+        return props;
     }
 
     private MessageUtil getMessageUtil() {

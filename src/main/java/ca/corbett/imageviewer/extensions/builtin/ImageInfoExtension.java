@@ -1,15 +1,16 @@
 package ca.corbett.imageviewer.extensions.builtin;
 
 import ca.corbett.extensions.AppExtensionInfo;
+import ca.corbett.extras.EnhancedAction;
+import ca.corbett.extras.io.KeyStrokeManager;
 import ca.corbett.extras.properties.AbstractProperty;
+import ca.corbett.extras.properties.KeyStrokeProperty;
+import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.Version;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.ui.MainWindow;
 
-import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +24,10 @@ import java.util.List;
 public class ImageInfoExtension extends ImageViewerExtension {
 
     private final AppExtensionInfo extInfo;
+
+    private static final String HOTKEY_PROP = AppConfig.KEYSTROKE_PREFIX + "General.ImageInfo";
+    private static final ImageInfoAction imageInfoAction = new ImageInfoAction();
+    private static final DirectoryInfoAction directoryInfoAction = new DirectoryInfoAction();
 
     public ImageInfoExtension() {
         extInfo = new AppExtensionInfo.Builder("Image information")
@@ -49,54 +54,46 @@ public class ImageInfoExtension extends ImageViewerExtension {
 
     @Override
     protected List<AbstractProperty> createConfigProperties() {
-        return List.of();
+        KeyStrokeProperty prop = new KeyStrokeProperty(HOTKEY_PROP,
+                                                       "Image information:",
+                                                       KeyStrokeManager.parseKeyStroke("Ctrl+I"),
+                                                       new ImageInfoAction());
+        prop.setAllowBlank(true);
+        prop.setReservedKeyStrokes(AppConfig.RESERVED_KEYSTROKES);
+        return List.of(prop);
     }
 
     @Override
-    public List<JMenuItem> getMenuItems(String menu, MainWindow.BrowseMode browseMode) {
+    public List<EnhancedAction> getMenuActions(String menu, MainWindow.BrowseMode browseMode) {
         if (!"View".equals(menu)) {
             return null;
         }
 
-        List<JMenuItem> items = new ArrayList<>();
-        items.add(createImageInfoMenuItem());
+        List<EnhancedAction> actions = new ArrayList<>();
+        imageInfoAction.setAcceleratorKey(getConfiguredHotkey());
+        actions.add(imageInfoAction);
         if (browseMode == MainWindow.BrowseMode.FILE_SYSTEM) {
-            items.add(createDirectoryInfoMenuItem());
+            actions.add(directoryInfoAction);
+        }
+        return actions;
+    }
+
+    @Override
+    public List<EnhancedAction> getPopupMenuActions(MainWindow.BrowseMode browseMode) {
+        List<EnhancedAction> items = new ArrayList<>();
+        imageInfoAction.setAcceleratorKey(getConfiguredHotkey());
+        items.add(imageInfoAction);
+        if (browseMode == MainWindow.BrowseMode.FILE_SYSTEM) {
+            items.add(directoryInfoAction);
         }
         return items;
     }
 
-    @Override
-    public List<JMenuItem> getPopupMenuItems(MainWindow.BrowseMode browseMode) {
-        List<JMenuItem> items = new ArrayList<>();
-        items.add(createImageInfoMenuItem());
-        if (browseMode == MainWindow.BrowseMode.FILE_SYSTEM) {
-            items.add(createDirectoryInfoMenuItem());
+    private KeyStroke getConfiguredHotkey() {
+        AbstractProperty prop = AppConfig.getInstance().getPropertiesManager().getProperty(HOTKEY_PROP);
+        if (prop instanceof KeyStrokeProperty ksp) {
+            return ksp.getKeyStroke();
         }
-        return items;
-    }
-
-    private JMenuItem createImageInfoMenuItem() {
-        JMenuItem menuItem = new JMenuItem(new ImageInfoAction());
-        menuItem.setMnemonic(KeyEvent.VK_I);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK));
-        return menuItem;
-    }
-
-    private JMenuItem createDirectoryInfoMenuItem() {
-        JMenuItem menuItem = new JMenuItem(new DirectoryInfoAction());
-        menuItem.setMnemonic(KeyEvent.VK_D);
-        return menuItem;
-    }
-
-    @Override
-    public boolean handleKeyboardShortcut(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_I) {
-            if ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) > 0) {
-                new ImageInfoAction().actionPerformed(null);
-                return true;
-            }
-        }
-        return false;
+        return null;
     }
 }

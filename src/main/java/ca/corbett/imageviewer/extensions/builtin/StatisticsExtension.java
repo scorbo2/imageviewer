@@ -1,14 +1,13 @@
 package ca.corbett.imageviewer.extensions.builtin;
 
 import ca.corbett.extensions.AppExtensionInfo;
+import ca.corbett.extras.EnhancedAction;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.imageviewer.ImageOperation;
 import ca.corbett.imageviewer.Version;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.ui.MainWindow;
 
-import javax.swing.JMenuItem;
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -121,13 +120,9 @@ public class StatisticsExtension extends ImageViewerExtension {
     }
 
     @Override
-    public List<JMenuItem> getMenuItems(String topLevelMenu, MainWindow.BrowseMode browseMode) {
+    public List<EnhancedAction> getMenuActions(String topLevelMenu, MainWindow.BrowseMode browseMode) {
         if ("View".equals(topLevelMenu)) {
-            List<JMenuItem> list = new ArrayList<>();
-            JMenuItem item = new JMenuItem(new ViewStatisticsAction("Deletion statistics", this));
-            item.setMnemonic(KeyEvent.VK_D);
-            list.add(item);
-            return list;
+            return List.of(new ViewStatisticsAction("Deletion statistics", this));
         }
 
         return null;
