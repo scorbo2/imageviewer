@@ -74,7 +74,7 @@ public abstract class ImageViewerExtension extends AppExtension {
     /**
      * Invoked when the application wants to know if the extension has its own top-level
      * menu to add to the MainWindow's main menu. Every name that is returned here will be
-     * added as a top-level menu. It will also be supplied to getMenuItems() calls when
+     * added as a top-level menu. It will also be supplied to getMenuActions() calls when
      * building that menu.
      *
      * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
