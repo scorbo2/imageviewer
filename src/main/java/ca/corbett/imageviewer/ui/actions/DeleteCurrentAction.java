@@ -26,7 +26,7 @@ public class DeleteCurrentAction extends EnhancedAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         ImageInstance currentImage = MainWindow.getInstance().getSelectedImage();
-        if (currentImage == null) {
+        if (currentImage.isEmpty()) {
             MainWindow.getInstance().showMessageDialog("Nothing selected", "There is no image selected.");
             return;
         }
