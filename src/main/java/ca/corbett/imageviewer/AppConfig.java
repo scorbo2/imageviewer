@@ -17,6 +17,7 @@ import ca.corbett.forms.fields.FormField;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
+import ca.corbett.imageviewer.ui.ReservedKeyStrokeWorkaround;
 import ca.corbett.imageviewer.ui.actions.AboutAction;
 import ca.corbett.imageviewer.ui.actions.DeleteCurrentAction;
 import ca.corbett.imageviewer.ui.actions.ExitAction;
@@ -454,27 +455,37 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
                                         "Refresh:",
                                         parseKeyStroke("F5"),
                                         new ReloadAction(MenuManager.MENU_ICON_SIZE))
-                          .setAllowBlank(true));
+                          .setAllowBlank(true)
+                          //.setReservedKeyStrokes(RESERVED_KEYSTROKES) // TODO does not work
+                          .addFormFieldGenerationListener(new ReservedKeyStrokeWorkaround())); // workaround
         props.add(new KeyStrokeProperty(KEY_RENAME,
                                         "Rename image:",
                                         parseKeyStroke("F2"),
                                         new RenameAction(MenuManager.MENU_ICON_SIZE))
-                          .setAllowBlank(true));
+                          .setAllowBlank(true)
+                          //.setReservedKeyStrokes(RESERVED_KEYSTROKES) // TODO does not work
+                          .addFormFieldGenerationListener(new ReservedKeyStrokeWorkaround())); // workaround
         props.add(new KeyStrokeProperty(KEY_BROWSE_MODE_FILESYSTEM,
                                         "Filesystem mode:",
                                         parseKeyStroke("alt+1"),
                                         new SetBrowseModeAction(MainWindow.BrowseMode.FILE_SYSTEM))
-                          .setAllowBlank(true));
+                          .setAllowBlank(true)
+                          //.setReservedKeyStrokes(RESERVED_KEYSTROKES) // TODO does not work
+                          .addFormFieldGenerationListener(new ReservedKeyStrokeWorkaround())); // workaround
         props.add(new KeyStrokeProperty(KEY_BROWSE_MODE_IMAGE_SET,
                                         "Image set mode:",
                                         parseKeyStroke("alt+2"),
                                         new SetBrowseModeAction(MainWindow.BrowseMode.IMAGE_SET))
-                          .setAllowBlank(true));
+                          .setAllowBlank(true)
+                          //.setReservedKeyStrokes(RESERVED_KEYSTROKES) // TODO does not work
+                          .addFormFieldGenerationListener(new ReservedKeyStrokeWorkaround())); // workaround
         props.add(new KeyStrokeProperty(KEY_ABOUT,
                                         "About dialog:",
                                         parseKeyStroke("Ctrl+A"),
                                         new AboutAction(MenuManager.MENU_ICON_SIZE))
-                          .setAllowBlank(true));
+                          .setAllowBlank(true)
+                          //.setReservedKeyStrokes(RESERVED_KEYSTROKES) // TODO does not work
+                          .addFormFieldGenerationListener(new ReservedKeyStrokeWorkaround())); // workaround
 
         return props;
     }

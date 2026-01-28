@@ -2,6 +2,7 @@ ImageViewer Release Notes
 Author: Steve Corbett
 
 Version 3.0 [TODO] - Maintenance release
+  #90 - Workaround for bug in KeyStrokeProperty
   #83 - Remove unused extension point: buildDirTree
   #82 - Clean up icon resource handling app-wide
   #80 - Remove KeyboardManager; use KeyStrokeManager instead
