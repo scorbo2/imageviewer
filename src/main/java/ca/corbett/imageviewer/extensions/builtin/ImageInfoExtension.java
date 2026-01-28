@@ -57,7 +57,7 @@ public class ImageInfoExtension extends ImageViewerExtension {
         KeyStrokeProperty prop = new KeyStrokeProperty(HOTKEY_PROP,
                                                        "Image information:",
                                                        KeyStrokeManager.parseKeyStroke("Ctrl+I"),
-                                                       new ImageInfoAction());
+                                                       imageInfoAction);
         prop.setAllowBlank(true);
         prop.setReservedKeyStrokes(AppConfig.RESERVED_KEYSTROKES);
         return List.of(prop);
