@@ -165,7 +165,7 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     /**
      * Interrogates extensions to see if they have any top-level menus that they want
      * to add to the MainWindow's main menu. Every name that is returned here will be
-     * added as a top-level menu. It will also be supplied to getMenuItems() calls when
+     * added as a top-level menu. It will also be supplied to getMenuActions() calls when
      * building that menu.
      *
      * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
