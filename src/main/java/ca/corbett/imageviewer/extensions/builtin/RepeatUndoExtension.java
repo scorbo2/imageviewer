@@ -64,7 +64,7 @@ public class RepeatUndoExtension extends ImageViewerExtension {
         KeyStrokeProperty prop = new KeyStrokeProperty(REPEAT_PROP,
                                                        "Repeat last action:",
                                                        KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK),
-                                                       new RepeatAction());
+                                                       repeatAction);
         prop.setAllowBlank(true);
         prop.setReservedKeyStrokes(AppConfig.RESERVED_KEYSTROKES);
         props.add(prop);
@@ -72,7 +72,7 @@ public class RepeatUndoExtension extends ImageViewerExtension {
         prop = new KeyStrokeProperty(UNDO_PROP,
                                      "Undo last action:",
                                      KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK),
-                                     new UndoAction());
+                                     undoAction);
         prop.setAllowBlank(true);
         prop.setReservedKeyStrokes(AppConfig.RESERVED_KEYSTROKES);
         props.add(prop);
@@ -82,8 +82,6 @@ public class RepeatUndoExtension extends ImageViewerExtension {
 
     @Override
     public List<EnhancedAction> getMenuActions(String topLevelMenu, MainWindow.BrowseMode browseMode) {
-        repeatAction.setAcceleratorKey(getRepeatHotkey());
-        undoAction.setAcceleratorKey(getUndoHotkey());
         return "Edit".equals(topLevelMenu) ?
                 List.of(repeatAction, undoAction)
                 : null;
@@ -92,15 +90,5 @@ public class RepeatUndoExtension extends ImageViewerExtension {
     @Override
     public List<EnhancedAction> getPopupMenuActions(MainWindow.BrowseMode browseMode) {
         return List.of(repeatAction, undoAction);
-    }
-
-    private KeyStroke getRepeatHotkey() {
-        AbstractProperty prop = AppConfig.getInstance().getPropertiesManager().getProperty(REPEAT_PROP);
-        return (prop instanceof KeyStrokeProperty ksp) ? ksp.getKeyStroke() : null;
-    }
-
-    private KeyStroke getUndoHotkey() {
-        AbstractProperty prop = AppConfig.getInstance().getPropertiesManager().getProperty(UNDO_PROP);
-        return (prop instanceof KeyStrokeProperty ksp) ? ksp.getKeyStroke() : null;
     }
 }

@@ -10,7 +10,6 @@ import ca.corbett.imageviewer.Version;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.ui.MainWindow;
 
-import javax.swing.KeyStroke;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,7 +69,6 @@ public class ImageInfoExtension extends ImageViewerExtension {
         }
 
         List<EnhancedAction> actions = new ArrayList<>();
-        imageInfoAction.setAcceleratorKey(getConfiguredHotkey());
         actions.add(imageInfoAction);
         if (browseMode == MainWindow.BrowseMode.FILE_SYSTEM) {
             actions.add(directoryInfoAction);
@@ -81,19 +79,10 @@ public class ImageInfoExtension extends ImageViewerExtension {
     @Override
     public List<EnhancedAction> getPopupMenuActions(MainWindow.BrowseMode browseMode) {
         List<EnhancedAction> items = new ArrayList<>();
-        imageInfoAction.setAcceleratorKey(getConfiguredHotkey());
         items.add(imageInfoAction);
         if (browseMode == MainWindow.BrowseMode.FILE_SYSTEM) {
             items.add(directoryInfoAction);
         }
         return items;
-    }
-
-    private KeyStroke getConfiguredHotkey() {
-        AbstractProperty prop = AppConfig.getInstance().getPropertiesManager().getProperty(HOTKEY_PROP);
-        if (prop instanceof KeyStrokeProperty ksp) {
-            return ksp.getKeyStroke();
-        }
-        return null;
     }
 }
