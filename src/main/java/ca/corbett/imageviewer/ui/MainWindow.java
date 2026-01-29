@@ -31,21 +31,17 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
@@ -93,6 +89,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
     private final ImageSetManager imageSetManager;
     private final MenuManager menuManager;
     private JToolBar toolBar;
+    private StatusPanel statusPanel;
     private UpdateManager updateManager;
     private KeyStrokeManager keyStrokeManager;
 
@@ -106,8 +103,6 @@ public final class MainWindow extends JFrame implements UIReloadable {
     private final Map<BrowseMode, ThumbContainerPanel> thumbContainerPanelMap;
     private ImagePanel imagePanel;
     private ImagePanelConfig imagePanelProperties;
-    private JLabel statusLabel1;
-    private JLabel statusLabel2;
     private final Map<BrowseMode, JSplitPane> sideSplitPaneMap;
     private JSplitPane mainSplitPane;
 
@@ -443,18 +438,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
         setLayout(new BorderLayout());
         add(mainSplitPane, BorderLayout.CENTER);
 
-        JPanel statusPanel = new JPanel();
-        statusPanel.setLayout(new BorderLayout());
-        statusLabel1 = new JLabel("Ready.");
-        statusLabel2 = new JLabel("");
-        JPanel wrapper = new JPanel();
-        wrapper.setLayout(new FlowLayout(FlowLayout.LEFT));
-        wrapper.add(statusLabel1);
-        statusPanel.add(wrapper, BorderLayout.CENTER);
-        wrapper = new JPanel();
-        wrapper.setLayout(new FlowLayout(FlowLayout.RIGHT));
-        wrapper.add(statusLabel2);
-        statusPanel.add(wrapper, BorderLayout.EAST);
+        statusPanel = new StatusPanel();
         add(statusPanel, BorderLayout.SOUTH);
 
         toolBar = ToolBarManager.buildToolBar();
@@ -584,7 +568,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
         }
         dirTree.selectAndScrollTo(effectiveStartupDir); // okay if null
 
-        setImageBackgroundColor(UIManager.getDefaults().getColor("ColorPalette.primaryBackground"));
+        reloadColors();
         setZoomFactorIncrement(prefs.getImagePanelZoomIncrement());
         setAutoBestFit(prefs.getImagePanelAutoBestFit());
     }
@@ -686,7 +670,17 @@ public final class MainWindow extends JFrame implements UIReloadable {
         // Re-initialize keyboard shortcuts:
         configureKeyStrokes();
 
+        reloadColors();
+
         reload(true);
+    }
+
+    private void reloadColors() {
+        AppConfig conf = AppConfig.getInstance();
+        imagePanelProperties.setBgColor(conf.getImagePanelBackgroundColor());
+        thumbContainerPanelMap.get(BrowseMode.FILE_SYSTEM).setBackground(conf.getThumbContainerBackgroundColor());
+        thumbContainerPanelMap.get(BrowseMode.IMAGE_SET).setBackground(conf.getThumbContainerBackgroundColor());
+        imagePanel.applyProperties(imagePanelProperties);
     }
 
     /**
@@ -757,14 +751,6 @@ public final class MainWindow extends JFrame implements UIReloadable {
 
         imagePanelWrapperPanel.add(imagePanel, BorderLayout.CENTER);
         return imagePanelWrapperPanel;
-    }
-
-    public void setImageBackgroundColor(Color color) {
-        imagePanelProperties.setBgColor(color);
-        thumbContainerPanelMap.get(BrowseMode.FILE_SYSTEM).setBackground(color);
-        thumbContainerPanelMap.get(BrowseMode.IMAGE_SET).setBackground(color);
-        imagePanel.applyProperties(imagePanelProperties);
-        ImageViewerExtensionManager.getInstance().imagePanelBackgroundChanged(color);
     }
 
     public void setZoomFactorIncrement(double increment) {
@@ -873,18 +859,8 @@ public final class MainWindow extends JFrame implements UIReloadable {
             status1 += ", " + format.format(new java.util.Date(srcFile.lastModified()));
         }
 
-        statusLabel1.setText(status1);
-        statusLabel2.setText(status2);
-
-        final JPanel panel = (JPanel)statusLabel1.getParent();
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                panel.invalidate();
-                panel.revalidate();
-                panel.repaint();
-            }
-        });
+        statusPanel.setLeftText(status1);
+        statusPanel.setRightText(status2);
     }
 
     /**
