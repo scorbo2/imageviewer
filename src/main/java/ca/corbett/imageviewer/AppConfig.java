@@ -605,7 +605,7 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
                                                new Font("Dialog", Font.PLAIN, 12));
         thumbPanelFontProp = new FontProperty(PREFIX + "thumbPanelFont",
                                               "Thumbnail panel font:",
-                                              new Font("Dialog", Font.PLAIN, 12));
+                                              new Font("Dialog", Font.PLAIN, 11));
 
         props.add(statusPanelFontProp);
         props.add(thumbPanelFontProp);
