@@ -2,16 +2,23 @@ package ca.corbett.imageviewer;
 
 import ca.corbett.extensions.AppProperties;
 import ca.corbett.extras.MessageUtil;
+import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.extras.io.KeyStrokeManager;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.BooleanProperty;
+import ca.corbett.extras.properties.ColorProperty;
 import ca.corbett.extras.properties.ComboProperty;
 import ca.corbett.extras.properties.DecimalProperty;
 import ca.corbett.extras.properties.DirectoryProperty;
 import ca.corbett.extras.properties.EnumProperty;
+import ca.corbett.extras.properties.FontProperty;
 import ca.corbett.extras.properties.IntegerProperty;
 import ca.corbett.extras.properties.KeyStrokeProperty;
 import ca.corbett.extras.properties.LookAndFeelProperty;
+import ca.corbett.extras.properties.PropertyFormFieldChangeListener;
+import ca.corbett.extras.properties.PropertyFormFieldValueChangedEvent;
+import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
@@ -29,6 +36,10 @@ import ca.corbett.imageviewer.ui.actions.SetBrowseModeAction;
 import com.formdev.flatlaf.FlatDarkLaf;
 
 import javax.swing.KeyStroke;
+import javax.swing.UIManager;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Frame;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -91,6 +102,19 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
 
     private LookAndFeelProperty lookAndFeelProp;
 
+    private BooleanProperty useSystemColorsProp;
+    private ColorProperty imagePanelBgColorProp;
+    private ColorProperty thumbSelectedBgColorProp;
+    private ColorProperty thumbUnselectedBgColorProp;
+    private ColorProperty thumbSelectedFontColorProp;
+    private ColorProperty thumbUnselectedFontColorProp;
+    private ColorProperty thumbContainerBgColorProp;
+    private ColorProperty statusPanelBgColorProp;
+    private ColorProperty statusPanelFontColorProp;
+    private FontProperty thumbPanelFontProp;
+    private FontProperty statusPanelFontProp;
+    private BooleanProperty statusPanelBorderProp;
+
     private IntegerProperty toolbarIconSizeProp;
     private IntegerProperty toolbarIconMarginProp;
     private IntegerProperty miniToolbarIconSizeProp;
@@ -122,6 +146,23 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         }
 
         return instance;
+    }
+
+    /**
+     * Overridden so we can set the initial enabled/disabled state our properties.
+     */
+    @Override
+    public boolean showPropertiesDialog(Frame owner) {
+        boolean isCustom = !useSystemColorsProp.getValue();
+        imagePanelBgColorProp.setInitiallyEditable(isCustom);
+        thumbSelectedBgColorProp.setInitiallyEditable(isCustom);
+        thumbUnselectedBgColorProp.setInitiallyEditable(isCustom);
+        thumbSelectedFontColorProp.setInitiallyEditable(isCustom);
+        thumbUnselectedFontColorProp.setInitiallyEditable(isCustom);
+        thumbContainerBgColorProp.setInitiallyEditable(isCustom);
+        statusPanelBgColorProp.setInitiallyEditable(isCustom);
+        statusPanelFontColorProp.setInitiallyEditable(isCustom);
+        return super.showPropertiesDialog(owner);
     }
 
     public int getFileSystemVerticalSplitPanePosition() {
@@ -198,6 +239,66 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
 
     public String getLookAndFeelClassname() {
         return lookAndFeelProp.getSelectedLafClass();
+    }
+
+    public Color getImagePanelBackgroundColor() {
+        return useSystemColorsProp.getValue()
+                ? UIManager.getDefaults().getColor("ColorPalette.primaryBackground")
+                : imagePanelBgColorProp.getSolidColor();
+    }
+
+    public Color getThumbPanelSelectedBackgroundColor() {
+        return useSystemColorsProp.getValue()
+                ? UIManager.getDefaults().getColor("TextArea.selectionBackground")
+                : thumbSelectedBgColorProp.getSolidColor();
+    }
+
+    public Color getThumbPanelUnselectedBackgroundColor() {
+        return useSystemColorsProp.getValue()
+                ? UIManager.getDefaults().getColor("Button.background")
+                : thumbUnselectedBgColorProp.getSolidColor();
+    }
+
+    public Color getThumbPanelSelectedFontColor() {
+        return useSystemColorsProp.getValue()
+                ? UIManager.getDefaults().getColor("TextArea.selectionForeground")
+                : thumbSelectedFontColorProp.getSolidColor();
+    }
+
+    public Color getThumbPanelUnselectedFontColor() {
+        return useSystemColorsProp.getValue()
+                ? UIManager.getDefaults().getColor("Button.foreground")
+                : thumbUnselectedFontColorProp.getSolidColor();
+    }
+
+    public Color getThumbContainerBackgroundColor() {
+        return useSystemColorsProp.getValue()
+                ? UIManager.getDefaults().getColor("Panel.background")
+                : thumbContainerBgColorProp.getSolidColor();
+    }
+
+    public Color getStatusPanelBackgroundColor() {
+        return useSystemColorsProp.getValue()
+                ? UIManager.getDefaults().getColor("Panel.background")
+                : statusPanelBgColorProp.getSolidColor();
+    }
+
+    public Color getStatusPanelFontColor() {
+        return useSystemColorsProp.getValue()
+                ? UIManager.getDefaults().getColor("Label.foreground")
+                : statusPanelFontColorProp.getSolidColor();
+    }
+
+    public boolean isStatusPanelBorderEnabled() {
+        return statusPanelBorderProp.getValue();
+    }
+
+    public Font getThumbPanelFont() {
+        return thumbPanelFontProp.getFont();
+    }
+
+    public Font getStatusPanelFont() {
+        return statusPanelFontProp.getFont();
     }
 
     public int getToolbarIconSize() {
@@ -355,32 +456,35 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
                                                   FlatDarkLaf.class.getName());
         list.add(lookAndFeelProp);
 
-        toolbarIconSizeProp = new IntegerProperty("UI.Look and Feel.iconSize", "Main toolbar icons:", 24, 16, 128, 2);
+        toolbarIconSizeProp = new IntegerProperty("UI.Toolbars.iconSize", "Main toolbar icons:", 24, 16, 128, 2);
         toolbarIconSizeProp.setHelpText("Size of icons in the main toolbar.");
         list.add(toolbarIconSizeProp);
 
-        toolbarIconMarginProp = new IntegerProperty("UI.Look and Feel.iconMargin", "Main toolbar margin:", 4, 2, 32, 2);
+        toolbarIconMarginProp = new IntegerProperty("UI.Toolbars.iconMargin", "Main toolbar margin:", 4, 2, 32, 2);
         toolbarIconMarginProp.setHelpText("Margin around icons in the main toolbar.");
         list.add(toolbarIconMarginProp);
 
-        miniToolbarIconSizeProp = new IntegerProperty("UI.Look and Feel.miniIconSize", "Mini toolbar icons:", 16,
+        miniToolbarIconSizeProp = new IntegerProperty("UI.Toolbars.miniIconSize", "Mini toolbar icons:", 16,
                                                       16, 64, 2);
         miniToolbarIconSizeProp.setHelpText("Size of icons in mini toolbars (e.g., image set toolbar).");
         list.add(miniToolbarIconSizeProp);
 
-        miniToolbarIconMarginProp = new IntegerProperty("UI.Look and Feel.miniIconMargin", "Mini toolbar margin:", 4,
+        miniToolbarIconMarginProp = new IntegerProperty("UI.Toolbars.miniIconMargin", "Mini toolbar margin:", 4,
                                                         2, 16, 2);
         miniToolbarIconMarginProp.setHelpText("Margin around icons in mini toolbars (e.g., image set toolbar).");
         list.add(miniToolbarIconMarginProp);
 
-        imageSetSaveLocation = new ComboProperty<>("UI.Image sets.imageSetSaveLocation", "Persistence:",
+        list.addAll(createColorProperties());
+        list.addAll(createFontProperties());
+
+        imageSetSaveLocation = new ComboProperty<>("Image sets.General.imageSetSaveLocation", "Persistence:",
                                                    List.of("Use application settings directory",
                                                            "Choose a specific directory..."), 0, false);
         list.add(imageSetSaveLocation);
-        imageSetSaveLocationOverride = new DirectoryProperty("UI.Image sets.imageSetSaveDirectoryOverride",
+        imageSetSaveLocationOverride = new DirectoryProperty("Image sets.General.imageSetSaveDirectoryOverride",
                                                              "Persistence dir:", false, Version.SETTINGS_DIR);
         boolean initiallyVisible = false;
-        String currentOption = peek(Version.APP_CONFIG_FILE, "UI.Image sets.imageSetSaveLocation");
+        String currentOption = peek(Version.APP_CONFIG_FILE, "Image sets.General.imageSetSaveLocation");
         if (currentOption != null && currentOption.equals("Choose a specific directory...")) {
             initiallyVisible = true;
         }
@@ -390,7 +494,7 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         // Set up a listener to make the override visible/invisible as needed:
         imageSetSaveLocation.addFormFieldChangeListener(event -> {
             int index = ((ComboField)event.formField()).getSelectedIndex();
-            FormField field = event.formPanel().getFormField("UI.Image sets.imageSetSaveDirectoryOverride");
+            FormField field = event.formPanel().getFormField("Image sets.General.imageSetSaveDirectoryOverride");
             field.setVisible(index == 1);
         });
 
@@ -415,6 +519,103 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         return list;
     }
 
+    /**
+     * Creates all color-related properties used within the application.
+     */
+    private List<AbstractProperty> createColorProperties() {
+        final String PREFIX = "UI.Colors.";
+        List<AbstractProperty> props = new ArrayList<>();
+        useSystemColorsProp = new BooleanProperty(PREFIX + "useSystemColors", "Use system colors", true);
+        useSystemColorsProp.setHelpText("<html>If enabled, the application will use the selected look-and-feel's colors"
+                                                + "<br>for various UI elements. If disabled, custom colors can be set"
+                                                + "<br>for these elements.</html>");
+        imagePanelBgColorProp = createColorProp("imagePanelBackgroundColor",
+                                                "Image panel bg:",
+                                                "ColorPalette.primaryBackground");
+        thumbSelectedBgColorProp = createColorProp("thumbPanelSelectedBackgroundColor",
+                                                   "Thumb selected bg:",
+                                                   "TextArea.selectionBackground");
+        thumbUnselectedBgColorProp = createColorProp("thumbPanelUnselectedBackgroundColor",
+                                                     "Thumb unselected bg:",
+                                                     "Button.background");
+        thumbSelectedFontColorProp = createColorProp("thumbPanelSelectedFontColor",
+                                                     "Thumb selected text:",
+                                                     "TextArea.selectionForeground");
+        thumbContainerBgColorProp = createColorProp("thumbPanelContainerBackgroundColor",
+                                                    "Thumb container bg:",
+                                                    "Panel.background");
+        thumbUnselectedFontColorProp = createColorProp("thumbPanelUnselectedFontColor",
+                                                       "Thumb unselected text:",
+                                                       "Button.foreground");
+        statusPanelBgColorProp = createColorProp("statusPanelBackgroundColor",
+                                                 "Status panel bg:",
+                                                 "Panel.background");
+        statusPanelFontColorProp = createColorProp("statusPanelFontColor",
+                                                   "Status panel text:",
+                                                   "Label.foreground");
+
+        // Set up a listener to ensure proper enabled/disabled state:
+        useSystemColorsProp.addFormFieldChangeListener(new PropertyFormFieldChangeListener() {
+            @Override
+            public void valueChanged(PropertyFormFieldValueChangedEvent event) {
+                boolean isCustom = !((CheckBoxField)event.formField()).isChecked();
+                FormPanel fp = event.formPanel();
+                fp.getFormField(imagePanelBgColorProp.getFullyQualifiedName()).setEnabled(isCustom);
+                fp.getFormField(thumbSelectedBgColorProp.getFullyQualifiedName()).setEnabled(isCustom);
+                fp.getFormField(thumbUnselectedBgColorProp.getFullyQualifiedName()).setEnabled(isCustom);
+                fp.getFormField(thumbSelectedFontColorProp.getFullyQualifiedName()).setEnabled(isCustom);
+                fp.getFormField(thumbUnselectedFontColorProp.getFullyQualifiedName()).setEnabled(isCustom);
+                fp.getFormField(thumbContainerBgColorProp.getFullyQualifiedName()).setEnabled(isCustom);
+                fp.getFormField(statusPanelBgColorProp.getFullyQualifiedName()).setEnabled(isCustom);
+                fp.getFormField(statusPanelFontColorProp.getFullyQualifiedName()).setEnabled(isCustom);
+            }
+        });
+
+        props.add(useSystemColorsProp);
+        props.add(imagePanelBgColorProp);
+        props.add(thumbSelectedBgColorProp);
+        props.add(thumbUnselectedBgColorProp);
+        props.add(thumbSelectedFontColorProp);
+        props.add(thumbUnselectedFontColorProp);
+        props.add(thumbContainerBgColorProp);
+        props.add(statusPanelBgColorProp);
+        props.add(statusPanelFontColorProp);
+
+        statusPanelBorderProp = new BooleanProperty(PREFIX + "statusPanelBorder",
+                                                    "Show border around status panel",
+                                                    true);
+        props.add(statusPanelBorderProp);
+
+        return props;
+    }
+
+    private ColorProperty createColorProp(String name, String label, String defaultKey) {
+        final String PREFIX = "UI.Colors.";
+        ColorProperty prop = new ColorProperty(PREFIX + name, label, ColorSelectionType.SOLID);
+        prop.setSolidColor(UIManager.getDefaults().getColor(defaultKey));
+        return prop;
+    }
+
+    private List<AbstractProperty> createFontProperties() {
+        final String PREFIX = "UI.Fonts.";
+        List<AbstractProperty> props = new ArrayList<>();
+
+        statusPanelFontProp = new FontProperty(PREFIX + "statusPanelFont",
+                                               "Status panel font:",
+                                               new Font("Dialog", Font.PLAIN, 12));
+        thumbPanelFontProp = new FontProperty(PREFIX + "thumbPanelFont",
+                                              "Thumbnail panel font:",
+                                              new Font("Dialog", Font.PLAIN, 12));
+
+        props.add(statusPanelFontProp);
+        props.add(thumbPanelFontProp);
+
+        return props;
+    }
+
+    /**
+     * Creates all properties related to keystrokes used within the application.
+     */
     private List<AbstractProperty> createKeyboardProperties() {
         List<AbstractProperty> props = new ArrayList<>();
 

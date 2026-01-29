@@ -14,7 +14,6 @@ import ca.corbett.imageviewer.ui.ThumbPanel;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
@@ -461,19 +460,6 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     public void quickMoveTreeChanged() {
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
             extension.quickMoveTreeChanged();
-        }
-    }
-
-    /**
-     * An informational message that will be sent to all extensions when the image panel
-     * background color changes.Extensions that supply an extra panel around the main image
-     * panel may want to react to this by changing their own background colour to match.
-     *
-     * @param newColor The new background color.
-     */
-    public void imagePanelBackgroundChanged(Color newColor) {
-        for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            extension.imagePanelBackgroundChanged(newColor);
         }
     }
 
