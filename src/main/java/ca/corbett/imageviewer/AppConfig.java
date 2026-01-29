@@ -242,51 +242,91 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
     }
 
     public Color getImagePanelBackgroundColor() {
-        return useSystemColorsProp.getValue()
-                ? UIManager.getDefaults().getColor("ColorPalette.primaryBackground")
+        Color c = useSystemColorsProp.getValue()
+                ? UIManager.getDefaults().getColor("Panel.background")
                 : imagePanelBgColorProp.getSolidColor();
+        if (c == null) {
+            // Emergency fallback:
+            c = Color.LIGHT_GRAY;
+        }
+        return c;
     }
 
     public Color getThumbPanelSelectedBackgroundColor() {
-        return useSystemColorsProp.getValue()
+        Color c = useSystemColorsProp.getValue()
                 ? UIManager.getDefaults().getColor("TextArea.selectionBackground")
                 : thumbSelectedBgColorProp.getSolidColor();
+        if (c == null) {
+            // Emergency fallback:
+            c = Color.BLUE;
+        }
+        return c;
     }
 
     public Color getThumbPanelUnselectedBackgroundColor() {
-        return useSystemColorsProp.getValue()
+        Color c = useSystemColorsProp.getValue()
                 ? UIManager.getDefaults().getColor("Button.background")
                 : thumbUnselectedBgColorProp.getSolidColor();
+        if (c == null) {
+            // Emergency fallback:
+            c = Color.LIGHT_GRAY;
+        }
+        return c;
     }
 
     public Color getThumbPanelSelectedFontColor() {
-        return useSystemColorsProp.getValue()
+        Color c = useSystemColorsProp.getValue()
                 ? UIManager.getDefaults().getColor("TextArea.selectionForeground")
                 : thumbSelectedFontColorProp.getSolidColor();
+        if (c == null) {
+            // Emergency fallback:
+            c = Color.WHITE;
+        }
+        return c;
     }
 
     public Color getThumbPanelUnselectedFontColor() {
-        return useSystemColorsProp.getValue()
+        Color c = useSystemColorsProp.getValue()
                 ? UIManager.getDefaults().getColor("Button.foreground")
                 : thumbUnselectedFontColorProp.getSolidColor();
+        if (c == null) {
+            // Emergency fallback:
+            c = Color.BLACK;
+        }
+        return c;
     }
 
     public Color getThumbContainerBackgroundColor() {
-        return useSystemColorsProp.getValue()
+        Color c = useSystemColorsProp.getValue()
                 ? UIManager.getDefaults().getColor("Panel.background")
                 : thumbContainerBgColorProp.getSolidColor();
+        if (c == null) {
+            // Emergency fallback:
+            c = Color.LIGHT_GRAY;
+        }
+        return c;
     }
 
     public Color getStatusPanelBackgroundColor() {
-        return useSystemColorsProp.getValue()
+        Color c = useSystemColorsProp.getValue()
                 ? UIManager.getDefaults().getColor("Panel.background")
                 : statusPanelBgColorProp.getSolidColor();
+        if (c == null) {
+            // Emergency fallback:
+            c = Color.LIGHT_GRAY;
+        }
+        return c;
     }
 
     public Color getStatusPanelFontColor() {
-        return useSystemColorsProp.getValue()
+        Color c = useSystemColorsProp.getValue()
                 ? UIManager.getDefaults().getColor("Label.foreground")
                 : statusPanelFontColorProp.getSolidColor();
+        if (c == null) {
+            // Emergency fallback:
+            c = Color.BLACK;
+        }
+        return c;
     }
 
     public boolean isStatusPanelBorderEnabled() {
