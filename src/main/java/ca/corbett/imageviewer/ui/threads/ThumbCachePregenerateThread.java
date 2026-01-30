@@ -1,9 +1,8 @@
 package ca.corbett.imageviewer.ui.threads;
 
 import ca.corbett.extras.io.FileSystemUtil;
-import ca.corbett.extras.progress.MultiProgressDialog;
+import ca.corbett.extras.progress.MultiProgressWorker;
 import ca.corbett.imageviewer.AppConfig;
-import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.ThumbCacheManager;
 import ca.corbett.imageviewer.ui.ThumbContainerPanel;
 
@@ -23,16 +22,14 @@ import java.util.logging.Logger;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 1.1
  */
-public class ThumbCachePregenerateThread implements Runnable {
+public class ThumbCachePregenerateThread extends MultiProgressWorker {
 
     private static final Logger log = Logger.getLogger(ThumbCachePregenerateThread.class.getName());
 
     private final File rootDir;
-    private final MultiProgressDialog progress;
 
     public ThumbCachePregenerateThread(File dir) {
         this.rootDir = dir;
-        progress = new MultiProgressDialog(MainWindow.getInstance(), "Pregenerating thumbnails...");
     }
 
     @Override
@@ -45,25 +42,24 @@ public class ThumbCachePregenerateThread implements Runnable {
 
         List<File> alldirs = FileSystemUtil.findSubdirectories(rootDir, true);
         alldirs.add(0, rootDir); // above list does not include the root itself
-        progress.setMajorProgressBounds(0, alldirs.size());
-        progress.setInitialShowDelayMS(500); // Don't show for very fast operations
+
+        boolean wasCanceled = false;
+        fireProgressBegins(alldirs.size());
         try {
-            progress.setVisible(true);
-            int majorProgress = 1; // 1-based progress looks better
+            int majorProgress = 0;
 
             for (File dir : alldirs) {
-                if (progress.isCanceled()) {
+                List<File> images = FileSystemUtil.findFiles(dir, false, ThumbContainerPanel.imageExtensions);
+                if (!fireMajorProgressUpdate(majorProgress, images.size(), dir.getAbsolutePath())) {
+                    wasCanceled = true;
                     break;
                 }
-                progress.setMajorProgress(majorProgress, dir.getAbsolutePath());
-                List<File> images = FileSystemUtil.findFiles(dir, false, ThumbContainerPanel.imageExtensions);
-                progress.setMinorProgressBounds(0, images.size());
-                int minorProgress = 1; // 1-based progress looks better
+                int minorProgress = 0;
                 for (File image : images) {
-                    if (progress.isCanceled()) {
+                    if (!fireMinorProgressUpdate(majorProgress, minorProgress, image.getName())) {
+                        wasCanceled = true;
                         break;
                     }
-                    progress.setMinorProgress(minorProgress, image.getName());
                     ThumbCacheManager.add(image);
                     minorProgress++;
                 }
@@ -73,8 +69,12 @@ public class ThumbCachePregenerateThread implements Runnable {
         }
         finally {
             // Ensure progress dialog is closed no matter what happens above
-            progress.setVisible(false);
-            progress.dispose();
+            if (wasCanceled) {
+                fireProgressCanceled();
+            }
+            else {
+                fireProgressComplete();
+            }
         }
     }
 }

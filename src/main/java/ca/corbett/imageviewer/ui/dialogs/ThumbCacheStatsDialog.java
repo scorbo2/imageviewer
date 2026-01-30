@@ -110,7 +110,6 @@ public class ThumbCacheStatsDialog extends JDialog {
             }
             finally {
                 SwingUtilities.invokeLater(() -> {
-                    getMessageUtil().info("Cache Cleared", "Thumbnail cache cleared successfully.");
                     rescanButton.setEnabled(true);
                     clearButton.setEnabled(true);
                     isWorkInProgress.set(false);

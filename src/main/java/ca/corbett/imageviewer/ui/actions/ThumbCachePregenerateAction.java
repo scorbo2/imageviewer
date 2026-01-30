@@ -1,6 +1,7 @@
 package ca.corbett.imageviewer.ui.actions;
 
 import ca.corbett.extras.EnhancedAction;
+import ca.corbett.extras.progress.MultiProgressDialog;
 import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.ImageViewerResources;
 import ca.corbett.imageviewer.ui.MainWindow;
@@ -9,6 +10,7 @@ import ca.corbett.imageviewer.ui.threads.ThumbCachePregenerateThread;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import java.awt.event.ActionEvent;
+import java.io.File;
 
 /**
  * Shows a confirmation prompt and then starts a thumbnail generation thread on the currently selected
@@ -31,7 +33,8 @@ public class ThumbCachePregenerateAction extends EnhancedAction {
                                                        "This option is only available when browsing the file system.");
             return;
         }
-        if (MainWindow.getInstance().getCurrentDirectory() == null) {
+        File currentDir = MainWindow.getInstance().getCurrentDirectory();
+        if (currentDir == null) {
             MainWindow.getInstance().showMessageDialog("Pregenerate thumbnails", "Nothing is selected.");
             return;
         }
@@ -41,7 +44,9 @@ public class ThumbCachePregenerateAction extends EnhancedAction {
                                           "Confirm thumbnail generation",
                                           JOptionPane.YES_NO_OPTION,
                                           JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-            new Thread(new ThumbCachePregenerateThread(MainWindow.getInstance().getCurrentDirectory())).start();
+            MultiProgressDialog dialog = new MultiProgressDialog(MainWindow.getInstance(), "Generating thumbnails");
+            dialog.setInitialShowDelayMS(500); // Don't show for very fast operations
+            dialog.runWorker(new ThumbCachePregenerateThread(currentDir), true);
         }
     }
 }
