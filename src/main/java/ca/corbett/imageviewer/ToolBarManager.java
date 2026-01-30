@@ -15,6 +15,7 @@ import ca.corbett.imageviewer.ui.actions.NextImageAction;
 import ca.corbett.imageviewer.ui.actions.PreferencesAction;
 import ca.corbett.imageviewer.ui.actions.PreviousImageAction;
 import ca.corbett.imageviewer.ui.actions.ReloadAction;
+import ca.corbett.imageviewer.ui.actions.ThumbCachePregenerateAction;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -131,6 +132,10 @@ public final class ToolBarManager {
         wrapper.add(new JLabel(" "));
         wrapper.add(buildToolbarButton(new ReloadAction()));
 
+        // Only show  thumbnail pregeneration button if thumb caching is enabled:
+        if (AppConfig.getInstance().isThumbCacheEnabled()) {
+            wrapper.add(buildToolbarButton(new ThumbCachePregenerateAction()));
+        }
         wrapper.add(new JLabel(" "));
 
         // Insert any buttons supplied by extensions, if any:

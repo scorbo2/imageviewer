@@ -5,6 +5,7 @@ import ca.corbett.extras.io.FileSystemUtil;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.ImageInstance;
 import ca.corbett.imageviewer.ui.MainWindow;
+import ca.corbett.imageviewer.ui.ThumbCacheManager;
 import ca.corbett.imageviewer.ui.actions.ImageOperationAction;
 import ca.corbett.imageviewer.ui.dialogs.NameConflictDialog;
 import ca.corbett.imageviewer.ui.threads.DeleteImageThread;
@@ -243,6 +244,9 @@ public final class ImageOperationHandler {
                 }
             }
 
+            // Notify ThumbCacheManager:
+            ThumbCacheManager.postImageOperation(operation, srcFile, destFile);
+
             // Notify extensions of what just happened:
             ImageViewerExtensionManager.getInstance().postImageOperation(operation, srcFile, destFile);
 
@@ -373,6 +377,7 @@ public final class ImageOperationHandler {
             logger.log(Level.INFO, "moveDirectory: {0} -> {1}",
                        new Object[]{srcDir.getAbsolutePath(), newDir.getAbsolutePath()});
             FileUtils.moveDirectory(srcDir, newDir);
+            ThumbCacheManager.moveDirectory(srcDir, newDir);
             ImageViewerExtensionManager.getInstance().directoryWasMoved(srcDir, newDir);
             MainWindow.getInstance().getImageSetManager().directoryMoved(srcDir, newDir);
         }
@@ -505,6 +510,7 @@ public final class ImageOperationHandler {
             logger.log(Level.INFO, "copyDirectory: {0} -> {1}",
                        new Object[]{srcDir.getAbsolutePath(), newDir.getAbsolutePath()});
             FileUtils.copyDirectory(srcDir, newDir);
+            ThumbCacheManager.copyDirectory(srcDir, newDir);
             ImageViewerExtensionManager.getInstance().directoryWasCopied(srcDir, newDir);
         }
         catch (IOException ex) {
@@ -701,6 +707,7 @@ public final class ImageOperationHandler {
                 f.renameTo(new File(srcFile.getParentFile(), renamedCompanion.getName()));
             }
         }
+        ThumbCacheManager.postImageOperation(ImageOperation.Type.MOVE, srcFile, newFile);
         ImageViewerExtensionManager.getInstance().postImageOperation(ImageOperation.Type.MOVE, srcFile, newFile);
 
         // Notify the ImageSetManager that this has happened
@@ -741,6 +748,9 @@ public final class ImageOperationHandler {
             logger.log(Level.INFO, "deleteImage (companion): {0}", f.getAbsolutePath());
             f.delete();
         }
+
+        // Notify ThumbCacheManager:
+        ThumbCacheManager.postImageOperation(ImageOperation.Type.DELETE, srcFile, null);
 
         // Notify extensions that we deleted the file (this is debatable since srcFile no longer exists, but eh).
         ImageViewerExtensionManager.getInstance().postImageOperation(ImageOperation.Type.DELETE, srcFile, null);
@@ -916,6 +926,7 @@ public final class ImageOperationHandler {
                            new Object[]{targetDir.getAbsolutePath(), newDir.getAbsolutePath()});
                 try {
                     FileUtils.moveDirectory(targetDir, newDir);
+                    ThumbCacheManager.moveDirectory(targetDir, newDir);
                     ImageViewerExtensionManager.getInstance().directoryWasMoved(targetDir, newDir);
                     MainWindow.getInstance().getImageSetManager().directoryMoved(targetDir, newDir);
                 }
@@ -1064,6 +1075,7 @@ public final class ImageOperationHandler {
                         for (File f : companions) {
                             FileUtils.moveFile(f, new File(destFile.getParentFile(), f.getName()));
                         }
+                        ThumbCacheManager.postImageOperation(ImageOperation.Type.MOVE, file, destFile);
                         ImageViewerExtensionManager.getInstance()
                                                    .postImageOperation(ImageOperation.Type.MOVE, file, destFile);
                         
@@ -1088,6 +1100,7 @@ public final class ImageOperationHandler {
                     for (File f : companions) {
                         FileUtils.deleteQuietly(f);
                     }
+                    ThumbCacheManager.postImageOperation(ImageOperation.Type.DELETE, file, null);
                     ImageViewerExtensionManager
                             .getInstance()
                             .postImageOperation(ImageOperation.Type.DELETE, file, null);

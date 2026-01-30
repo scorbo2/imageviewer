@@ -51,7 +51,6 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     public void loadAll() {
         // Built-in extensions:
         addExtension(new ca.corbett.imageviewer.extensions.builtin.ImageInfoExtension(), true);
-        addExtension(new ca.corbett.imageviewer.extensions.builtin.ThumbCacheExtension(), true);
         addExtension(new ca.corbett.imageviewer.extensions.builtin.StatisticsExtension(), true);
         addExtension(new ca.corbett.imageviewer.extensions.builtin.RepeatUndoExtension(), true);
 
