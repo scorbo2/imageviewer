@@ -36,6 +36,7 @@ public class ThumbCachePregenerateThread extends MultiProgressWorker {
     public void run() {
         // If caching is disabled in preferences, just exit:
         if (!AppConfig.getInstance().isThumbCacheEnabled()) {
+            fireProgressComplete();
             log.warning("Ignoring request to pregenerate thumbnails: thumbnail caching is disabled in preferences.");
             return;
         }
