@@ -133,7 +133,7 @@ public final class ToolBarManager {
         wrapper.add(buildToolbarButton(new ReloadAction()));
 
         // Only show  thumbnail pregeneration button if thumb caching is enabled:
-        if (AppConfig.instance.isThumbCacheEnabled()) {
+        if (AppConfig.getInstance().isThumbCacheEnabled()) {
             wrapper.add(buildToolbarButton(new ThumbCachePregenerateAction()));
         }
         wrapper.add(new JLabel(" "));
