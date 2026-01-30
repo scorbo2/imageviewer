@@ -14,6 +14,7 @@ import ca.corbett.extras.properties.EnumProperty;
 import ca.corbett.extras.properties.FontProperty;
 import ca.corbett.extras.properties.IntegerProperty;
 import ca.corbett.extras.properties.KeyStrokeProperty;
+import ca.corbett.extras.properties.LabelProperty;
 import ca.corbett.extras.properties.LookAndFeelProperty;
 import ca.corbett.extras.properties.PropertyFormFieldChangeListener;
 import ca.corbett.extras.properties.PropertyFormFieldValueChangedEvent;
@@ -25,6 +26,7 @@ import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.ReservedKeyStrokeWorkaround;
+import ca.corbett.imageviewer.ui.ThumbCacheManager;
 import ca.corbett.imageviewer.ui.actions.AboutAction;
 import ca.corbett.imageviewer.ui.actions.DeleteCurrentAction;
 import ca.corbett.imageviewer.ui.actions.ExitAction;
@@ -130,6 +132,7 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
 
     private EnumProperty<ThumbSize> thumbSizeProp;
     private EnumProperty<ThumbPageSize> thumbPageSizeProp;
+    private BooleanProperty thumbCacheEnabledProp;
 
     private ComboProperty<String> imageSetSaveLocation;
     private DirectoryProperty imageSetSaveLocationOverride;
@@ -365,6 +368,10 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         return thumbPageSizeProp.getSelectedItem().getSize();
     }
 
+    public boolean isThumbCacheEnabled() {
+        return thumbCacheEnabledProp.getValue();
+    }
+
     public File getImageSetSaveLocation() {
         //noinspection unchecked
         ComboProperty<String> prop = (ComboProperty<String>)getPropertiesManager().getProperty(
@@ -545,6 +552,17 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
 
         thumbPageSizeProp = new EnumProperty<>("Thumbnails.General.pageSize", "Page size", ThumbPageSize.Normal);
         list.add(thumbPageSizeProp);
+
+        thumbCacheEnabledProp = new BooleanProperty("Thumbnails.Caching.enableThumbCache",
+                                                    "Enable automatic caching of thumbnails",
+                                                    true);
+        list.add(thumbCacheEnabledProp);
+
+        // Not currently configurable, but we can at least show the user where the cache is located:
+        LabelProperty label = new LabelProperty("Thumbnails.Caching.infoLabel",
+                                                ThumbCacheManager.CACHE_DIR.getAbsolutePath());
+        label.setFieldLabelText("Cache dir:");
+        list.add(label);
 
         enableQuickMoveProp = new BooleanProperty("Quick Move.enableQuickMove", "Enable image move operations", true);
         list.add(enableQuickMoveProp);

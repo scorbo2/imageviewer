@@ -22,6 +22,7 @@ import ca.corbett.imageviewer.ui.actions.PreviousImageAction;
 import ca.corbett.imageviewer.ui.actions.QuickMoveEditAction;
 import ca.corbett.imageviewer.ui.actions.ReloadAction;
 import ca.corbett.imageviewer.ui.actions.RenameAction;
+import ca.corbett.imageviewer.ui.actions.ThumbCacheStatsAction;
 import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 
 import javax.swing.JMenu;
@@ -286,6 +287,10 @@ public final class MenuManager {
             viewMenu.addSeparator();
         }
 
+
+        // We'll show this even if thumb caching is disabled, since it shows stats
+        // and gives an option to clear the cache:
+        viewMenu.add(new JMenuItem(new ThumbCacheStatsAction()));
 
         item = new JMenuItem(new LogConsoleAction());
         item.setMnemonic(KeyEvent.VK_L);
