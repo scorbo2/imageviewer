@@ -15,6 +15,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Window;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 /**
@@ -29,7 +30,9 @@ public class ThumbCacheStatsDialog extends JDialog {
     private MessageUtil messageUtil;
     private final Window owner;
     private final LabelField statsLabel;
-    private boolean isScanInProgress = false;
+    private JButton rescanButton;
+    private JButton clearButton;
+    private AtomicBoolean isScanInProgress = new AtomicBoolean(false);
 
     public ThumbCacheStatsDialog(Window owner) {
         super(owner, "Thumbnail Cache Statistics", ModalityType.APPLICATION_MODAL);
@@ -56,22 +59,28 @@ public class ThumbCacheStatsDialog extends JDialog {
      * Invoked to rescan the thumbnail cache and update statistics.
      */
     private void rescan() {
-        if (isScanInProgress) {
+        if (isScanInProgress.get()) {
             log.info("Ignoring rescan request; scan already in progress.");
             return;
         }
 
         statsLabel.setText("Calculating...");
-        isScanInProgress = true;
+        rescanButton.setEnabled(false);
+        clearButton.setEnabled(false);
+        isScanInProgress.set(true);
         new Thread(() -> {
             String results = "Scan failed.";
             try {
                 results = ThumbCacheManager.gatherCacheStats().toString();
             }
             finally {
-                isScanInProgress = false;
                 final String resultsStr = results;
-                SwingUtilities.invokeLater(() -> statsLabel.setText(resultsStr));
+                SwingUtilities.invokeLater(() -> {
+                    statsLabel.setText(resultsStr);
+                    rescanButton.setEnabled(true);
+                    clearButton.setEnabled(true);
+                    isScanInProgress.set(false);
+                });
             }
         }).start();
     }
@@ -96,17 +105,17 @@ public class ThumbCacheStatsDialog extends JDialog {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBorder(BorderFactory.createRaisedBevelBorder());
 
-        JButton button = new JButton("Rescan");
-        button.setPreferredSize(new Dimension(100, 25));
-        button.addActionListener(e -> rescan());
-        buttonPanel.add(button);
+        rescanButton = new JButton("Rescan");
+        rescanButton.setPreferredSize(new Dimension(100, 25));
+        rescanButton.addActionListener(e -> rescan());
+        buttonPanel.add(rescanButton);
 
-        button = new JButton("Clear");
-        button.setPreferredSize(new Dimension(100, 25));
-        button.addActionListener(e -> clearCache());
-        buttonPanel.add(button);
+        clearButton = new JButton("Clear");
+        clearButton.setPreferredSize(new Dimension(100, 25));
+        clearButton.addActionListener(e -> clearCache());
+        buttonPanel.add(clearButton);
 
-        button = new JButton("OK");
+        JButton button = new JButton("OK");
         button.setPreferredSize(new Dimension(100, 25));
         button.addActionListener(e -> dispose());
         buttonPanel.add(button);
