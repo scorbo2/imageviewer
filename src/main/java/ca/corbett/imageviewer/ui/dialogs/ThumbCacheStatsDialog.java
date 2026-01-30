@@ -32,7 +32,7 @@ public class ThumbCacheStatsDialog extends JDialog {
     private final LabelField statsLabel;
     private JButton rescanButton;
     private JButton clearButton;
-    private AtomicBoolean isScanInProgress = new AtomicBoolean(false);
+    private final AtomicBoolean isWorkInProgress = new AtomicBoolean(false);
 
     public ThumbCacheStatsDialog(Window owner) {
         super(owner, "Thumbnail Cache Statistics", ModalityType.APPLICATION_MODAL);
@@ -59,15 +59,15 @@ public class ThumbCacheStatsDialog extends JDialog {
      * Invoked to rescan the thumbnail cache and update statistics.
      */
     private void rescan() {
-        if (isScanInProgress.get()) {
-            log.info("Ignoring rescan request; scan already in progress.");
+        if (isWorkInProgress.get()) {
+            log.info("Ignoring rescan request; operation already in progress.");
             return;
         }
 
         statsLabel.setText("Calculating...");
         rescanButton.setEnabled(false);
         clearButton.setEnabled(false);
-        isScanInProgress.set(true);
+        isWorkInProgress.set(true);
         new Thread(() -> {
             String results = "Scan failed.";
             try {
@@ -79,7 +79,7 @@ public class ThumbCacheStatsDialog extends JDialog {
                     statsLabel.setText(resultsStr);
                     rescanButton.setEnabled(true);
                     clearButton.setEnabled(true);
-                    isScanInProgress.set(false);
+                    isWorkInProgress.set(false);
                 });
             }
         }).start();
@@ -89,6 +89,11 @@ public class ThumbCacheStatsDialog extends JDialog {
      * Will prompt for confirmation, and then clear the thumbnail cache if confirmed.
      */
     private void clearCache() {
+        if (isWorkInProgress.get()) {
+            log.info("Ignoring clear cache request; operation already in progress.");
+            return;
+        }
+
         int response = getMessageUtil().askYesNo(
                 "Confirm Clear Cache",
                 "Are you sure you want to clear the thumbnail cache? This action cannot be undone.");
@@ -96,9 +101,23 @@ public class ThumbCacheStatsDialog extends JDialog {
             return;
         }
 
-        ThumbCacheManager.clear();
-        getMessageUtil().info("Cache Cleared", "Thumbnail cache cleared successfully.");
-        rescan();
+        rescanButton.setEnabled(false);
+        clearButton.setEnabled(false);
+        isWorkInProgress.set(true);
+        new Thread(() -> {
+            try {
+                ThumbCacheManager.clear();
+            }
+            finally {
+                SwingUtilities.invokeLater(() -> {
+                    getMessageUtil().info("Cache Cleared", "Thumbnail cache cleared successfully.");
+                    rescanButton.setEnabled(true);
+                    clearButton.setEnabled(true);
+                    isWorkInProgress.set(false);
+                    rescan();
+                });
+            }
+        }).start();
     }
 
     private JPanel buildButtonPanel() {
