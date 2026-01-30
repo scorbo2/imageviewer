@@ -556,6 +556,9 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         thumbCacheEnabledProp = new BooleanProperty("Thumbnails.Caching.enableThumbCache",
                                                     "Enable automatic caching of thumbnails",
                                                     true);
+        thumbCacheEnabledProp.setHelpText("<html>Disabling caching will not remove existing cached thumbnails."
+                                                  + "<br>Disabling caching only prevents new thumbnails from being cached."
+                                                  + "<br>Any existing thumbnails will still be used when browsing images.</html>");
         list.add(thumbCacheEnabledProp);
 
         // Not currently configurable, but we can at least show the user where the cache is located:
