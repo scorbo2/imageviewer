@@ -25,7 +25,7 @@ import java.awt.Color;
  */
 public enum ColorScheme {
 
-    Matrix(
+    MATRIX("Matrix",
         new Color(0, 0, 0),  // Image panel background
         new Color(0, 255, 0),// Thumb selected background
         new Color(0, 50, 0), // Thumb unselected background
@@ -35,7 +35,7 @@ public enum ColorScheme {
         new Color(0, 50, 0), // Status panel background
         new Color(0, 255, 0) // Status panel font color
     ),
-    Dark(
+    DARK("Dark",
         new Color(45, 45, 45),     // Image panel background
         new Color(70, 130, 180),   // Thumb selected background
         new Color(60, 60, 60),     // Thumb unselected background
@@ -45,7 +45,7 @@ public enum ColorScheme {
         new Color(40, 40, 40),     // Status panel background
         new Color(220, 220, 220)   // Status panel font color
     ),
-    VeryDark(
+    VERY_DARK("Very dark",
         new Color(25, 25, 25),   // Image panel background
         new Color(40, 100, 150), // Thumb selected background
         new Color(40, 40, 40),   // Thumb unselected background
@@ -55,7 +55,7 @@ public enum ColorScheme {
         new Color(25, 25, 25),   // Status panel background
         new Color(205, 205, 205) // Status panel font color
     ),
-    ExtremelyDark(
+    EXTREMELY_DARK("Extremely dark",
         new Color(0, 0, 0),      // Image panel background
         new Color(40, 100, 150), // Thumb selected background
         new Color(20, 20, 20),   // Thumb unselected background
@@ -65,7 +65,7 @@ public enum ColorScheme {
         new Color(0, 0, 0),      // Status panel background
         new Color(205, 205, 205) // Status panel font color
     ),
-    ShadesOfGrey(
+    SHADES_OF_GREY("Shades of grey",
         new Color(45, 45, 45),   // Image panel background
         new Color(130, 130, 130),// Thumb selected background
         new Color(75, 75, 75),   // Thumb unselected background
@@ -75,7 +75,7 @@ public enum ColorScheme {
         new Color(45, 45, 45),   // Status panel background
         new Color(200, 200, 200) // Status panel font color
     ),
-    GotTheBlues(
+    GOT_THE_BLUES("Got the blues",
         new Color(25, 25, 65),    // Image panel background
         new Color(30, 30, 150),   // Thumb selected background
         new Color(45, 45, 105),   // Thumb unselected background
@@ -85,7 +85,7 @@ public enum ColorScheme {
         new Color(25, 25, 65),    // Status panel background
         new Color(100, 100, 200)  // Status panel font color
     ),
-    HotDogStand( // Just a joke! :D
+    HOT_DOG_STAND("Hot dog stand", // Just a joke! :D
         new Color(155, 155, 25),  // Image panel background
         new Color(155, 40, 50),   // Thumb selected background
         new Color(165, 75, 5),    // Thumb unselected background
@@ -96,6 +96,7 @@ public enum ColorScheme {
         new Color(200, 200, 200)  // Status panel font color
     );
 
+    private final String label;
     private final Color imagePanelBgColor;
     private final Color thumbSelectedBgColor;
     private final Color thumbUnselectedBgColor;
@@ -105,10 +106,11 @@ public enum ColorScheme {
     private final Color statusPanelBgColor;
     private final Color statusPanelFontColor;
 
-    ColorScheme(Color imagePanelBg, Color thumbSelectedBg, Color thumbUnselectedBg,
+    ColorScheme(String label, Color imagePanelBg, Color thumbSelectedBg, Color thumbUnselectedBg,
                 Color thumbSelectedFont, Color thumbUnselectedFont,
                 Color thumbContainerBg, Color statusPanelBg,
                 Color statusPanelFont) {
+        this.label = label;
         imagePanelBgColor = imagePanelBg;
         thumbSelectedBgColor = thumbSelectedBg;
         thumbUnselectedBgColor = thumbUnselectedBg;
@@ -117,6 +119,11 @@ public enum ColorScheme {
         thumbContainerBgColor = thumbContainerBg;
         statusPanelBgColor = statusPanelBg;
         statusPanelFontColor = statusPanelFont;
+    }
+
+    @Override
+    public String toString() {
+        return label;
     }
 
     public Color getImagePanelBgColor() {

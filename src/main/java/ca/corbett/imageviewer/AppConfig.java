@@ -596,7 +596,7 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
                                                 + "<br>for these elements.</html>");
         colorSchemeProp = new EnumProperty<>(PREFIX + "colorScheme",
                                              "Set from scheme:",
-                                             ColorScheme.Matrix);
+                                             ColorScheme.MATRIX);
         colorSchemeProp.addFormFieldChangeListener(event -> setColorScheme(event));
         imagePanelBgColorProp = createColorProp("imagePanelBackgroundColor",
                                                 "Image panel bg:",
