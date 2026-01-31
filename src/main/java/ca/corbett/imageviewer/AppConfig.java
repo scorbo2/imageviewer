@@ -32,6 +32,7 @@ import ca.corbett.imageviewer.ui.ThumbCacheManager;
 import ca.corbett.imageviewer.ui.actions.AboutAction;
 import ca.corbett.imageviewer.ui.actions.DeleteCurrentAction;
 import ca.corbett.imageviewer.ui.actions.ExitAction;
+import ca.corbett.imageviewer.ui.actions.ImageSetDeleteSourceImageAction;
 import ca.corbett.imageviewer.ui.actions.NextImageAction;
 import ca.corbett.imageviewer.ui.actions.PreviousImageAction;
 import ca.corbett.imageviewer.ui.actions.ReloadAction;
@@ -89,6 +90,7 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
     private static final String KEY_NEXT_IMAGE2 = "Keystrokes.General.nextImage2";
     private static final String KEY_RENAME = "Keystrokes.General.rename";
     private static final String KEY_DELETE_CURRENT = "Keystrokes.General.deleteCurrent";
+    private static final String KEY_DELETE_SOURCE = "Keystrokes.General.deleteSource";
     private static final String KEY_BROWSE_MODE_FILESYSTEM = "Keystrokes.General.setBrowseModeFileSystem";
     private static final String KEY_BROWSE_MODE_IMAGE_SET = "Keystrokes.General.setBrowseModeImageSet";
     private static final String KEY_REFRESH = "Keystrokes.General.refresh";
@@ -424,6 +426,11 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         return prop.getKeyStroke();
     }
 
+    public KeyStroke getDeleteSourceKeyStroke() {
+        KeyStrokeProperty prop = (KeyStrokeProperty)getPropertiesManager().getProperty(KEY_DELETE_SOURCE);
+        return prop.getKeyStroke();
+    }
+
     public KeyStroke getAboutKeyStroke() {
         KeyStrokeProperty prop = (KeyStrokeProperty)getPropertiesManager().getProperty(KEY_ABOUT);
         return prop.getKeyStroke();
@@ -440,6 +447,7 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_NEXT_IMAGE2));
         list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_RENAME));
         list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_DELETE_CURRENT));
+        list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_DELETE_SOURCE));
         list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_BROWSE_MODE_FILESYSTEM));
         list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_BROWSE_MODE_IMAGE_SET));
         list.add((KeyStrokeProperty)getPropertiesManager().getProperty(KEY_REFRESH));
@@ -741,36 +749,43 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         List<AbstractProperty> props = new ArrayList<>();
 
         // Non-configurable:
+        final String notConfigurableText = "This keystroke cannot be changed.";
         props.add(new KeyStrokeProperty(KEY_EXIT,
                                         "Exit application:",
                                         parseKeyStroke("Ctrl+Q"),
                                         new ExitAction())
-                          .setInitiallyEditable(false));
+                          .setInitiallyEditable(false)
+                          .setHelpText(notConfigurableText));
         props.add(new KeyStrokeProperty(KEY_PREVIOUS_IMAGE1,
                                         "Previous image:",
                                         parseKeyStroke("left"),
                                         new PreviousImageAction(MenuManager.MENU_ICON_SIZE))
-                          .setInitiallyEditable(false));
+                          .setInitiallyEditable(false)
+                          .setHelpText(notConfigurableText));
         props.add(new KeyStrokeProperty(KEY_PREVIOUS_IMAGE2,
                                         "Previous image:",
                                         parseKeyStroke("up"),
                                         new PreviousImageAction(MenuManager.MENU_ICON_SIZE))
-                          .setInitiallyEditable(false));
+                          .setInitiallyEditable(false)
+                          .setHelpText(notConfigurableText));
         props.add(new KeyStrokeProperty(KEY_NEXT_IMAGE1,
                                         "Next image:",
                                         parseKeyStroke("right"),
                                         new NextImageAction(MenuManager.MENU_ICON_SIZE))
-                          .setInitiallyEditable(false));
+                          .setInitiallyEditable(false)
+                          .setHelpText(notConfigurableText));
         props.add(new KeyStrokeProperty(KEY_NEXT_IMAGE2,
                                         "Next image:",
                                         parseKeyStroke("down"),
                                         new NextImageAction(MenuManager.MENU_ICON_SIZE))
-                          .setInitiallyEditable(false));
+                          .setInitiallyEditable(false)
+                          .setHelpText(notConfigurableText));
         props.add(new KeyStrokeProperty(KEY_DELETE_CURRENT,
                                         "Delete image:",
                                         parseKeyStroke("del"),
                                         new DeleteCurrentAction())
-                          .setInitiallyEditable(false));
+                          .setInitiallyEditable(false)
+                          .setHelpText(notConfigurableText));
 
         // Configurable:
         props.add(new KeyStrokeProperty(KEY_REFRESH,
@@ -798,6 +813,13 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
                                         "Image set mode:",
                                         parseKeyStroke("alt+2"),
                                         new SetBrowseModeAction(MainWindow.BrowseMode.IMAGE_SET))
+                          .setAllowBlank(true)
+                          //.setReservedKeyStrokes(RESERVED_KEYSTROKES) // TODO does not work
+                          .addFormFieldGenerationListener(new ReservedKeyStrokeWorkaround())); // workaround
+        props.add(new KeyStrokeProperty(KEY_DELETE_SOURCE,
+                                        "Delete source image:",
+                                        parseKeyStroke("Ctrl+Del"),
+                                        new ImageSetDeleteSourceImageAction(MenuManager.MENU_ICON_SIZE))
                           .setAllowBlank(true)
                           //.setReservedKeyStrokes(RESERVED_KEYSTROKES) // TODO does not work
                           .addFormFieldGenerationListener(new ReservedKeyStrokeWorkaround())); // workaround
