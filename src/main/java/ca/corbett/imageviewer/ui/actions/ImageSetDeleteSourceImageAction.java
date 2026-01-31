@@ -59,13 +59,6 @@ public class ImageSetDeleteSourceImageAction extends EnhancedAction {
             return;
         }
 
-        // Make sure some ImageSet is selected:
-        ImageSet imageSet = MainWindow.getInstance().getImageSetPanel().getSelectedImageSet().orElse(null);
-        if (imageSet == null) {
-            MainWindow.getInstance().showMessageDialog(NAME, "No Image set selected.");
-            return;
-        }
-
         // Prompt to confirm first!
         if (JOptionPane.showConfirmDialog(MainWindow.getInstance(),
                                           "Are you sure you want to permanently delete this image from disk?\n"
