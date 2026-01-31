@@ -13,9 +13,11 @@ import javax.swing.JOptionPane;
 import java.awt.event.ActionEvent;
 
 /**
- * Represents an action to delete the currently showing image in the currently selected image set.
- * This is NOT the same as ImageSetRemoveImageAction! That action merely removes the image from
- * the image set. This action will REMOVE the image file from disk!
+ * Represents an action to permanently delete the currently showing image from disk and remove it from
+ * all image sets.
+ * This is NOT the same as ImageSetRemoveImageAction! That action merely removes the image from the
+ * currently selected image set, leaving the underlying file intact. This action will REMOVE the image
+ * file from disk, which also removes it from all image sets that reference it.
  * <p>
  * If there is no image selected, or if there is no image set selected, this action will
  * display an error message and do nothing.
