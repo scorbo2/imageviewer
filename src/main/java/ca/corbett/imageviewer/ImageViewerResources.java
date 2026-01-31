@@ -12,6 +12,7 @@ public class ImageViewerResources extends ResourceLoader {
 
     private static final String PREFIX = "ca/corbett/imageviewer/images/";
 
+    // Icons used in core application:
     private static final String ICON_PREVIOUS = "icon-go-previous.png";
     private static final String ICON_NEXT = "icon-go-next.png";
     private static final String ICON_ZOOM_IN = "icon-zoom-in2.png";
@@ -30,6 +31,18 @@ public class ImageViewerResources extends ResourceLoader {
     private static final String ICON_SET_RELOAD = "icon-reboot.png";
     private static final String ICON_SAVE = "icon-save.png";
     private static final String ICON_RENAME = "icon-rename.png";
+
+    // Not used in core application, but can be used by extensions:
+    private static final String ICON_PLUS = "icon-plus.png";
+    private static final String ICON_MINUS = "icon-minus.png";
+    private static final String ICON_CHECK = "icon-check.png";
+    private static final String ICON_QUESTION = "icon-help.png";
+    private static final String ICON_EXTENSIONS = "icon-extensions.png";
+    private static final String ICON_EYE = "icon-eye.png";
+    private static final String ICON_FULLSCREEN = "icon-fullscreen.png";
+    private static final String ICON_HEART = "icon-heart.png";
+    private static final String ICON_ARROW_LEFT = "icon-previous.png";
+    private static final String ICON_ARROW_RIGHT = "icon-next.png";
 
     private static final int NO_RESIZE = 0;
     private static final int NATIVE_SIZE = 48;
@@ -105,6 +118,46 @@ public class ImageViewerResources extends ResourceLoader {
 
     public static BufferedImage getIconRename(int size) {
         return internalLoad(ICON_RENAME, size);
+    }
+
+    public static BufferedImage getIconPlus(int size) {
+        return internalLoad(ICON_PLUS, size);
+    }
+
+    public static BufferedImage getIconMinus(int size) {
+        return internalLoad(ICON_MINUS, size);
+    }
+
+    public static BufferedImage getIconCheck(int size) {
+        return internalLoad(ICON_CHECK, size);
+    }
+
+    public static BufferedImage getIconQuestion(int size) {
+        return internalLoad(ICON_QUESTION, size);
+    }
+
+    public static BufferedImage getIconExtensions(int size) {
+        return internalLoad(ICON_EXTENSIONS, size);
+    }
+
+    public static BufferedImage getIconEye(int size) {
+        return internalLoad(ICON_EYE, size);
+    }
+
+    public static BufferedImage getIconFullscreen(int size) {
+        return internalLoad(ICON_FULLSCREEN, size);
+    }
+
+    public static BufferedImage getIconHeart(int size) {
+        return internalLoad(ICON_HEART, size);
+    }
+
+    public static BufferedImage getIconArrowLeft(int size) {
+        return internalLoad(ICON_ARROW_LEFT, size);
+    }
+
+    public static BufferedImage getIconArrowRight(int size) {
+        return internalLoad(ICON_ARROW_RIGHT, size);
     }
 
     /**
