@@ -1,5 +1,6 @@
 package ca.corbett.imageviewer.ui;
 
+import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.io.FileSystemUtil;
 import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
@@ -35,19 +36,6 @@ import java.util.List;
  */
 public final class ThumbContainerPanel extends JPanel {
 
-    /**
-     * A file will be considered a valid image if its filename ends with any
-     * extension in this list.
-     */
-    public static final List<String> imageExtensions;
-
-    /**
-     * A file will be considered an "alien" file UNLESS its filename ends with
-     * any extension in this list. Note this list might not be the same as
-     * the imageExtensions list, because reasons.
-     */
-    private static final List<String> alienExclusionExtensions;
-
     private final MainWindow.BrowseMode browseMode;
     private final List<ThumbContainerPanelListener> listeners;
     private List<File> imageFileList;
@@ -70,24 +58,6 @@ public final class ThumbContainerPanel extends JPanel {
     private static final int PANEL_MARGIN = 20;
     private static final int INFO_PANEL_WIDTH = 120;
     private static final int INFO_PANEL_HEIGHT = 77;
-
-    /*
-     * Statically create the list of allowable image extensions
-     * and alien exclusion extensions.
-     */
-    static {
-        imageExtensions = new ArrayList<>();
-        imageExtensions.add("gif");
-        imageExtensions.add("jpg");
-        imageExtensions.add("jpeg");
-        imageExtensions.add("png");
-        imageExtensions.add("tiff");
-        imageExtensions.add("bmp");
-
-        alienExclusionExtensions = new ArrayList<>();
-        alienExclusionExtensions.addAll(imageExtensions);
-        alienExclusionExtensions.add(AlienDialog.DARWIN_METADATA_FILENAME.replace(".", ""));
-    }
 
     /**
      * Constructor is private to force factory method access.
@@ -116,18 +86,6 @@ public final class ThumbContainerPanel extends JPanel {
      */
     public MainWindow.BrowseMode getBrowseMode() {
         return browseMode;
-    }
-
-    /**
-     * Returns the list of allowable image extensions. Implementation note: a copy of the
-     * list is returned to prevent client modification.
-     *
-     * @return A static list of allowable image extensions.
-     */
-    public static List<String> getImageExtensions() {
-        List<String> copy = new ArrayList<>();
-        copy.addAll(imageExtensions);
-        return copy;
     }
 
     /**
@@ -305,7 +263,10 @@ public final class ThumbContainerPanel extends JPanel {
             clear();
             return;
         }
-        setImageList(FileSystemUtil.findFiles(dir, false, imageExtensions));
+        setImageList(FileSystemUtil.findFiles(dir, false)
+                                   .stream()
+                                   .filter(f -> ImageUtil.isImageFile(f))
+                                   .toList());
         alienFileList = findAlienFiles(dir);
     }
 
@@ -712,51 +673,20 @@ public final class ThumbContainerPanel extends JPanel {
     }
 
     /**
-     * I hate that these static utility methods live in a UI class.
-     * <a href="https://github.com/scorbo2/imageviewer/issues/66">Issue 66</a>
-     * will move these to a better location, but it will be an extension-breaking change,
-     * so I don't want to do it until version 3.0.
+     * Returns a list of all "alien" files in the given directory.
+     * An "alien" file is any file that is not an image file, not a "companion"
+     * file, and not a "known" file.
+     *
+     * @param dir The directory to scan.
+     * @return A list of all alien files in the given directory.
      */
-    public static boolean isImageFile(File file) {
-        String name = file.getName().toLowerCase();
-        for (String ext : imageExtensions) {
-            if (name.endsWith("." + ext)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * I hate that these static utility methods live in a UI class.
-     * <a href="https://github.com/scorbo2/imageviewer/issues/66">Issue 66</a>
-     * will move these to a better location, but it will be an extension-breaking change,
-     * so I don't want to do it until version 3.0.
-     */
-    public static boolean isAlienExcludedFile(File file) {
-        String name = file.getName().toLowerCase();
-        for (String ext : alienExclusionExtensions) {
-            if (name.endsWith("." + ext)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public static List<File> findAlienFiles(File dir) {
-        List<File> aliens = FileSystemUtil.findFilesExcluding(dir, false, alienExclusionExtensions);
-        List<File> listToReturn = new ArrayList<>();
-
-        for (File f : aliens) {
-
-            // Ask all our extensions if they recognize this file:
-            boolean isCompanion = ImageViewerExtensionManager.getInstance().isCompanionFile(f);
-            if (!isCompanion) {
-                listToReturn.add(f);
-            }
-        }
-
-        return listToReturn;
+        ImageViewerExtensionManager extManager = ImageViewerExtensionManager.getInstance();
+        return FileSystemUtil.findFiles(dir, false)
+                             .stream()
+                             .filter(f -> !ImageUtil.isImageFile(f))
+                             .filter(f -> !extManager.isCompanionFile(f))
+                             .filter(f -> !extManager.isKnownFile(f))
+                             .toList();
     }
-
 }

@@ -360,7 +360,7 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
 
     /**
      * Invoked when the application is trying to decide what type of file it's looking
-     * at, and therefore what to do with it. ImageViewer works with three broad types of files:
+     * at, and therefore what to do with it. ImageViewer works with four broad types of files:
      * <ol>
      *     <li><b>Images</b> - any file in a supported image format</li>
      *     <li><b>Companion files</b> - not images, but files that nonetheless belong together
@@ -368,8 +368,11 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
      *     the image or contains additional information about the image. Extensions can
      *     register support for companion files. Out of the box (i.e. without extensions),
      *     ImageViewer does not recognize any file as a companion file.</li>
+     *     <li><b>Known files</b> - extensions can store extra files (configuration, metadata,
+     *     whatever) in an image directory, and regard those files as "known". These files are
+     *     ignored for file-based image operations.</li>
      *     <li><b>Aliens</b> - an alien file is any file that is not positively identified
-     *     either as a supported image type or as a companion file.</li>
+     *     either as a supported image type, a companion file, or a "known" file.</li>
      * </ol>
      * If an extension wishes to consider a given File as a companion file, it can return
      * true here. The default return is false, indicating that the extension does not recognize
@@ -408,6 +411,33 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
             companions.addAll(extension.getCompanionFiles(imageFile));
         }
         return new ArrayList<>(companions);
+    }
+
+    /**
+     * Given a candidate non-image file, ask extensions if they "know" this file.
+     * Known files are not the same as companion files! Companion files are associated
+     * with individual images, whereas known files are associated with the directory as a whole.
+     * These files will therefore NOT be included with image operations (except for operations
+     * that move or copy the entire directory). But, they will also not be marked as "alien" files.
+     * This causes ImageViewer to just ignore them - they do not appear in the application's UI.
+     *
+     * @param candidateFile The file in question.
+     * @return true if any extension recognizes the file, false otherwise (default false).
+     */
+    public boolean isKnownFile(File candidateFile) {
+        // We'll hard-code one application-level "known" file, at least
+        // until Darwin has its own ImageViewer extension...
+        if (".00darwin-metadata".equals(candidateFile.getName())) {
+            return true;
+        }
+
+        // For everything else, we'll defer to our enabled extensions:
+        for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
+            if (extension.isKnownFile(candidateFile)) {
+                return true; // first extension that says yes, we're done
+            }
+        }
+        return false;
     }
 
     /**

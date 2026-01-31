@@ -1,10 +1,10 @@
 package ca.corbett.imageviewer.ui.threads;
 
+import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.io.FileSystemUtil;
 import ca.corbett.extras.progress.MultiProgressWorker;
 import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.ui.ThumbCacheManager;
-import ca.corbett.imageviewer.ui.ThumbContainerPanel;
 
 import java.io.File;
 import java.util.List;
@@ -50,7 +50,10 @@ public class ThumbCachePregenerateThread extends MultiProgressWorker {
             int majorProgress = 0;
 
             for (File dir : alldirs) {
-                List<File> images = FileSystemUtil.findFiles(dir, false, ThumbContainerPanel.imageExtensions);
+                List<File> images = FileSystemUtil.findFiles(dir, false)
+                                                  .stream()
+                                                  .filter(ImageUtil::isImageFile)
+                                                  .toList();
                 if (!fireMajorProgressUpdate(majorProgress, images.size(), dir.getAbsolutePath())) {
                     wasCanceled = true;
                     break;
