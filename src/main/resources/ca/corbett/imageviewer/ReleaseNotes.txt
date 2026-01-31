@@ -10,6 +10,7 @@ Version 3.0 [TODO] - Maintenance release
   #82 - Clean up icon resource handling app-wide
   #80 - Remove KeyboardManager; use KeyStrokeManager instead
   #76 - Upgrade to swing-extras 2.7
+  #75 - ImageSet: add "delete source image" option
   #74 - Ensure image thumbnails are disposed properly
   #72 - Clean up commandline handling
   #66 - Alien handling: clean up code a bit

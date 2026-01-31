@@ -12,6 +12,7 @@ import ca.corbett.imageviewer.ui.actions.ImageSetAddImageAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetBrowseToSourceDirAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetCreateAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetDeleteAction;
+import ca.corbett.imageviewer.ui.actions.ImageSetDeleteSourceImageAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetMoveImageAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetRemoveImageAction;
 import ca.corbett.imageviewer.ui.actions.LogConsoleAction;
@@ -425,7 +426,8 @@ public final class MenuManager {
     /**
      * Creates and returns a list of "image removal" menu items. What we mean by "removal" depends on the
      * current browse mode. In filesystem mode, removal means deleting files or directories from disk.
-     * In image set mode, removal means removing the image from the image set, or deleting the entire image set.
+     * In image set mode, removal means removing the image from the image set, deleting the source image file,
+     * or deleting the entire image set.
      */
     public List<JMenuItem> buildImageRemovalMenuItems() {
         List<JMenuItem> menuList = new ArrayList<>();
@@ -443,6 +445,9 @@ public final class MenuManager {
 
         else {
             menuList.add(new JMenuItem(new ImageSetRemoveImageAction(MENU_ICON_SIZE)));
+            JMenuItem menuItem = new JMenuItem(new ImageSetDeleteSourceImageAction(MENU_ICON_SIZE));
+            menuItem.setAccelerator(AppConfig.getInstance().getDeleteSourceKeyStroke());
+            menuList.add(menuItem);
             menuList.add(new JMenuItem(new ImageSetDeleteAction(MENU_ICON_SIZE)));
         }
 
