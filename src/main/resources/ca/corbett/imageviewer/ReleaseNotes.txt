@@ -2,6 +2,7 @@ ImageViewer Release Notes
 Author: Steve Corbett
 
 Version 3.0 [TODO] - Maintenance release
+  #94 - Built-in color schemes
   #90 - Workaround for bug in KeyStrokeProperty
   #85 - Promote ThumbCacheExtension to ThumbCacheManager
   #84 - Custom color override options

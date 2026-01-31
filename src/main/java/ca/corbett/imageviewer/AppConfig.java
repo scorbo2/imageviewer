@@ -20,10 +20,12 @@ import ca.corbett.extras.properties.PropertyFormFieldChangeListener;
 import ca.corbett.extras.properties.PropertyFormFieldValueChangedEvent;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
+import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
+import ca.corbett.imageviewer.ui.ColorScheme;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.ReservedKeyStrokeWorkaround;
 import ca.corbett.imageviewer.ui.ThumbCacheManager;
@@ -105,6 +107,7 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
     private LookAndFeelProperty lookAndFeelProp;
 
     private BooleanProperty useSystemColorsProp;
+    private EnumProperty<ColorScheme> colorSchemeProp;
     private ColorProperty imagePanelBgColorProp;
     private ColorProperty thumbSelectedBgColorProp;
     private ColorProperty thumbUnselectedBgColorProp;
@@ -157,6 +160,7 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
     @Override
     public boolean showPropertiesDialog(Frame owner) {
         boolean isCustom = !useSystemColorsProp.getValue();
+        colorSchemeProp.setInitiallyEditable(isCustom);
         imagePanelBgColorProp.setInitiallyEditable(isCustom);
         thumbSelectedBgColorProp.setInitiallyEditable(isCustom);
         thumbUnselectedBgColorProp.setInitiallyEditable(isCustom);
@@ -590,6 +594,10 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         useSystemColorsProp.setHelpText("<html>If enabled, the application will use the selected look-and-feel's colors"
                                                 + "<br>for various UI elements. If disabled, custom colors can be set"
                                                 + "<br>for these elements.</html>");
+        colorSchemeProp = new EnumProperty<>(PREFIX + "colorScheme",
+                                             "Set from scheme:",
+                                             ColorScheme.MATRIX);
+        colorSchemeProp.addFormFieldChangeListener(event -> setColorScheme(event));
         imagePanelBgColorProp = createColorProp("imagePanelBackgroundColor",
                                                 "Image panel bg:",
                                                 "ColorPalette.primaryBackground");
@@ -621,6 +629,7 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
             public void valueChanged(PropertyFormFieldValueChangedEvent event) {
                 boolean isCustom = !((CheckBoxField)event.formField()).isChecked();
                 FormPanel fp = event.formPanel();
+                fp.getFormField(colorSchemeProp.getFullyQualifiedName()).setEnabled(isCustom);
                 fp.getFormField(imagePanelBgColorProp.getFullyQualifiedName()).setEnabled(isCustom);
                 fp.getFormField(thumbSelectedBgColorProp.getFullyQualifiedName()).setEnabled(isCustom);
                 fp.getFormField(thumbUnselectedBgColorProp.getFullyQualifiedName()).setEnabled(isCustom);
@@ -633,6 +642,7 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         });
 
         props.add(useSystemColorsProp);
+        props.add(colorSchemeProp);
         props.add(imagePanelBgColorProp);
         props.add(thumbSelectedBgColorProp);
         props.add(thumbUnselectedBgColorProp);
@@ -648,6 +658,56 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
         props.add(statusPanelBorderProp);
 
         return props;
+    }
+
+    /**
+     * Invoked when the color scheme chooser is modified. Will look up all relevant
+     * color fields and set all their values according to the selected scheme.
+     */
+    private void setColorScheme(PropertyFormFieldValueChangedEvent event) {
+        FormPanel formPanel = event.formPanel();
+        if (formPanel == null) {
+            logger.warning("Unable to set color scheme: form panel is null.");
+            return;
+        }
+
+        // Look up all our generated form fields:
+        ColorField imagePanelBgColorField = (ColorField)formPanel.getFormField(
+                imagePanelBgColorProp.getFullyQualifiedName());
+        ColorField thumbSelectedBgColorField = (ColorField)formPanel.getFormField(
+                thumbSelectedBgColorProp.getFullyQualifiedName());
+        ColorField thumbUnselectedBgColorField = (ColorField)formPanel.getFormField(
+                thumbUnselectedBgColorProp.getFullyQualifiedName());
+        ColorField thumbSelectedFontColorField = (ColorField)formPanel.getFormField(
+                thumbSelectedFontColorProp.getFullyQualifiedName());
+        ColorField thumbUnselectedFontColorField = (ColorField)formPanel.getFormField(
+                thumbUnselectedFontColorProp.getFullyQualifiedName());
+        ColorField thumbContainerBgColorField = (ColorField)formPanel.getFormField(
+                thumbContainerBgColorProp.getFullyQualifiedName());
+        ColorField statusPanelBgColorField = (ColorField)formPanel.getFormField(
+                statusPanelBgColorProp.getFullyQualifiedName());
+        ColorField statusPanelFontColorField = (ColorField)formPanel.getFormField(
+                statusPanelFontColorProp.getFullyQualifiedName());
+
+        // If any of them are null, something has gone off the rails:
+        if (imagePanelBgColorField == null || thumbSelectedBgColorField == null ||
+                thumbUnselectedBgColorField == null || thumbSelectedFontColorField == null ||
+                thumbUnselectedFontColorField == null || thumbContainerBgColorField == null ||
+                statusPanelBgColorField == null || statusPanelFontColorField == null) {
+            logger.warning("Unable to set color scheme: one or more form fields are null.");
+            return;
+        }
+
+        // Set them all!
+        ColorScheme scheme = (ColorScheme)((ComboField<?>)event.formField()).getSelectedItem();
+        imagePanelBgColorField.setColor(scheme.getImagePanelBgColor());
+        thumbSelectedBgColorField.setColor(scheme.getThumbSelectedBgColor());
+        thumbUnselectedBgColorField.setColor(scheme.getThumbUnselectedBgColor());
+        thumbSelectedFontColorField.setColor(scheme.getThumbSelectedFontColor());
+        thumbUnselectedFontColorField.setColor(scheme.getThumbUnselectedFontColor());
+        thumbContainerBgColorField.setColor(scheme.getThumbContainerBgColor());
+        statusPanelBgColorField.setColor(scheme.getStatusPanelBgColor());
+        statusPanelFontColorField.setColor(scheme.getStatusPanelFontColor());
     }
 
     private ColorProperty createColorProp(String name, String label, String defaultKey) {
