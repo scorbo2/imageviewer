@@ -30,6 +30,7 @@ public class Main {
 
         // Before we do anything else...
         initializeLogging();
+        Logger log = Logger.getLogger(Main.class.getName());
 
         // Check for -v command line arg:
         for (String arg : args) {
@@ -39,34 +40,18 @@ public class Main {
             }
         }
 
-        // This is extremely stupid, but due to the way ProcessBuilder handles command
-        // line arguments with spaces in the path or filename, we have to assume that if
-        // we receive multiple args, that it's actually Java being stupid on the calling
-        // end (i.e. Darwin) and that it is in fact a single path. So, join all arguments
-        // together with spaces and try to parse it into a single path.
+        // You can specify a directory on the command line to open at startup.
+        // You can also specify a fully-qualified image file, in which case we'll open
+        // its containing directory. Extra arguments beyond the first are ignored.
+        // If the given directory doesn't exist, it is logged and then ignored.
         File overrideDir = null;
         if (args.length > 0) {
-            StringBuilder path = new StringBuilder();
-
-            for (int i = 0; i < args.length; i++) {
-                path.append(args[i]);
-                if (i < args.length - 1) {
-                    path.append(" ");
-                }
-            }
-
-            File file = new File(path.toString());
+            File file = new File(args[0]);
             if (file.exists()) {
-
-                // You can specify a directory name, in which case we'll take it as-is:
-                if (file.isDirectory()) {
-                    overrideDir = file;
-                }
-
-                // Of you can specify a specific file, in which case we'll take it's containing dir:
-                else if (file.getParentFile().exists() && file.getParentFile().isDirectory()) {
-                    overrideDir = file.getParentFile();
-                }
+                overrideDir = file.isDirectory() ? file : file.getParentFile();
+            }
+            else {
+                log.severe("Startup directory does not exist: " + file.getAbsolutePath());
             }
         }
 
@@ -76,8 +61,7 @@ public class Main {
         final SplashScreen splashScreen = SplashScreen.getSplashScreen();
 
         // Load saved application config:
-        Logger.getLogger(Main.class.getName())
-              .info(Version.APPLICATION_NAME + " " + Version.VERSION + " initializing...");
+        log.info(Version.APPLICATION_NAME + " " + Version.VERSION + " initializing...");
         ImageViewerExtensionManager.getInstance().loadAll();
         AppConfig.getInstance().load();
         LookAndFeelManager.switchLaf(AppConfig.getInstance().getLookAndFeelClassname());
