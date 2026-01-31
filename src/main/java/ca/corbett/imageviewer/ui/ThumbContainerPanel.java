@@ -238,7 +238,7 @@ public final class ThumbContainerPanel extends JPanel {
         selectedPanelIndex = -1;
         fireSelectionClearedEvent();
 
-        imageFileList = fileList;
+        imageFileList = new ArrayList<>(fileList);
         if (imageFileList == null) {
             imageFileList = new ArrayList<>();
         }
