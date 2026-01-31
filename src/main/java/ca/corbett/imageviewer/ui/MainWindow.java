@@ -873,8 +873,8 @@ public final class MainWindow extends JFrame implements UIReloadable {
         // Select it in the tree without triggering a change event:
         dirTree.removeDirTreeListener(dirTreeChangeListener);
         if (selectedDir != null) {
+            dirTree.selectAndScrollTo(selectedDir);
             dirTree.reload(); // TODO: https://github.com/scorbo2/swing-extras/issues/123
-            //dirTree.selectAndScrollTo(selectedDir);
         }
 
         dirTree.addDirTreeListener(dirTreeChangeListener);
