@@ -238,10 +238,7 @@ public final class ThumbContainerPanel extends JPanel {
         selectedPanelIndex = -1;
         fireSelectionClearedEvent();
 
-        imageFileList = new ArrayList<>(fileList);
-        if (imageFileList == null) {
-            imageFileList = new ArrayList<>();
-        }
+        imageFileList = fileList == null ? new ArrayList<>() : new ArrayList<>(fileList);
 
         // Note that we don't clear alienFileList here, because that list
         // likely hasn't changed. (we haven't changed directories).
