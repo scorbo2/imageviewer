@@ -26,6 +26,7 @@ import ca.corbett.imageviewer.ui.actions.RenameAction;
 import ca.corbett.imageviewer.ui.actions.ThumbCacheStatsAction;
 import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 
+import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -148,7 +149,7 @@ public final class MenuManager {
         // Add any menu items from our extensions, if any:
         List<EnhancedAction> extensionActions = extManager.getPopupMenuActions(browseMode);
         for (EnhancedAction action : extensionActions) {
-            imagePanelPopupMenu.add(new JMenuItem(action));
+            imagePanelPopupMenu.add(buildMenuItem(action));
         }
 
         return imagePanelPopupMenu;
@@ -174,7 +175,7 @@ public final class MenuManager {
             List<EnhancedAction> actions = extManager.getMenuActions(menuName, browseMode);
             if (!actions.isEmpty()) {
                 for (EnhancedAction action : actions) {
-                    extensionMenu.add(new JMenuItem(action));
+                    extensionMenu.add(buildMenuItem(action));
                 }
                 menuBar.add(extensionMenu);
             }
@@ -203,7 +204,7 @@ public final class MenuManager {
         List<EnhancedAction> actions = extManager.getMenuActions("File", browseMode);
         if (!actions.isEmpty()) {
             for (EnhancedAction action : actions) {
-                fileMenu.add(new JMenuItem(action));
+                fileMenu.add(buildMenuItem(action));
             }
             fileMenu.addSeparator();
         }
@@ -242,7 +243,7 @@ public final class MenuManager {
         List<EnhancedAction> actions = extManager.getMenuActions("Edit", browseMode);
         if (!actions.isEmpty()) {
             for (EnhancedAction action : actions) {
-                editMenu.add(new JMenuItem(action));
+                editMenu.add(buildMenuItem(action));
             }
             editMenu.addSeparator();
         }
@@ -283,7 +284,7 @@ public final class MenuManager {
         List<EnhancedAction> actions = extManager.getMenuActions("View", browseMode);
         if (!actions.isEmpty()) {
             for (EnhancedAction action : actions) {
-                viewMenu.add(new JMenuItem(action));
+                viewMenu.add(buildMenuItem(action));
             }
             viewMenu.addSeparator();
         }
@@ -320,7 +321,7 @@ public final class MenuManager {
         List<EnhancedAction> actions = extManager.getMenuActions("Help", browseMode);
         if (!actions.isEmpty()) {
             for (EnhancedAction action : actions) {
-                helpMenu.add(new JMenuItem(action));
+                helpMenu.add(buildMenuItem(action));
             }
             helpMenu.addSeparator();
         }
@@ -515,5 +516,18 @@ public final class MenuManager {
         else if (node != null && (node.getUserObject() instanceof ImageSet)) {
             menu.add(new ImageSetAddImageAction((ImageSet)node.getUserObject()));
         }
+    }
+
+    /**
+     * Invoked internally to build a JMenuItem from an EnhancedAction, scaling its icon
+     * to our MENU_ICON_SIZE if needed. If the given action has no icon, no icon is set.
+     */
+    private JMenuItem buildMenuItem(EnhancedAction action) {
+        JMenuItem item = new JMenuItem(action);
+        if (action.getIcon() != null) {
+            ImageIcon icon = ImageViewerResources.scaleIcon((ImageIcon)action.getIcon(), MENU_ICON_SIZE);
+            item.setIcon(icon);
+        }
+        return item;
     }
 }

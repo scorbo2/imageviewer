@@ -1,7 +1,6 @@
 package ca.corbett.imageviewer;
 
 import ca.corbett.extras.EnhancedAction;
-import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.actions.AboutAction;
@@ -79,15 +78,8 @@ public final class ToolBarManager {
         int buttonSize = iconImageSize + iconMarginSize;
 
         // Scale if needed:
-        ImageIcon imageIcon = (ImageIcon)action.getIcon();
-        BufferedImage image = null;
-        if (imageIcon != null) {
-            image = (BufferedImage)imageIcon.getImage();
-            if (image.getHeight() != iconImageSize || image.getWidth() != iconImageSize) {
-                // Resize the image to match the preferred toolbar icon size:
-                image = ImageUtil.generateThumbnailWithTransparency(image, iconImageSize, iconImageSize);
-            }
-        }
+        ImageIcon imageIcon = ImageViewerResources.scaleIcon((ImageIcon)action.getIcon(), iconImageSize);
+        BufferedImage image = imageIcon == null ? null : (BufferedImage)imageIcon.getImage();
 
         // Create and return the button:
         JButton button = new JButton(action);

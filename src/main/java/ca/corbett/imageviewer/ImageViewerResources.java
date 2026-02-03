@@ -3,6 +3,7 @@ package ca.corbett.imageviewer;
 import ca.corbett.extras.ResourceLoader;
 import ca.corbett.extras.image.ImageUtil;
 
+import javax.swing.ImageIcon;
 import java.awt.image.BufferedImage;
 import java.util.logging.Logger;
 
@@ -45,7 +46,7 @@ public class ImageViewerResources extends ResourceLoader {
     private static final String ICON_ARROW_RIGHT = "icon-next.png";
 
     private static final int NO_RESIZE = 0;
-    private static final int NATIVE_SIZE = 48;
+    public static final int NATIVE_ICON_SIZE = 48;
     static final int MAX_ICON_SIZE = 256;
 
     public static BufferedImage getIconPrevious(int size) {
@@ -161,6 +162,26 @@ public class ImageViewerResources extends ResourceLoader {
     }
 
     /**
+     * Returns a scaled version of the input icon, if it is not already at the
+     * given size (assuming square icons). If the input icon is null, null is returned.
+     *
+     * @param imageIcon Any ImageIcon instance.
+     * @param size      The requested size (assuming square icons).
+     * @return A scaled ImageIcon instance, or null if the input icon was null.
+     */
+    public static ImageIcon scaleIcon(ImageIcon imageIcon, int size) {
+        BufferedImage image = null;
+        if (imageIcon != null) {
+            image = (BufferedImage)imageIcon.getImage();
+            if (image.getHeight() != size || image.getWidth() != size) {
+                // Resize the image to match the specified size (assuming square icons):
+                image = ImageUtil.generateThumbnailWithTransparency(image, size, size);
+            }
+        }
+        return image == null ? null : new ImageIcon(image);
+    }
+
+    /**
      * All icons are all stored at 48x48 internally, but can be requested at any size.
      *
      * @param resourceName Any of the icon name constants.
@@ -182,7 +203,7 @@ public class ImageViewerResources extends ResourceLoader {
         }
 
         // Resize if needed:
-        if (size > 0 && size != NATIVE_SIZE) {
+        if (size > 0 && size != NATIVE_ICON_SIZE) {
             // Put some kind of cap on it to avoid stupid issues:
             if (size > MAX_ICON_SIZE) {
                 // *should* never happen, but let's be safe:
