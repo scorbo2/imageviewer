@@ -288,14 +288,9 @@ public final class MenuManager {
             viewMenu.addSeparator();
         }
 
-
         // We'll show this even if thumb caching is disabled, since it shows stats
         // and gives an option to clear the cache:
         viewMenu.add(new JMenuItem(new ThumbCacheStatsAction()));
-
-        item = new JMenuItem(new LogConsoleAction());
-        item.setMnemonic(KeyEvent.VK_L);
-        viewMenu.add(item);
     }
 
     /**
@@ -330,7 +325,12 @@ public final class MenuManager {
             helpMenu.addSeparator();
         }
 
+        // LogConsole used to be under "View", but makes more sense under "Help":
+        JMenuItem item = new JMenuItem(new LogConsoleAction());
+        item.setMnemonic(KeyEvent.VK_L);
+        helpMenu.add(item);
 
+        // About:
         JMenuItem aboutItem = new JMenuItem(new AboutAction(MENU_ICON_SIZE));
         aboutItem.setMnemonic(KeyEvent.VK_A);
         if (AppConfig.getInstance().getAboutKeyStroke() != null) {
