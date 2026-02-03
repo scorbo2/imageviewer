@@ -52,6 +52,12 @@ import java.util.logging.Logger;
 
 import static ca.corbett.extras.io.KeyStrokeManager.parseKeyStroke;
 
+/**
+ * A custom AppProperties implementation for ImageViewer, defining all of the
+ * application's built-in properties.
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ */
 public class AppConfig extends AppProperties<ImageViewerExtension> {
 
     private static final Logger logger = Logger.getLogger(AppConfig.class.getName());
@@ -68,6 +74,14 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
      * </p>
      */
     public static final String KEYSTROKE_PREFIX = "Keystrokes.";
+
+    /**
+     * If an extension only has a single keystroke to publish, then consider putting it
+     * in the "miscellaneous tools" section, to avoid cluttering up the main keystrokes tab.
+     * If there are several keystrokes, then consider using the KEYSTROKE_PREFIX with its
+     * suggested format instead.
+     */
+    public static final String KEYSTROKE_MISC_PREFIX = KEYSTROKE_PREFIX + "Miscellaneous tools.";
 
     /**
      * The application reserves these keystrokes for its own use,
