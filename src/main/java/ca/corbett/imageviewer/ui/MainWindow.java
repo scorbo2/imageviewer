@@ -790,7 +790,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
         for (JComponent component : components) {
             String name = component.getName();
             if (name == null || name.isBlank()) {
-                name = "" + tabIndex; // cheesy default numeric tab name if the component doesn't have one specified
+                name = "Tab " + tabIndex; // cheesy default numeric tab name if the component doesn't have one specified
             }
             tabPane.add(name, component);
             tabIndex++;

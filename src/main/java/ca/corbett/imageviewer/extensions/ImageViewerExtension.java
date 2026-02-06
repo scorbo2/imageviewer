@@ -285,9 +285,8 @@ public abstract class ImageViewerExtension extends AppExtension {
      * positions for extra components that can go around the main image panel, indicated by the
      * ExtraPanelPosition value of TOP, RIGHT, BOTTOM, or LEFT. Each loaded and enabled extension
      * will be queried to see if they have an extra component to offer for each position.
-     * This method will return a List of all extension-supplied components for the given position.
-     * The caller can decide what to do in the case where more than one is returned - either pick
-     * the first in the list, or display all of them in a tabbed pane.
+     * Your extension may return one JComponent for each position. Returning null is fine
+     * here, if your extension has nothing to supply.
      * <p>
      * It is recommended that extensions expose a config property to allow users to select where they want
      * their extra component to show up, to help mitigate conflicts with other extensions.
