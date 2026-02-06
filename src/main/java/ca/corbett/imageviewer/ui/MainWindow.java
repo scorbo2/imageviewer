@@ -17,7 +17,6 @@ import ca.corbett.imageviewer.MenuManager;
 import ca.corbett.imageviewer.QuickMoveManager;
 import ca.corbett.imageviewer.ToolBarManager;
 import ca.corbett.imageviewer.Version;
-import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.actions.ReloadUIAction;
 import ca.corbett.imageviewer.ui.imagesets.ImageSet;
@@ -56,6 +55,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static ca.corbett.imageviewer.extensions.ImageViewerExtension.ExtraPanelPosition;
 
 /**
  * Represents the main window for the application.
@@ -415,7 +416,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
         imagePanel = new ImagePanel(imagePanelProperties);
 
         imageTabPane = new ToggleableTabbedPane();
-        imageTabPane.addTab("Image", buildImagePanelWrapperPanel());
+        imageTabPane.addTab("Image", buildImagePanelWrapperPanel(imagePanel));
 
         // See if extensions have any image tab panes for us:
         List<JPanel> imageTabs = ImageViewerExtensionManager.getInstance().getImageTabPanels();
@@ -649,7 +650,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
 
         // Rebuild the image tab pane:
         imageTabPane.removeAll();
-        imageTabPane.addTab("Image", buildImagePanelWrapperPanel());
+        imageTabPane.addTab("Image", buildImagePanelWrapperPanel(imagePanel));
         // See if extensions have any image tab panes for us:
         List<JPanel> imageTabs = ImageViewerExtensionManager.getInstance().getImageTabPanels();
         if (!imageTabs.isEmpty()) {
@@ -723,19 +724,28 @@ public final class MainWindow extends JFrame implements UIReloadable {
         updateStatusBar();
     }
 
-    private JPanel buildImagePanelWrapperPanel() {
+    /**
+     * Builds a wrapper panel for the given ImagePanel, complete with all extension-supplied
+     * extra components in surrounding positions.
+     * <p>
+     * <b>Implementation note:</b> This method is public because some extensions
+     * (for example, ext-iv-fullscreen) need to also be able to do this. Better to
+     * share this helper method than to force extensions to reinvent the wheel.
+     * </p>
+     *
+     * @param imagePanel The ImagePanel to wrap.
+     * @return A JPanel containing the given ImagePanel and any extra extension-supplied components.
+     */
+    public static JPanel buildImagePanelWrapperPanel(ImagePanel imagePanel) {
         JPanel imagePanelWrapperPanel = new JPanel();
         imagePanelWrapperPanel.setLayout(new BorderLayout());
 
         // Add extra panels, if any are supplied by our extensions:
-        JComponent westComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
-                ImageViewerExtension.ExtraPanelPosition.Left);
-        JComponent eastComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
-                ImageViewerExtension.ExtraPanelPosition.Right);
-        JComponent northComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
-                ImageViewerExtension.ExtraPanelPosition.Top);
-        JComponent southComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
-                ImageViewerExtension.ExtraPanelPosition.Bottom);
+        ImageViewerExtensionManager extManager = ImageViewerExtensionManager.getInstance();
+        JComponent westComponent = buildComponentTabPane(extManager.getExtraPanelComponent(ExtraPanelPosition.Left));
+        JComponent eastComponent = buildComponentTabPane(extManager.getExtraPanelComponent(ExtraPanelPosition.Right));
+        JComponent northComponent = buildComponentTabPane(extManager.getExtraPanelComponent(ExtraPanelPosition.Top));
+        JComponent southComponent = buildComponentTabPane(extManager.getExtraPanelComponent(ExtraPanelPosition.Bottom));
         if (westComponent != null) {
             imagePanelWrapperPanel.add(westComponent, BorderLayout.WEST);
         }
@@ -751,6 +761,47 @@ public final class MainWindow extends JFrame implements UIReloadable {
 
         imagePanelWrapperPanel.add(imagePanel, BorderLayout.CENTER);
         return imagePanelWrapperPanel;
+    }
+
+    /**
+     * Builds a tabbed pane wrapper for the given list of components.
+     * If the list is empty or null, will return null.
+     * If the list only has one element, the tab controls will be hidden.
+     * Otherwise, each component will get its own tab, and the tab name will be taken from the
+     * component's name property if it has one, or a default numeric name if it doesn't.
+     * <p>
+     * <b>Implementation note:</b> This method is public because some extensions
+     * (for example, ext-iv-fullscreen) need to also be able to do this. Better to
+     * share this helper method than to force extensions to reinvent the wheel.
+     * </p>
+     *
+     * @param components The list of components to wrap.
+     * @return A ToggleableTabbedPane containing the given components, or null if none were given.
+     */
+    public static ToggleableTabbedPane buildComponentTabPane(List<JComponent> components) {
+        // If we got nothing, we give nothing:
+        if (components == null || components.isEmpty()) {
+            return null;
+        }
+
+        // Build a tab for each component:
+        ToggleableTabbedPane tabPane = new ToggleableTabbedPane();
+        int tabIndex = 1;
+        for (JComponent component : components) {
+            String name = component.getName();
+            if (name == null || name.isBlank()) {
+                name = "" + tabIndex; // cheesy default numeric tab name if the component doesn't have one specified
+            }
+            tabPane.add(name, component);
+            tabIndex++;
+        }
+
+        // If there's only one tab, hide the tab header as it's not needed:
+        if (components.size() == 1) {
+            tabPane.setTabHeaderVisible(false);
+        }
+
+        return tabPane;
     }
 
     public void setZoomFactorIncrement(double increment) {
