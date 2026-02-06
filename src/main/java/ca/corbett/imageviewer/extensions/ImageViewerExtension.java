@@ -282,13 +282,23 @@ public abstract class ImageViewerExtension extends AppExtension {
 
     /**
      * Invoked when the application is building the main ImagePanel display - there are four
-     * extra components that can go around the main image panel, indicated by the
-     * ExtraPanelPosition value of TOP, RIGHT, BOTTOM, or LEFT. The first extension that returns
-     * a non-null component for each of these positions will be allowed to use that area to
-     * display extra information or controls. It is recommended that extensions expose a config
-     * property to allow users to select where they want that extension to show up, to help
-     * mitigate conflicts with other extensions. For example, I set extension A to use the LEFT
-     * position, and set extension B to use the RIGHT position.
+     * positions for extra components that can go around the main image panel, indicated by the
+     * ExtraPanelPosition value of TOP, RIGHT, BOTTOM, or LEFT. Each loaded and enabled extension
+     * will be queried to see if they have an extra component to offer for each position.
+     * Your extension may return one JComponent for each position. Returning null is fine
+     * here, if your extension has nothing to supply.
+     * <p>
+     * It is recommended that extensions expose a config property to allow users to select where they want
+     * their extra component to show up, to help mitigate conflicts with other extensions.
+     * For example, I set extension A to use the LEFT position, and set extension B to use the RIGHT position.
+     * That way they can coexist on screen at the same time with no conflicts.
+     * </p>
+     * <p>
+     * <b>Hint:</b> use setName() on your component to give it a meaningful name. If more than one
+     * extension supplies an extra component for the same position, the component name will be used
+     * as a tab header in the tabbed pane that will be created to hold them all. Keep the name
+     * brief but distinctive. If no name is supplied, your tab will get a numeric name based on load order.
+     * </p>
      *
      * @param position LEFT, TOP, RIGHT, or BOTTOM, relative to the main ImagePanel.
      * @return Any JComponent, or null for none.
