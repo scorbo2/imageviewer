@@ -105,6 +105,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
     private ImagePanelConfig imagePanelProperties;
     private final Map<BrowseMode, JSplitPane> sideSplitPaneMap;
     private JSplitPane mainSplitPane;
+    private final Map<ImageViewerExtension.ExtraPanelPosition, JComponent> extraPanelMap;
 
     // Optionally set via cmdline args in Main, this will override our saved startup dir if set:
     private File startupDir;
@@ -119,6 +120,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
         dirTreeChangeListener = new DirTreeChangeListener();
         thumbContainerPanelMap = new HashMap<>(2);
         sideSplitPaneMap = new HashMap<>(2);
+        extraPanelMap = new HashMap<>();
     }
 
     /**
@@ -726,6 +728,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
     private JPanel buildImagePanelWrapperPanel() {
         JPanel imagePanelWrapperPanel = new JPanel();
         imagePanelWrapperPanel.setLayout(new BorderLayout());
+        extraPanelMap.clear();
 
         // Add extra panels, if any are supplied by our extensions:
         JComponent westComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
@@ -738,19 +741,30 @@ public final class MainWindow extends JFrame implements UIReloadable {
                 ImageViewerExtension.ExtraPanelPosition.Bottom);
         if (westComponent != null) {
             imagePanelWrapperPanel.add(westComponent, BorderLayout.WEST);
+            extraPanelMap.put(ImageViewerExtension.ExtraPanelPosition.Left, westComponent);
         }
         if (eastComponent != null) {
             imagePanelWrapperPanel.add(eastComponent, BorderLayout.EAST);
+            extraPanelMap.put(ImageViewerExtension.ExtraPanelPosition.Right, eastComponent);
         }
         if (northComponent != null) {
             imagePanelWrapperPanel.add(northComponent, BorderLayout.NORTH);
+            extraPanelMap.put(ImageViewerExtension.ExtraPanelPosition.Top, northComponent);
         }
         if (southComponent != null) {
             imagePanelWrapperPanel.add(southComponent, BorderLayout.SOUTH);
+            extraPanelMap.put(ImageViewerExtension.ExtraPanelPosition.Bottom, southComponent);
         }
 
         imagePanelWrapperPanel.add(imagePanel, BorderLayout.CENTER);
         return imagePanelWrapperPanel;
+    }
+
+    /**
+     * Reports whether an extra component is present at the given position.
+     */
+    public boolean hasExtraComponent(ImageViewerExtension.ExtraPanelPosition position) {
+        return extraPanelMap.get(position) != null;
     }
 
     public void setZoomFactorIncrement(double increment) {
