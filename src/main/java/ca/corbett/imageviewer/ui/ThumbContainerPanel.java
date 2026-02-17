@@ -513,6 +513,7 @@ public final class ThumbContainerPanel extends JPanel {
         // Scroll to make this panel visible if needed:
         selectedPanelIndex = index;
         ThumbPanel thumbPanel = loadedThumbPanels.get(selectedPanelIndex);
+        setSelectedThumb(thumbPanel);
         ThumbContainerPanel containerPanel = (ThumbContainerPanel)thumbPanel.getParent();
         containerPanel.scrollRectToVisible(thumbPanel.getBounds());
 
