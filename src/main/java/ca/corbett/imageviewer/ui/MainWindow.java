@@ -372,23 +372,14 @@ public final class MainWindow extends JFrame implements UIReloadable {
     }
 
     /**
-     * Selects the thumbnail at the given index in the currently visible thumbnail container panel.
-     * If the index is out of bounds, or if there is no currently visible thumbnail container panel, this does nothing.
-     * The index is 0-based.
-     *
-     * @param index The numeric, 0-based index of the thumbnail to select.
-     * @return true if the selected index was valid and the thumbnail was selected.
+     * Selects the first thumbnail in the currently-visible thumbnail container panel.
+     * Does nothing if there are no thumbnails loaded.
      */
-    public boolean selectThumbnailAtIndex(int index) {
+    public void selectFirstThumbnail() {
         ThumbContainerPanel thumbContainer = thumbContainerPanelMap.get(getBrowseMode());
-        if (thumbContainer == null) {
-            return false;
+        if (thumbContainer != null) {
+            thumbContainer.selectAtIndex(0);
         }
-        if (index < 0 || index >= thumbContainer.getCount()) {
-            return false;
-        }
-        thumbContainer.selectAtIndex(index);
-        return true;
     }
 
     /**
