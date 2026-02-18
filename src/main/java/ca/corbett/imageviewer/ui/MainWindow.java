@@ -349,6 +349,49 @@ public final class MainWindow extends JFrame implements UIReloadable {
     }
 
     /**
+     * Returns the numeric (0-based) index of the currently selected thumbnail,
+     * or -1 if nothing is currently selected.
+     *
+     * @return The numeric (0-based) index of the currently selected thumbnail, or -1 if nothing is currently selected.
+     */
+    public int getThumbnailSelectionIndex() {
+        ThumbContainerPanel thumbContainer = thumbContainerPanelMap.get(getBrowseMode());
+        return thumbContainer == null ? -1 : thumbContainer.getSelectionIndex();
+    }
+
+    /**
+     * Returns the count of thumbnails in the currently-visible thumbnail container panel.
+     * Note that this count includes thumbnails that have not yet been loaded!
+     * The count may be zero if the current directory or image set is empty.
+     *
+     * @return The count of thumbnails in the currently-visible thumbnail container panel, or 0 if empty.
+     */
+    public int getThumbnailCount() {
+        ThumbContainerPanel thumbContainer = thumbContainerPanelMap.get(getBrowseMode());
+        return thumbContainer == null ? 0 : thumbContainer.getCount();
+    }
+
+    /**
+     * Selects the thumbnail at the given index in the currently visible thumbnail container panel.
+     * If the index is out of bounds, or if there is no currently visible thumbnail container panel, this does nothing.
+     * The index is 0-based.
+     *
+     * @param index The numeric, 0-based index of the thumbnail to select.
+     * @return true if the selected index was valid and the thumbnail was selected.
+     */
+    public boolean selectThumbnailAtIndex(int index) {
+        ThumbContainerPanel thumbContainer = thumbContainerPanelMap.get(getBrowseMode());
+        if (thumbContainer == null) {
+            return false;
+        }
+        if (index < 0 || index >= thumbContainer.getCount()) {
+            return false;
+        }
+        thumbContainer.selectAtIndex(index);
+        return true;
+    }
+
+    /**
      * Kludge alert - quick access extension needs this to force the quick access
      * panel to be visible from the configure quick access destinations dialog.
      * TODO this seems very clunky and there must be a better way to do this.
@@ -544,6 +587,28 @@ public final class MainWindow extends JFrame implements UIReloadable {
     }
 
     /**
+     * Registers to receive ThumbContainerPanelEvents from all thumbnail container panels,
+     * regardless of browse mode. This is a convenience method for extensions that want to
+     * listen to thumbnail selection events but don't care about browse mode.
+     */
+    public void addThumbContainerPanelListener(ThumbContainerPanelListener listener) {
+        for (ThumbContainerPanel panel : thumbContainerPanelMap.values()) {
+            panel.addListener(listener);
+        }
+    }
+
+    /**
+     * Stops listening for ThumbContainerPanelEvents from all thumbnail container panels.
+     * This is a convenience method for extensions that want to listen to thumbnail selection events
+     * but don't care about browse mode.
+     */
+    public void removeThumbContainerPanelListener(ThumbContainerPanelListener listener) {
+        for (ThumbContainerPanel panel : thumbContainerPanelMap.values()) {
+            panel.removeListener(listener);
+        }
+    }
+
+    /**
      * Internal method to load our UI state.
      */
     private void loadUIState() {
@@ -736,7 +801,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
      * @param imagePanel The ImagePanel to wrap.
      * @return A JPanel containing the given ImagePanel and any extra extension-supplied components.
      */
-    public static JPanel buildImagePanelWrapperPanel(ImagePanel imagePanel) {
+    public static JPanel buildImagePanelWrapperPanel(JComponent imagePanel) {
         JPanel imagePanelWrapperPanel = new JPanel();
         imagePanelWrapperPanel.setLayout(new BorderLayout());
 

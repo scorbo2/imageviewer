@@ -2,6 +2,7 @@ ImageViewer Release Notes
 Author: Steve Corbett
 
 Version 3.0 [TODO] - Major release with breaking API changes
+  #108 - Add helper methods for extensions to access the thumb panel
   #105 - allow multiple extra components per position (in tabs)
   #100 - Additional extension icons
   #94 - Built-in color schemes
