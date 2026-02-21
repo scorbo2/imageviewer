@@ -57,11 +57,11 @@ public class StatusPanel extends JPanel implements UIReloadable {
 
     @Override
     public void reloadUI() {
-        setBackground(AppConfig.getInstance().getStatusPanelBackgroundColor());
-        leftWrapperPanel.setBackground(AppConfig.getInstance().getStatusPanelBackgroundColor());
-        rightWrapperPanel.setBackground(AppConfig.getInstance().getStatusPanelBackgroundColor());
-        leftLabel.setForeground(AppConfig.getInstance().getStatusPanelFontColor());
-        rightLabel.setForeground(AppConfig.getInstance().getStatusPanelFontColor());
+        setBackground(AppConfig.getInstance().getDefaultBackground());
+        leftWrapperPanel.setBackground(AppConfig.getInstance().getDefaultBackground());
+        rightWrapperPanel.setBackground(AppConfig.getInstance().getDefaultBackground());
+        leftLabel.setForeground(AppConfig.getInstance().getDefaultForeground());
+        rightLabel.setForeground(AppConfig.getInstance().getDefaultForeground());
         leftLabel.setFont(AppConfig.getInstance().getStatusPanelFont());
         rightLabel.setFont(AppConfig.getInstance().getStatusPanelFont());
 

@@ -38,6 +38,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -734,9 +735,17 @@ public final class MainWindow extends JFrame implements UIReloadable {
 
     private void reloadColors() {
         AppConfig conf = AppConfig.getInstance();
-        imagePanelProperties.setBgColor(conf.getImagePanelBackgroundColor());
-        thumbContainerPanelMap.get(BrowseMode.FILE_SYSTEM).setBackground(conf.getThumbContainerBackgroundColor());
-        thumbContainerPanelMap.get(BrowseMode.IMAGE_SET).setBackground(conf.getThumbContainerBackgroundColor());
+        dirTree.setBackground(conf.getUnselectedBackground());
+        if (dirTree.getTreeCellRenderer() instanceof DefaultTreeCellRenderer renderer) {
+            renderer.setBackgroundNonSelectionColor(conf.getUnselectedBackground());
+            renderer.setTextNonSelectionColor(conf.getUnselectedForeground());
+            renderer.setBackgroundSelectionColor(conf.getSelectedBackground());
+            renderer.setTextSelectionColor(conf.getSelectedForeground());
+            renderer.setBackground(conf.getUnselectedBackground());
+        }
+        imagePanelProperties.setBgColor(conf.getDefaultBackground());
+        thumbContainerPanelMap.get(BrowseMode.FILE_SYSTEM).setBackground(conf.getDefaultBackground());
+        thumbContainerPanelMap.get(BrowseMode.IMAGE_SET).setBackground(conf.getDefaultBackground());
         imagePanel.applyProperties(imagePanelProperties);
     }
 
