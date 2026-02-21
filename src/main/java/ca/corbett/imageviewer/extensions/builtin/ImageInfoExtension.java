@@ -9,7 +9,6 @@ import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.Version;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.ui.MainWindow;
-import ca.corbett.imageviewer.ui.ReservedKeyStrokeWorkaround;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,7 @@ public class ImageInfoExtension extends ImageViewerExtension {
 
     private final AppExtensionInfo extInfo;
 
-    private static final String HOTKEY_PROP = AppConfig.KEYSTROKE_PREFIX + "General.ImageInfo";
+    private static final String HOTKEY_PROP = AppConfig.KEYSTROKE_PREFIX + "Main window.ImageInfo";
     private static final ImageInfoAction imageInfoAction = new ImageInfoAction();
     private static final DirectoryInfoAction directoryInfoAction = new DirectoryInfoAction();
 
@@ -59,8 +58,7 @@ public class ImageInfoExtension extends ImageViewerExtension {
                                                        KeyStrokeManager.parseKeyStroke("Ctrl+I"),
                                                        imageInfoAction);
         prop.setAllowBlank(true);
-        //prop.setReservedKeyStrokes(AppConfig.RESERVED_KEYSTROKES); // TODO does not work
-        prop.addFormFieldGenerationListener(new ReservedKeyStrokeWorkaround()); // Temporary workaround
+        prop.setReservedKeyStrokes(AppConfig.RESERVED_KEYSTROKES);
         return List.of(prop);
     }
 

@@ -12,13 +12,6 @@ import java.awt.Color;
  * and ImageViewer ships with all the extra Look and Feels that come
  * for free out of the box with swing-extras.
  * </p>
- * <p>
- * Note: unfortunately, we can't change the colors of the DirTree component,
- * because it's part of the swing-extras library, and doesn't expose its
- * underlying JTree directly. That seems to be the only major UI component that
- * we can't skin with these color schemes. It's distracting, but not the end
- * of the world.
- * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 3.0
@@ -26,99 +19,80 @@ import java.awt.Color;
 public enum ColorScheme {
 
     MATRIX("Matrix",
-        new Color(0, 0, 0),  // Image panel background
-        new Color(0, 255, 0),// Thumb selected background
-        new Color(0, 50, 0), // Thumb unselected background
-        new Color(0, 0, 0),  // Thumb selected font color
-        new Color(0, 200, 0),// Thumb unselected font color
-        new Color(0, 0, 0),  // Thumb container background
-        new Color(0, 50, 0), // Status panel background
-        new Color(0, 255, 0) // Status panel font color
+           new Color(0, 0, 0),   // Default background
+           new Color(0, 255, 0), // Default foreground
+           new Color(0, 255, 0), // Selected background
+           new Color(0, 0, 0),   // Selected foreground
+           new Color(0, 50, 0),  // Unselected background
+           new Color(0, 200, 0)  // Unselected foreground
     ),
     DARK("Dark",
-        new Color(45, 45, 45),     // Image panel background
-        new Color(70, 130, 180),   // Thumb selected background
-        new Color(60, 60, 60),     // Thumb unselected background
-        new Color(255, 255, 255),  // Thumb selected font color
-        new Color(200, 200, 200),  // Thumb unselected font color
-        new Color(50, 50, 50),     // Thumb container background
-        new Color(40, 40, 40),     // Status panel background
-        new Color(220, 220, 220)   // Status panel font color
+         new Color(45, 45, 45),    // Default background
+         new Color(220, 220, 220), // Default foreground
+         new Color(70, 130, 180),  // Selected background
+         new Color(255, 255, 255), // Selected foreground
+         new Color(60, 60, 60),    // Unselected background
+         new Color(200, 200, 200)  // Unselected foreground
     ),
     VERY_DARK("Very dark",
-        new Color(25, 25, 25),   // Image panel background
-        new Color(40, 100, 150), // Thumb selected background
-        new Color(40, 40, 40),   // Thumb unselected background
-        new Color(205, 205, 205),// Thumb selected font color
-        new Color(180, 180, 180),// Thumb unselected font color
-        new Color(25, 25, 25),   // Thumb container background
-        new Color(25, 25, 25),   // Status panel background
-        new Color(205, 205, 205) // Status panel font color
+              new Color(25, 25, 25),    // Default background
+              new Color(205, 205, 205), // Default foreground
+              new Color(40, 100, 150),  // Selected background
+              new Color(205, 205, 205), // Selected foreground
+              new Color(40, 40, 40),    // Unselected background
+              new Color(180, 180, 180)  // Unselected foreground
     ),
     EXTREMELY_DARK("Extremely dark",
-        new Color(0, 0, 0),      // Image panel background
-        new Color(40, 100, 150), // Thumb selected background
-        new Color(20, 20, 20),   // Thumb unselected background
-        new Color(205, 205, 205),// Thumb selected font color
-        new Color(180, 180, 180),// Thumb unselected font color
-        new Color(0, 0, 0),      // Thumb container background
-        new Color(0, 0, 0),      // Status panel background
-        new Color(205, 205, 205) // Status panel font color
+                   new Color(0, 0, 0),       // Default background
+                   new Color(205, 205, 205), // Default foreground
+                   new Color(40, 100, 150),  // Selected background
+                   new Color(205, 205, 205), // Selected foreground
+                   new Color(20, 20, 20),    // Unselected background
+                   new Color(180, 180, 180)  // Unselected foreground
     ),
     SHADES_OF_GREY("Shades of grey",
-        new Color(45, 45, 45),   // Image panel background
-        new Color(130, 130, 130),// Thumb selected background
-        new Color(75, 75, 75),   // Thumb unselected background
-        new Color(255, 255, 255),// Thumb selected font color
-        new Color(200, 200, 200),// Thumb unselected font color
-        new Color(45, 45, 45),   // Thumb container background
-        new Color(45, 45, 45),   // Status panel background
-        new Color(200, 200, 200) // Status panel font color
+                   new Color(45, 45, 45),    // Default background
+                   new Color(200, 200, 200), // Default foreground
+                   new Color(130, 130, 130), // Selected background
+                   new Color(255, 255, 255), // Selected foreground
+                   new Color(75, 75, 75),    // Unselected background
+                   new Color(200, 200, 200)  // Unselected foreground
     ),
     GOT_THE_BLUES("Got the blues",
-        new Color(25, 25, 65),    // Image panel background
-        new Color(30, 30, 150),   // Thumb selected background
-        new Color(45, 45, 105),   // Thumb unselected background
-        new Color(205, 205, 255), // Thumb selected font color
-        new Color(100, 100, 200), // Thumb unselected font color
-        new Color(25, 25, 65),    // Thumb container background
-        new Color(25, 25, 65),    // Status panel background
-        new Color(100, 100, 200)  // Status panel font color
+                  new Color(25, 25, 65),    // Default background
+                  new Color(100, 100, 200), // Default foreground
+                  new Color(30, 30, 150),   // Selected background
+                  new Color(205, 205, 255), // Selected foreground
+                  new Color(45, 45, 105),   // Unselected background
+                  new Color(100, 100, 200)  // Unselected foreground
     ),
     HOT_DOG_STAND("Hot dog stand", // Just a joke! :D
-        new Color(155, 155, 25),  // Image panel background
-        new Color(155, 40, 50),   // Thumb selected background
-        new Color(165, 75, 5),    // Thumb unselected background
-        new Color(205, 205, 255), // Thumb selected font color
-        new Color(225, 75, 75),   // Thumb unselected font color
-        new Color(155, 155, 25),  // Thumb container background
-        new Color(155, 155, 25),  // Status panel background
-        new Color(200, 200, 200)  // Status panel font color
+                  new Color(155, 155, 25),  // Default background
+                  new Color(200, 200, 200), // Default foreground
+                  new Color(155, 40, 50),   // Selected background
+                  new Color(205, 205, 255), // Selected foreground
+                  new Color(165, 75, 5),    // Unselected background
+                  new Color(225, 75, 75)    // Unselected foreground
     );
 
     private final String label;
-    private final Color imagePanelBgColor;
-    private final Color thumbSelectedBgColor;
-    private final Color thumbUnselectedBgColor;
-    private final Color thumbSelectedFontColor;
-    private final Color thumbUnselectedFontColor;
-    private final Color thumbContainerBgColor;
-    private final Color statusPanelBgColor;
-    private final Color statusPanelFontColor;
+    private final Color defaultBackground;
+    private final Color defaultForeground;
+    private final Color selectedBackground;
+    private final Color selectedForeground;
+    private final Color unselectedBackground;
+    private final Color unselectedForeground;
 
-    ColorScheme(String label, Color imagePanelBg, Color thumbSelectedBg, Color thumbUnselectedBg,
-                Color thumbSelectedFont, Color thumbUnselectedFont,
-                Color thumbContainerBg, Color statusPanelBg,
-                Color statusPanelFont) {
+    ColorScheme(String label, Color defaultBackground, Color defaultForeground,
+                Color selectedBackground, Color selectedForeground,
+                Color unselectedBackground, Color unselectedForeground) {
         this.label = label;
-        imagePanelBgColor = imagePanelBg;
-        thumbSelectedBgColor = thumbSelectedBg;
-        thumbUnselectedBgColor = thumbUnselectedBg;
-        thumbSelectedFontColor = thumbSelectedFont;
-        thumbUnselectedFontColor = thumbUnselectedFont;
-        thumbContainerBgColor = thumbContainerBg;
-        statusPanelBgColor = statusPanelBg;
-        statusPanelFontColor = statusPanelFont;
+        this.defaultBackground = defaultBackground;
+        this.defaultForeground = defaultForeground;
+        this.unselectedBackground = unselectedBackground;
+        this.unselectedForeground = unselectedForeground;
+        this.selectedBackground = selectedBackground;
+        this.selectedForeground = selectedForeground;
     }
 
     @Override
@@ -126,35 +100,27 @@ public enum ColorScheme {
         return label;
     }
 
-    public Color getImagePanelBgColor() {
-        return imagePanelBgColor;
+    public Color getDefaultBackground() {
+        return defaultBackground;
     }
 
-    public Color getThumbSelectedBgColor() {
-        return thumbSelectedBgColor;
+    public Color getDefaultForeground() {
+        return defaultForeground;
     }
 
-    public Color getThumbUnselectedBgColor() {
-        return thumbUnselectedBgColor;
+    public Color getSelectedBackground() {
+        return selectedBackground;
     }
 
-    public Color getThumbSelectedFontColor() {
-        return thumbSelectedFontColor;
+    public Color getSelectedForeground() {
+        return selectedForeground;
     }
 
-    public Color getThumbUnselectedFontColor() {
-        return thumbUnselectedFontColor;
+    public Color getUnselectedBackground() {
+        return unselectedBackground;
     }
 
-    public Color getThumbContainerBgColor() {
-        return thumbContainerBgColor;
-    }
-
-    public Color getStatusPanelBgColor() {
-        return statusPanelBgColor;
-    }
-
-    public Color getStatusPanelFontColor() {
-        return statusPanelFontColor;
+    public Color getUnselectedForeground() {
+        return unselectedForeground;
     }
 }

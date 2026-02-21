@@ -8,7 +8,6 @@ import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.Version;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.ui.MainWindow;
-import ca.corbett.imageviewer.ui.ReservedKeyStrokeWorkaround;
 
 import javax.swing.KeyStroke;
 import java.awt.event.InputEvent;
@@ -67,8 +66,7 @@ public class RepeatUndoExtension extends ImageViewerExtension {
                                                        KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK),
                                                        repeatAction);
         prop.setAllowBlank(true);
-        //prop.setReservedKeyStrokes(AppConfig.RESERVED_KEYSTROKES); // TODO does not work
-        prop.addFormFieldGenerationListener(new ReservedKeyStrokeWorkaround()); // Temporary workaround
+        prop.setReservedKeyStrokes(AppConfig.RESERVED_KEYSTROKES);
         props.add(prop);
 
         prop = new KeyStrokeProperty(UNDO_PROP,
@@ -76,8 +74,7 @@ public class RepeatUndoExtension extends ImageViewerExtension {
                                      KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK),
                                      undoAction);
         prop.setAllowBlank(true);
-        //prop.setReservedKeyStrokes(AppConfig.RESERVED_KEYSTROKES); // TODO does not work
-        prop.addFormFieldGenerationListener(new ReservedKeyStrokeWorkaround()); // Temporary workaround
+        prop.setReservedKeyStrokes(AppConfig.RESERVED_KEYSTROKES);
         props.add(prop);
 
         return props;

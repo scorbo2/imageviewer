@@ -115,7 +115,7 @@ public class ThumbPanel extends JPanel {
         panelConfig.setRenderingQuality(ImagePanelConfig.Quality.QUICK_AND_DIRTY);
         panelConfig.setDisplayMode(ImagePanelConfig.DisplayMode.CENTER);
         panelConfig.setBgColor(LookAndFeelManager.getLafColor("Button.background", Color.LIGHT_GRAY));
-        panelConfig.setBgColor(AppConfig.getInstance().getThumbPanelUnselectedBackgroundColor());
+        panelConfig.setBgColor(AppConfig.getInstance().getUnselectedBackground());
         setBackground(panelConfig.getBgColor());
         setPreferredSize(new Dimension(width, height));
 
@@ -144,7 +144,7 @@ public class ThumbPanel extends JPanel {
         // it's smart enough to do this itself. The JLabel below is not so smart.
         imageLabel = new JLabel(title, JLabel.CENTER);
         imageLabel.setFont(AppConfig.getInstance().getThumbPanelFont());
-        imageLabel.setForeground(AppConfig.getInstance().getThumbPanelUnselectedFontColor());
+        imageLabel.setForeground(AppConfig.getInstance().getUnselectedForeground());
         imageLabel.addMouseListener(new RedispatchingMouseAdapter());
         imageLabel.addMouseWheelListener(new RedispatchingMouseAdapter());
         imageLabel.addMouseMotionListener(new RedispatchingMouseAdapter());
@@ -169,16 +169,16 @@ public class ThumbPanel extends JPanel {
 
         this.isSelected = selected;
         if (isSelected) {
-            Color selectedBg = AppConfig.getInstance().getThumbPanelSelectedBackgroundColor();
+            Color selectedBg = AppConfig.getInstance().getSelectedBackground();
             setBackground(selectedBg);
             imagePanel.setBackground(selectedBg);
-            imageLabel.setForeground(AppConfig.getInstance().getThumbPanelSelectedFontColor());
+            imageLabel.setForeground(AppConfig.getInstance().getSelectedForeground());
         }
         else {
-            Color bg = AppConfig.getInstance().getThumbPanelUnselectedBackgroundColor();
+            Color bg = AppConfig.getInstance().getUnselectedBackground();
             setBackground(bg);
             imagePanel.setBackground(bg);
-            imageLabel.setForeground(AppConfig.getInstance().getThumbPanelUnselectedFontColor());
+            imageLabel.setForeground(AppConfig.getInstance().getUnselectedForeground());
         }
         ImageViewerExtensionManager.getInstance().thumbPanelSelectionChanged(this, isSelected);
         repaint();
