@@ -46,6 +46,7 @@ import com.formdev.flatlaf.FlatDarkLaf;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
 import java.io.File;
@@ -195,8 +196,12 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
      */
     @Override
     public void propertiesDialogCreated(PropertiesDialog dialog) {
+        dialog.setSize(800, 600); // a bit bigger than the default size
+        dialog.setMinimumSize(new Dimension(600, 500)); // ditto
+
         if (dialog instanceof ActionPanelPropertiesDialog actionPanelDialog) {
             ActionPanel actionPanel = actionPanelDialog.getActionPanel();
+            actionPanel.getActionTrayMargins().setLeft(6).setRight(6); // bit of horizontal padding
 
             // There are a crazy amount of customization options for ActionPanel.
             // For example, we can change color options:
