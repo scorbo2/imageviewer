@@ -626,9 +626,14 @@ public final class MainWindow extends JFrame implements UIReloadable {
         }
         dirTree.selectAndScrollTo(effectiveStartupDir); // okay if null
 
-        reloadColors();
-        setZoomFactorIncrement(prefs.getImagePanelZoomIncrement());
-        setAutoBestFit(prefs.getImagePanelAutoBestFit());
+        // Don't go through our setters as they will each apply the properties immediately.
+        // We can cut down on churn by updating the imagePanelProperties directly, then applying it once.
+        imagePanelProperties.setZoomFactorIncrement(prefs.getImagePanelZoomIncrement());
+        imagePanelProperties.setDisplayMode(prefs.getImagePanelAutoBestFit()
+                                                    ? ImagePanelConfig.DisplayMode.BEST_FIT
+                                                    : ImagePanelConfig.DisplayMode.NONE);
+        reloadColors(false);
+        imagePanel.applyProperties(imagePanelProperties);
     }
 
     /**
@@ -728,16 +733,24 @@ public final class MainWindow extends JFrame implements UIReloadable {
         // Re-initialize keyboard shortcuts:
         configureKeyStrokes();
 
-        // Re-set image panel properties that may have changed:
-        setZoomFactorIncrement(AppConfig.getInstance().getImagePanelZoomIncrement());
-        setAutoBestFit(AppConfig.getInstance().getImagePanelAutoBestFit());
-
-        reloadColors();
+        // Re-set image panel properties that may have changed.
+        // Don't go through our setters as they will each apply the properties immediately.
+        // We can cut down on churn by updating the imagePanelProperties directly, then applying it once.
+        imagePanelProperties.setZoomFactorIncrement(AppConfig.getInstance().getImagePanelZoomIncrement());
+        imagePanelProperties.setDisplayMode(AppConfig.getInstance().getImagePanelAutoBestFit()
+                                                    ? ImagePanelConfig.DisplayMode.BEST_FIT
+                                                    : ImagePanelConfig.DisplayMode.NONE);
+        reloadColors(false);
+        imagePanel.applyProperties(imagePanelProperties);
 
         reload(true);
     }
 
     private void reloadColors() {
+        reloadColors(true);
+    }
+
+    private void reloadColors(boolean applyImmediately) {
         AppConfig conf = AppConfig.getInstance();
         dirTree.setBackground(conf.getUnselectedBackground());
         if (dirTree.getTreeCellRenderer() instanceof DefaultTreeCellRenderer renderer) {
@@ -750,7 +763,9 @@ public final class MainWindow extends JFrame implements UIReloadable {
         imagePanelProperties.setBgColor(conf.getDefaultBackground());
         thumbContainerPanelMap.get(BrowseMode.FILE_SYSTEM).setBackground(conf.getDefaultBackground());
         thumbContainerPanelMap.get(BrowseMode.IMAGE_SET).setBackground(conf.getDefaultBackground());
-        imagePanel.applyProperties(imagePanelProperties);
+        if (applyImmediately) {
+            imagePanel.applyProperties(imagePanelProperties);
+        }
     }
 
     /**
