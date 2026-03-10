@@ -728,6 +728,10 @@ public final class MainWindow extends JFrame implements UIReloadable {
         // Re-initialize keyboard shortcuts:
         configureKeyStrokes();
 
+        // Re-set image panel properties that may have changed:
+        setZoomFactorIncrement(AppConfig.getInstance().getImagePanelZoomIncrement());
+        setAutoBestFit(AppConfig.getInstance().getImagePanelAutoBestFit());
+
         reloadColors();
 
         reload(true);
@@ -875,7 +879,12 @@ public final class MainWindow extends JFrame implements UIReloadable {
     }
 
     public void setAutoBestFit(boolean bestFit) {
-        imagePanelProperties.setDisplayMode(ImagePanelConfig.DisplayMode.BEST_FIT);
+        if (bestFit) {
+            imagePanelProperties.setDisplayMode(ImagePanelConfig.DisplayMode.BEST_FIT);
+        }
+        else {
+            imagePanelProperties.setDisplayMode(ImagePanelConfig.DisplayMode.NONE);
+        }
         imagePanel.applyProperties(imagePanelProperties);
     }
 
