@@ -416,7 +416,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
         setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
 
         dirTree = new DirTree();
-        dirTree.setShowHiddenDirs(AppConfig.getInstance().getShowHiddenDirectories());
+        dirTree.setShowHidden(AppConfig.getInstance().getShowHiddenDirectories());
         dirTree.setMinimumSize(new Dimension(180, 100));
         dirTree.setPreferredSize(new Dimension(180, 200));
         dirTree.addDirTreeListener(dirTreeChangeListener);
@@ -643,7 +643,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
         prefs.setMainSplitPanePosition(mainSplitPane.getDividerLocation());
         prefs.setMainWindowWidth(this.getWidth());
         prefs.setMainWindowHeight(this.getHeight());
-        prefs.setShowHiddenDirectories(dirTree.getShowHiddenDirs());
+        prefs.setShowHiddenDirectories(dirTree.getShowHidden());
 
         // Only save lock dir and current dir if we were NOT given a startup
         // directory on the command line. Otherwise, our settings were transient.
@@ -1079,6 +1079,11 @@ public final class MainWindow extends JFrame implements UIReloadable {
 
         @Override
         public void treeUnlocked(DirTree source) {
+        }
+
+        @Override
+        public void fileDoubleClicked(DirTree source, File clickedFile) {
+            // Ignored - we don't show files in our DirTree
         }
     }
 
