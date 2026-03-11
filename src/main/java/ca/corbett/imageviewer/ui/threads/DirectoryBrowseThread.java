@@ -120,6 +120,7 @@ public class DirectoryBrowseThread extends SimpleProgressWorker {
         // doesn't have a mechanism to discover the size of the file
         // list in advance. So, we end up just showing an indeterminate
         // progress dialog. Better than nothing, I guess.
+        // We'll just report that we're on step 0 for every file found.
         if (!fireProgressUpdate(0, file.getName()) || isCanceled) {
             // User or caller canceled! We're done here.
             stop(); // set canceled flag if it wasn't already set

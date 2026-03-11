@@ -279,6 +279,7 @@ public final class ThumbContainerPanel extends JPanel {
         });
         MultiProgressDialog dialog = new MultiProgressDialog(MainWindow.getInstance(), "Scanning...");
         dialog.setInitialShowDelayMS(500); // don't show the dialog for very fast searches
+        dialog.setFormatString("%m"); // Just show the progress message, not the step count. (step count is unknown)
         dialog.runWorker(browseThread, true);
     }
 
