@@ -60,7 +60,7 @@ public class DirectoryBrowseThread extends SimpleProgressWorker {
     /**
      * Creates a DirectoryBrowseThread for the given directory.
      * The supplied directory must be a valid existing directory.
-     * The supplied ownerPanel will be notified of our search results.
+     * The supplied Callback will be notified of our search results.
      *
      * @param directory the directory to scan for image files
      * @param callback  the callback to be notified of search results upon completion
@@ -85,10 +85,11 @@ public class DirectoryBrowseThread extends SimpleProgressWorker {
         // Fire progress begins with a dummy step count, just to get the dialog up.
         fireProgressBegins(1);
         FileSystemUtil.findFiles(directory, false, this::fileFound);
-        fireProgressComplete(); // close the progress dialog
 
         // Only notify the Callback if we weren't canceled:
         if (!isCanceled) {
+            fireProgressComplete(); // close the progress dialog
+
             // Sort while we're still on the worker thread:
             FileSystemUtil.sortFiles(images);
             FileSystemUtil.sortFiles(aliens);
@@ -96,10 +97,15 @@ public class DirectoryBrowseThread extends SimpleProgressWorker {
             // Now notify our Callback on the EDT:
             SwingUtilities.invokeLater(() -> callback.onBrowseComplete(this, images, aliens));
         }
+
+        else {
+            // We were canceled, so just fire the canceled event to close the dialog.
+            fireProgressCanceled();
+        }
     }
 
     /**
-     * Invoke this to abort a search in progress. The callback will be invoked with results so far.
+     * Invoke this to abort a search in progress. The callback will NOT be invoked.
      */
     public void stop() {
         isCanceled = true;
@@ -109,11 +115,11 @@ public class DirectoryBrowseThread extends SimpleProgressWorker {
      * Invoked as the search progresses, once for each file found.
      * Here we'll filter the raw list into images and aliens.
      * If the user cancels via the progress dialog, or if the caller
-     * cancels via our stop() method, the search will stop immediately
-     * and report results so far.
+     * cancels via our stop() method, the search will stop immediately.
+     * No results will be reported.
      *
      * @param file the most recently found File during the search.
-     * @return true to continue with the search, false to abort it and report results so far.
+     * @return true to continue with the search, false to abort it.
      */
     private boolean fileFound(File file) {
         // I want to show a proper progress dialog, but FileSystemUtil
@@ -124,7 +130,6 @@ public class DirectoryBrowseThread extends SimpleProgressWorker {
         if (!fireProgressUpdate(0, file.getName()) || isCanceled) {
             // User or caller canceled! We're done here.
             stop(); // set canceled flag if it wasn't already set
-            fireProgressCanceled();
             return false;
         }
 
