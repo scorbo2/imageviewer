@@ -261,9 +261,9 @@ public final class ThumbContainerPanel extends JPanel {
     public void setDirectory(File dir) {
         currentDir = dir;
         if (dir == null) {
-            clear();
             return;
         }
+        clear(); // nuke any stale data.
 
         // If we're already browsing, stop that thread before starting a new one:
         if (browseThread != null) {
