@@ -2,11 +2,13 @@ package ca.corbett.imageviewer.ui;
 
 import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.io.FileSystemUtil;
+import ca.corbett.extras.progress.MultiProgressDialog;
 import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.dialogs.AlienDialog;
 import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 import ca.corbett.imageviewer.ui.layout.WrapLayout;
+import ca.corbett.imageviewer.ui.threads.DirectoryBrowseThread;
 import ca.corbett.imageviewer.ui.threads.ThumbLoaderThread;
 
 import javax.swing.BorderFactory;
@@ -41,6 +43,7 @@ public final class ThumbContainerPanel extends JPanel {
     private List<File> imageFileList;
     private List<File> alienFileList;
     private File currentDir;
+    private DirectoryBrowseThread browseThread;
     private final List<ThumbPanel> loadedThumbPanels;
     private int selectedPanelIndex;
     private int loadOffset;
@@ -66,6 +69,7 @@ public final class ThumbContainerPanel extends JPanel {
         alienFileList = new ArrayList<>();
         listeners = new ArrayList<>();
         loadedThumbPanels = new ArrayList<>();
+        browseThread = null;
         selectedPanelIndex = -1;
         thumbWidth = thumbHeight = AppConfig.getInstance().getThumbnailSize();
         this.browseMode = browseMode;
@@ -175,7 +179,7 @@ public final class ThumbContainerPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 AlienDialog.getInstance().setDirectory(currentDir);
                 AlienDialog.getInstance().setVisible(true);
-                alienFileList = findAlienFiles(currentDir);
+                alienFileList = findAlienFiles(currentDir); // refreshes after dialog, user may have deleted some.
                 addAlienControl(); // will hide if no longer needed.
             }
 
@@ -257,14 +261,32 @@ public final class ThumbContainerPanel extends JPanel {
     public void setDirectory(File dir) {
         currentDir = dir;
         if (dir == null) {
-            clear();
             return;
         }
-        setImageList(FileSystemUtil.findFiles(dir, false)
-                                   .stream()
-                                   .filter(f -> ImageUtil.isImageFile(f))
-                                   .toList());
-        alienFileList = findAlienFiles(dir);
+        clear(); // nuke any stale data.
+
+        // If we're already browsing, stop that thread before starting a new one:
+        if (browseThread != null) {
+            browseThread.stop();
+        }
+
+        // Browse this directory in a worker thread, so we don't block the UI for large directories.
+        browseThread = new DirectoryBrowseThread(dir, (thread, images, aliens) -> {
+            if (thread != browseThread) {
+                // User might be clicking around super fast.
+                // Ignore this callback if it's from an old thread that we already replaced with a new one.
+                return;
+            }
+
+            // This callback is invoked on the EDT, so we're good to update the UI:
+            alienFileList = aliens; // update this first as it's needed by setImageList() (indirectly, via loadMore)
+            setImageList(images);
+            browseThread = null;
+        });
+        MultiProgressDialog dialog = new MultiProgressDialog(MainWindow.getInstance(), "Scanning...");
+        dialog.setInitialShowDelayMS(500); // don't show the dialog for very fast searches
+        dialog.setFormatString("%m"); // Just show the progress message, not the step count. (step count is unknown)
+        dialog.runWorker(browseThread, true);
     }
 
     public void setImageSet(ImageSet imageSet) {
