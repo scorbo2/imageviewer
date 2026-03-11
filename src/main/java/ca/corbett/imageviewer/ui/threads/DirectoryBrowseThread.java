@@ -92,11 +92,12 @@ public class DirectoryBrowseThread extends SimpleProgressWorker {
         finally {
             // Only notify the Callback if we weren't canceled:
             if (!isCanceled) {
-                fireProgressComplete(); // close the progress dialog
-
                 // Sort while we're still on the worker thread:
                 FileSystemUtil.sortFiles(images);
                 FileSystemUtil.sortFiles(aliens);
+
+                // Close the progress dialog:
+                fireProgressComplete();
 
                 // Now notify our Callback on the EDT:
                 SwingUtilities.invokeLater(() -> callback.onBrowseComplete(this, images, aliens));
