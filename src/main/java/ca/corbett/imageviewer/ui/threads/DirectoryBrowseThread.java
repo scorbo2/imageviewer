@@ -122,6 +122,7 @@ public class DirectoryBrowseThread extends SimpleProgressWorker {
         // progress dialog. Better than nothing, I guess.
         if (!fireProgressUpdate(0, file.getName()) || isCanceled) {
             // User or caller canceled! We're done here.
+            stop(); // set canceled flag if it wasn't already set
             fireProgressCanceled();
             return false;
         }
