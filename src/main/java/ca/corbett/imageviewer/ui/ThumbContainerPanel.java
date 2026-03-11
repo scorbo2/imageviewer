@@ -273,8 +273,8 @@ public final class ThumbContainerPanel extends JPanel {
         // Browse this directory in a worker thread, so we don't block the UI for large directories.
         browseThread = new DirectoryBrowseThread(dir, (directory, images, aliens) -> {
             // This callback is invoked on the EDT, so we're good to update the UI:
+            alienFileList = aliens; // update this first as it's needed by setImageList() (indirectly, via loadMore)
             setImageList(images);
-            alienFileList = aliens;
             browseThread = null;
         });
         MultiProgressDialog dialog = new MultiProgressDialog(MainWindow.getInstance(), "Scanning...");

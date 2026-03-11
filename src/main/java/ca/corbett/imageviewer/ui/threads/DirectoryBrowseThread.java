@@ -84,23 +84,28 @@ public class DirectoryBrowseThread extends SimpleProgressWorker {
     public void run() {
         // Fire progress begins with a dummy step count, just to get the dialog up.
         fireProgressBegins(1);
-        FileSystemUtil.findFiles(directory, false, this::fileFound);
 
-        // Only notify the Callback if we weren't canceled:
-        if (!isCanceled) {
-            fireProgressComplete(); // close the progress dialog
-
-            // Sort while we're still on the worker thread:
-            FileSystemUtil.sortFiles(images);
-            FileSystemUtil.sortFiles(aliens);
-
-            // Now notify our Callback on the EDT:
-            SwingUtilities.invokeLater(() -> callback.onBrowseComplete(this, images, aliens));
+        try {
+            FileSystemUtil.findFiles(directory, false, this::fileFound);
         }
 
-        else {
-            // We were canceled, so just fire the canceled event to close the dialog.
-            fireProgressCanceled();
+        finally {
+            // Only notify the Callback if we weren't canceled:
+            if (!isCanceled) {
+                fireProgressComplete(); // close the progress dialog
+
+                // Sort while we're still on the worker thread:
+                FileSystemUtil.sortFiles(images);
+                FileSystemUtil.sortFiles(aliens);
+
+                // Now notify our Callback on the EDT:
+                SwingUtilities.invokeLater(() -> callback.onBrowseComplete(this, images, aliens));
+            }
+
+            else {
+                // We were canceled, so just fire the canceled event to close the dialog.
+                fireProgressCanceled();
+            }
         }
     }
 
