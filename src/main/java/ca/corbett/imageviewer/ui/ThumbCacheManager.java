@@ -56,9 +56,9 @@ public final class ThumbCacheManager {
      * An immutable data class to represent thumbnail cache statistics.
      */
     public static class CacheStats {
-        private int thumbnailCount;
-        private int fileCount;
-        private long totalSize;
+        private final int thumbnailCount;
+        private final int fileCount;
+        private final long totalSize;
 
         public CacheStats(int thumbCount, int fileCount, long totalSize) {
             this.thumbnailCount = thumbCount;
