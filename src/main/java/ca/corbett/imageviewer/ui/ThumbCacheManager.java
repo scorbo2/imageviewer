@@ -247,9 +247,9 @@ public final class ThumbCacheManager {
     }
 
     /**
-     * If the log size exceeds the configured threshold, emit a log warning
+     * If the thumbnail cache size exceeds the configured warning threshold, emit a log warning
      * about it. The user can then manually empty the cache if they wish,
-     * or change the threshold in preference.
+     * or change the threshold in preferences.
      * <p>
      * If the thumbnail cache is disabled in preferences, or if the
      * warning threshold is set to 0, then this method does nothing.
