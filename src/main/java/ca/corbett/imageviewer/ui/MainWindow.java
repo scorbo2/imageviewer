@@ -184,6 +184,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
             LogConsoleManager.setCustomTheme();
 
             instance.imageSetManager.load();
+            ThumbCacheManager.emitWarningIfNecessary(); // starts a background thread to check cache size
 
             ReloadUIAction.getInstance().registerReloadable(instance);
         }
