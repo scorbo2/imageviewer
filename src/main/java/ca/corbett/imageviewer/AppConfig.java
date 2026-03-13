@@ -155,6 +155,7 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
     private EnumProperty<ThumbSize> thumbSizeProp;
     private EnumProperty<ThumbPageSize> thumbPageSizeProp;
     private BooleanProperty thumbCacheEnabledProp;
+    private IntegerProperty thumbCacheSizeWarningProp;
 
     private ComboProperty<String> imageSetSaveLocation;
     private DirectoryProperty imageSetSaveLocationOverride;
@@ -438,6 +439,15 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
 
     public boolean isThumbCacheEnabled() {
         return thumbCacheEnabledProp.getValue();
+    }
+
+    /**
+     * Gets the size (in bytes) at which a log warning should be emitted
+     * because the thumbnail cache is getting too large. A value
+     * of zero disables the warning.
+     */
+    public long getThumbCacheSizeWarningThreshold() {
+        return thumbCacheSizeWarningProp.getValue() * 1024L * 1024L; // convert from MB to bytes
     }
 
     public File getImageSetSaveLocation() {
@@ -900,10 +910,10 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
      */
     private List<AbstractProperty> buildThumbnailProps() {
         List<AbstractProperty> list = new ArrayList<>();
-        thumbSizeProp = new EnumProperty<>("Thumbnails.Thumbnail options.thumbSize", "Thumb size", ThumbSize.Normal);
+        thumbSizeProp = new EnumProperty<>("Thumbnails.Thumbnail options.thumbSize", "Thumb size:", ThumbSize.Normal);
         list.add(thumbSizeProp);
 
-        thumbPageSizeProp = new EnumProperty<>("Thumbnails.Thumbnail options.pageSize", "Page size",
+        thumbPageSizeProp = new EnumProperty<>("Thumbnails.Thumbnail options.pageSize", "Page size:",
                                                ThumbPageSize.Normal);
         list.add(thumbPageSizeProp);
 
@@ -920,6 +930,14 @@ public class AppConfig extends AppProperties<ImageViewerExtension> {
                                                 ThumbCacheManager.CACHE_DIR.getAbsolutePath());
         label.setFieldLabelText("Cache dir:");
         list.add(label);
+
+        // There is currently no automatic cache eviction mechanism or max size limit,
+        // but we can at least offer a warning option if it starts to get too large:
+        thumbCacheSizeWarningProp = new IntegerProperty("Thumbnails.Thumbnail caching.sizeWarningThreshold",
+                                                        "Warning (MB):", 128, 0, 4096, 32);
+        thumbCacheSizeWarningProp.setHelpText("<html>If the cache exceeds this size, a warning will be logged. " +
+                                                      "<br>Set to 0 to disable the warning.</html>");
+        list.add(thumbCacheSizeWarningProp);
 
         return list;
     }

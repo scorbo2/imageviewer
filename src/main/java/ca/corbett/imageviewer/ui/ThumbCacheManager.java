@@ -52,10 +52,31 @@ public final class ThumbCacheManager {
         CACHE_DIR.mkdirs();
     }
 
+    /**
+     * An immutable data class to represent thumbnail cache statistics.
+     */
     public static class CacheStats {
-        int thumbnailCount;
-        int fileCount;
-        long totalSize;
+        private final int thumbnailCount;
+        private final int fileCount;
+        private final long totalSize;
+
+        public CacheStats(int thumbCount, int fileCount, long totalSize) {
+            this.thumbnailCount = thumbCount;
+            this.fileCount = fileCount;
+            this.totalSize = totalSize;
+        }
+
+        public int getThumbnailCount() {
+            return thumbnailCount;
+        }
+
+        public int getFileCount() {
+            return fileCount;
+        }
+
+        public long getTotalSize() {
+            return totalSize;
+        }
 
         @Override
         public String toString() {
@@ -69,19 +90,20 @@ public final class ThumbCacheManager {
 
     /**
      * Creates and returns a CacheStats object describing current cache statistics.
-     * This may take a while to execute depending on cache size;
+     * This may take a while to execute depending on cache size, so you likely want
+     * to invoke this method from a worker thread.
      *
      * @return A populated CacheStats object.
      */
     public static CacheStats gatherCacheStats() {
-        CacheStats stats = new CacheStats();
         List<File> list = FileSystemUtil.findFiles(CACHE_DIR, true, "jpg");
-        stats.fileCount = list.size();
-        stats.thumbnailCount = list.size() / AppConfig.ThumbSize.values().length;
+        int fileCount = list.size();
+        int thumbnailCount = list.size() / AppConfig.ThumbSize.values().length;
+        long totalSize = 0;
         for (File f : list) {
-            stats.totalSize += f.length();
+            totalSize += f.length();
         }
-        return stats;
+        return new CacheStats(thumbnailCount, fileCount, totalSize);
     }
 
     /**
@@ -222,6 +244,48 @@ public final class ThumbCacheManager {
      */
     public static void copy(File srcFile, File destFile) {
         copy(srcFile, destFile, false);
+    }
+
+    /**
+     * If the thumbnail cache size exceeds the configured warning threshold, emit a log warning
+     * about it. The user can then manually empty the cache if they wish,
+     * or change the threshold in preferences.
+     * <p>
+     * If the thumbnail cache is disabled in preferences, or if the
+     * warning threshold is set to 0, then this method does nothing.
+     * </p>
+     */
+    public static void emitWarningIfNecessary() {
+        if (!AppConfig.getInstance().isThumbCacheEnabled()) {
+            return; // Don't warn if caching is disabled.
+        }
+        final long threshold = AppConfig.getInstance().getThumbCacheSizeWarningThreshold();
+        if (threshold <= 0) {
+            return; // 0 means "don't warn me about this"
+        }
+
+        // Fire off a background thread for this, so we don't block the UI:
+        new Thread(() -> {
+            try {
+                CacheStats stats = gatherCacheStats();
+                if (stats.getTotalSize() > threshold) {
+                    logger.warning("Thumbnail cache size of "
+                                           + FileSystemUtil.getPrintableSize(stats.getTotalSize())
+                                           + " exceeds configured warning threshold of "
+                                           + FileSystemUtil.getPrintableSize(threshold)
+                                           + ". You can clear the cache in the cache stats dialog.");
+                }
+                else {
+                    logger.log(Level.INFO,
+                               "Thumbnail cache size of {0} is within configured warning threshold of {1}.",
+                               new Object[]{FileSystemUtil.getPrintableSize(stats.getTotalSize()),
+                                       FileSystemUtil.getPrintableSize(threshold)});
+                }
+            }
+            catch (Exception e) {
+                logger.log(Level.SEVERE, "Unable to check thumbnail cache size against warning threshold.", e);
+            }
+        }, "ThumbCacheWarningCheck").start();
     }
 
     /**
