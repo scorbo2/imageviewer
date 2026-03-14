@@ -16,9 +16,8 @@ An installer tarball is available for linux-based systems. Just download, extrac
 the installer script to install the application:
 
 - [http://www.corbett.ca/apps/ImageViewer-3.0.tar.gz](http://www.corbett.ca/apps/ImageViewer-3.0.tar.gz)
-- TODO filesize
-- SHA-1: `TODO`
-- SHA-256: `TODO`
+- Size: 20MB
+- SHA-256: `3e2f02c1578220f2fccd5f841201f7907d4f26805de3b42c9c9fcb5a30836496`
 
 Alternatively, you can clone this repo and build it with Maven (Java 17 or higher required):
 
