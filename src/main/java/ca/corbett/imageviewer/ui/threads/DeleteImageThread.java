@@ -6,6 +6,7 @@ import ca.corbett.imageviewer.ImageOperation;
 import ca.corbett.imageviewer.ImageOperationHandler;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
+import ca.corbett.imageviewer.ui.ThumbCacheManager;
 import org.apache.commons.io.FileUtils;
 
 import javax.swing.ProgressMonitor;
@@ -110,6 +111,8 @@ public final class DeleteImageThread implements Runnable {
                         logger.log(Level.INFO, "deleteImage: {0}", file.getAbsolutePath());
                         okay = okay && file.delete();
                         if (okay) {
+                            ThumbCacheManager.postImageOperation(ImageOperation.Type.DELETE, file, null);
+
                             // Note: extensions may do stuff like delete companion files, which may confuse us
                             // when we go to delete a file that has already been deleted by an extension.
                             // It's okay, as the call to deleteDirectory() down below ensures that we
@@ -190,6 +193,7 @@ public final class DeleteImageThread implements Runnable {
                 logger.log(Level.INFO, "deleteImage: {0}", file.getAbsolutePath());
                 okay = okay && file.delete();
                 if (okay) {
+                    ThumbCacheManager.postImageOperation(ImageOperation.Type.DELETE, file, null);
                     ImageViewerExtensionManager
                             .getInstance()
                             .postImageOperation(ImageOperation.Type.DELETE, file, null);

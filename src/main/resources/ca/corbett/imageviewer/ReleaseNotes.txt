@@ -1,6 +1,27 @@
 ImageViewer Release Notes
 Author: Steve Corbett
 
+Version 3.0 [2026-03-13] - Major release with breaking API changes
+  #114 - Optional log warning when thumb cache gets too big
+  #112 - Improve UI performance when browsing large directories
+  #108 - Add helper methods for extensions to access the thumb panel
+  #107 - Upgrade to swing-extras 2.8
+  #105 - allow multiple extra components per position (in tabs)
+  #102 - Bug: fix "auto-best-fit" option
+  #100 - Additional extension icons
+  #94 - Built-in color schemes
+  #90 - Workaround for bug in KeyStrokeProperty
+  #85 - Promote ThumbCacheExtension to ThumbCacheManager
+  #84 - Custom color override options
+  #83 - Remove unused extension point: buildDirTree
+  #82 - Clean up icon resource handling app-wide
+  #80 - Remove KeyboardManager; use KeyStrokeManager instead
+  #76 - Upgrade to swing-extras 2.7
+  #75 - ImageSet: add "delete source image" option
+  #74 - Ensure image thumbnails are disposed properly
+  #72 - Clean up commandline handling
+  #66 - Alien handling: clean up code a bit
+
 Version 2.4 [2025-12-31] - Maintenance release
   #69 - Fix NullPointerException in AlienDialog
   #64 - Add "view as text" option on alien dialog

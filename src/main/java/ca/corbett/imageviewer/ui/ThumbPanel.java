@@ -47,16 +47,7 @@ public class ThumbPanel extends JPanel {
     private String title;
     private int width;
     private int height;
-    private static final ImagePanelConfig PROPS;
     private final Map<String, Object> extraProperties;
-
-    // Set up image panel props once to save a bit of memory.
-    static {
-        PROPS = ImagePanelConfig.createSimpleReadOnlyProperties();
-        PROPS.setRenderingQuality(ImagePanelConfig.Quality.QUICK_AND_DIRTY);
-        PROPS.setDisplayMode(ImagePanelConfig.DisplayMode.CENTER);
-        PROPS.setBgColor(LookAndFeelManager.getLafColor("Button.background", Color.LIGHT_GRAY));
-    }
 
     /**
      * To construct, supply the File handle on the image in question, an optional title
@@ -120,7 +111,12 @@ public class ThumbPanel extends JPanel {
     private void initComponents() {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-        setBackground(LookAndFeelManager.getLafColor("Button.background", Color.LIGHT_GRAY));
+        ImagePanelConfig panelConfig = ImagePanelConfig.createSimpleReadOnlyProperties();
+        panelConfig.setRenderingQuality(ImagePanelConfig.Quality.QUICK_AND_DIRTY);
+        panelConfig.setDisplayMode(ImagePanelConfig.DisplayMode.CENTER);
+        panelConfig.setBgColor(LookAndFeelManager.getLafColor("Button.background", Color.LIGHT_GRAY));
+        panelConfig.setBgColor(AppConfig.getInstance().getUnselectedBackground());
+        setBackground(panelConfig.getBgColor());
         setPreferredSize(new Dimension(width, height));
 
         // If invalidImage has not yet been generated, do it now.
@@ -141,12 +137,14 @@ public class ThumbPanel extends JPanel {
             g.dispose();
         }
 
-        imagePanel = new ImagePanel(thumbImage == null ? invalidImage : thumbImage, PROPS);
+        imagePanel = new ImagePanel(thumbImage == null ? invalidImage : thumbImage, panelConfig);
         add(imagePanel, BorderLayout.CENTER);
 
         // Note the ImagePanel above doesn't need these redispatching adapters because
         // it's smart enough to do this itself. The JLabel below is not so smart.
         imageLabel = new JLabel(title, JLabel.CENTER);
+        imageLabel.setFont(AppConfig.getInstance().getThumbPanelFont());
+        imageLabel.setForeground(AppConfig.getInstance().getUnselectedForeground());
         imageLabel.addMouseListener(new RedispatchingMouseAdapter());
         imageLabel.addMouseWheelListener(new RedispatchingMouseAdapter());
         imageLabel.addMouseMotionListener(new RedispatchingMouseAdapter());
@@ -164,18 +162,23 @@ public class ThumbPanel extends JPanel {
             return;
         }
 
+        // If we've been disposed, just ignore this:
+        if (imagePanel == null) {
+            return;
+        }
+
         this.isSelected = selected;
         if (isSelected) {
-            Color selectedBg = LookAndFeelManager.getLafColor("textHighlight", Color.BLUE);
+            Color selectedBg = AppConfig.getInstance().getSelectedBackground();
             setBackground(selectedBg);
             imagePanel.setBackground(selectedBg);
-            imageLabel.setForeground(LookAndFeelManager.getLafColor("textHighlightText", Color.LIGHT_GRAY));
+            imageLabel.setForeground(AppConfig.getInstance().getSelectedForeground());
         }
         else {
-            Color bg = LookAndFeelManager.getLafColor("Button.background", Color.LIGHT_GRAY);
+            Color bg = AppConfig.getInstance().getUnselectedBackground();
             setBackground(bg);
             imagePanel.setBackground(bg);
-            imageLabel.setForeground(LookAndFeelManager.getLafColor("Button.foreground", Color.BLACK));
+            imageLabel.setForeground(AppConfig.getInstance().getUnselectedForeground());
         }
         ImageViewerExtensionManager.getInstance().thumbPanelSelectionChanged(this, isSelected);
         repaint();
@@ -238,6 +241,23 @@ public class ThumbPanel extends JPanel {
         ImageViewerExtensionManager.getInstance().thumbPanelRenamed(this, newFile);
         if (!title.isEmpty()) {
             setTitle(newFile.getName());
+        }
+    }
+
+    /**
+     * Releases image resources associated with this {@code ThumbPanel}.
+     * <p>
+     * This will flush the thumbnail image ({@code thumbImage}) and dispose of the
+     * underlying {@link ImagePanel} ({@code imagePanel}). Call this method when
+     * the {@code ThumbPanel} is no longer needed to help prevent memory leaks.
+     */
+    public void dispose() {
+        if (thumbImage != null) {
+            thumbImage.flush();
+        }
+        if (imagePanel != null) {
+            imagePanel.dispose();
+            imagePanel = null;
         }
     }
 

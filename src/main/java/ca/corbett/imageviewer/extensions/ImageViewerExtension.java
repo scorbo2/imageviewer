@@ -1,7 +1,7 @@
 package ca.corbett.imageviewer.extensions;
 
 import ca.corbett.extensions.AppExtension;
-import ca.corbett.extras.dirtree.DirTree;
+import ca.corbett.extras.EnhancedAction;
 import ca.corbett.extras.logging.LogConsoleStyle;
 import ca.corbett.imageviewer.ImageOperation;
 import ca.corbett.imageviewer.ui.ImageInstance;
@@ -9,13 +9,8 @@ import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.ThumbPanel;
 
 import javax.swing.AbstractAction;
-import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import java.awt.Color;
-import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
@@ -62,80 +57,65 @@ public abstract class ImageViewerExtension extends AppExtension {
      * Invoked when the application is building the MainWindow's main menu and wants
      * to know if the extension has anything to add to one of the built-in top-level
      * menus.
+     * <p>
+     *     If your actions specify icons, please use MenuManager.MENU_ICON_SIZE
+     *     to size your icons appropriately.
+     * </p>
      *
      * @param topLevelMenu The name of the top-level menu being built: File, Edit, View, or Help.
      * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
-     * @return an optional list of menu items to insert into the given menu, or null for nothing.
+     * @return an optional list of EnhancedActions to insert into the given menu, or null for nothing.
      */
-    public List<JMenuItem> getMenuItems(String topLevelMenu, MainWindow.BrowseMode browseMode) {
+    public List<EnhancedAction> getMenuActions(String topLevelMenu, MainWindow.BrowseMode browseMode) {
         return null;
     }
 
     /**
      * Invoked when the application wants to know if the extension has its own top-level
-     * menu to add to the MainWindow's main menu.
+     * menu to add to the MainWindow's main menu. Every name that is returned here will be
+     * added as a top-level menu. It will also be supplied to getMenuActions() calls when
+     * building that menu.
      *
      * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
-     * @return an optional list of JMenu objects for the main menu, or null for none.
+     * @return an optional list of top-level menu names, or null for none.
      */
-    public List<JMenu> getTopLevelMenus(MainWindow.BrowseMode browseMode) {
+    public List<String> getTopLevelMenus(MainWindow.BrowseMode browseMode) {
         return null;
     }
 
     /**
      * Invoked when the application is building the popup menu for the MainWindow's image
-     * panel, also used in the toolbar and in the MainMenu. Extensions can add menu items
+     * panel, also used in the toolbar and in the MainMenu. Extensions can add EnhancedActions
      * here if they pertain to the current image or current directory of images.
+     * <p>
+     *     If your actions specify icons, please use MenuManager.MENU_ICON_SIZE
+     *     to size your icons appropriately.
+     * </p>
      *
      * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
-     * @return An optional list of menu items to insert into the popup menu, or null for none.
+     * @return An optional list of EnhancedActions to insert into the popup menu, or null for none.
      */
-    public List<JMenuItem> getPopupMenuItems(MainWindow.BrowseMode browseMode) {
+    public List<EnhancedAction> getPopupMenuActions(MainWindow.BrowseMode browseMode) {
         return null;
     }
 
     /**
      * Invoked when the application is building the MainWindow ToolBar - extensions can add
-     * buttons to this toolbar by returning them here. Use ToolBarManager.buildButton() to
-     * generate buttons of the correct size.
+     * buttons to this toolbar by returning EnhancedActions here.
      *
-     * @return A List of JButtons, or null.
+     * @return A List of EnhancedActions, or null.
      */
-    public List<JButton> getMainToolBarButtons() {
+    public List<EnhancedAction> getMainToolBarActions() {
         return null;
     }
 
     /**
      * Invoked when the application is building the ImageSetPanel ToolBar - extensions can add
-     * buttons to this toolbar by returning them here. Use ToolBarManager.buildButton() and
-     * ImageSetPanel.loadImageIcon() as convenience methods.
+     * buttons to this toolbar by returning EnhancedActions here.
      *
-     * @return A List of JButtons, or null.
+     * @return A List of EnhancedActions, or null.
      */
-    public List<JButton> getImageSetToolBarButtons() {
-        return null;
-    }
-
-    /**
-     * Invoked when the application receives a keyboard shortcut. Extensions can take some
-     * action in response to this keyboard shortcut. Processing does not stop when an extension
-     * handles this call, so in theory multiple extensions could do something with the same
-     * shortcut.
-     *
-     * @param e the KeyEvent in question.
-     * @return true if this extension did something with this event, false otherwise.
-     */
-    public boolean handleKeyboardShortcut(KeyEvent e) {
-        return false;
-    }
-
-    /**
-     * Invoked when MainWindow wants to create the main DirTree - an extension can return
-     * some customized DirTree which will be used in place of the default one.
-     *
-     * @return A DirTree instance, or null.
-     */
-    public DirTree buildDirTree() {
+    public List<EnhancedAction> getImageSetToolBarActions() {
         return null;
     }
 
@@ -243,7 +223,7 @@ public abstract class ImageViewerExtension extends AppExtension {
 
     /**
      * Invoked when the application is trying to decide what type of file it's looking
-     * at, and therefore what to do with it. ImageViewer works with three broad types of files:
+     * at, and therefore what to do with it. ImageViewer works with four broad types of files:
      * <ol>
      *     <li><b>Images</b> - any file in a supported image format</li>
      *     <li><b>Companion files</b> - not images, but files that nonetheless belong together
@@ -251,8 +231,11 @@ public abstract class ImageViewerExtension extends AppExtension {
      *     the image or contains additional information about the image. Extensions can
      *     register support for companion files. Out of the box (i.e. without extensions),
      *     ImageViewer does not recognize any file as a companion file.</li>
+     *     <li><b>Known files</b> - extensions can store extra files (configuration, metadata,
+     *     whatever) in an image directory, and regard those files as "known". These files are
+     *     ignored for file-based image operations.</li>
      *     <li><b>Aliens</b> - an alien file is any file that is not positively identified
-     *     either as a supported image type or as a companion file.</li>
+     *     either as a supported image type, a companion file, or a "known" file.</li>
      * </ol>
      * If an extension wishes to consider a given File as a companion file, it can return
      * true here. The default return is false, indicating that the extension does not recognize
@@ -278,14 +261,44 @@ public abstract class ImageViewerExtension extends AppExtension {
     }
 
     /**
+     * Extensions can store extra metadata or configuration files in image directories, and mark
+     * them as known files. These are not the same as companion files! Companion files are associated
+     * with individual images, whereas known files are associated with the directory as a whole.
+     * These files will therefore NOT be included with image operations (except for operations
+     * that move or copy the entire directory). But, they will also not be marked as "alien" files.
+     * This causes ImageViewer to just ignore them - they do not appear in the application's UI.
+     * Extensions can provide their own UI to display or edit these files, if they wish.
+     * <p>
+     * Don't include "known" files in your list of companion files! Also, don't return
+     * true here for companion files! They are different concepts.
+     * </p>
+     *
+     * @param candidateFile The file in question.
+     * @return true if the extension recognizes the file as a known file, false otherwise (default false).
+     */
+    public boolean isKnownFile(File candidateFile) {
+        return false;
+    }
+
+    /**
      * Invoked when the application is building the main ImagePanel display - there are four
-     * extra components that can go around the main image panel, indicated by the
-     * ExtraPanelPosition value of TOP, RIGHT, BOTTOM, or LEFT. The first extension that returns
-     * a non-null component for each of these positions will be allowed to use that area to
-     * display extra information or controls. It is recommended that extensions expose a config
-     * property to allow users to select where they want that extension to show up, to help
-     * mitigate conflicts with other extensions. For example, I set extension A to use the LEFT
-     * position, and set extension B to use the RIGHT position.
+     * positions for extra components that can go around the main image panel, indicated by the
+     * ExtraPanelPosition value of TOP, RIGHT, BOTTOM, or LEFT. Each loaded and enabled extension
+     * will be queried to see if they have an extra component to offer for each position.
+     * Your extension may return one JComponent for each position. Returning null is fine
+     * here, if your extension has nothing to supply.
+     * <p>
+     * It is recommended that extensions expose a config property to allow users to select where they want
+     * their extra component to show up, to help mitigate conflicts with other extensions.
+     * For example, I set extension A to use the LEFT position, and set extension B to use the RIGHT position.
+     * That way they can coexist on screen at the same time with no conflicts.
+     * </p>
+     * <p>
+     * <b>Hint:</b> use setName() on your component to give it a meaningful name. If more than one
+     * extension supplies an extra component for the same position, the component name will be used
+     * as a tab header in the tabbed pane that will be created to hold them all. Keep the name
+     * brief but distinctive. If no name is supplied, your tab will get a numeric name based on load order.
+     * </p>
      *
      * @param position LEFT, TOP, RIGHT, or BOTTOM, relative to the main ImagePanel.
      * @return Any JComponent, or null for none.
@@ -311,16 +324,6 @@ public abstract class ImageViewerExtension extends AppExtension {
      * is currently selected).
      */
     public void quickMoveTreeChanged() {
-    }
-
-    /**
-     * An informational message that will be sent to all extensions when the image panel
-     * background color changes. Extensions that supply an extra panel around the main image
-     * panel may want to react to this by changing their own background colour to match.
-     *
-     * @param newColor The new background color.
-     */
-    public void imagePanelBackgroundChanged(Color newColor) {
     }
 
     /**

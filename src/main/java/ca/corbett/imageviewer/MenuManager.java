@@ -1,5 +1,7 @@
 package ca.corbett.imageviewer;
 
+import ca.corbett.extras.EnhancedAction;
+import ca.corbett.extras.io.KeyStrokeManager;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.actions.AboutAction;
@@ -10,6 +12,7 @@ import ca.corbett.imageviewer.ui.actions.ImageSetAddImageAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetBrowseToSourceDirAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetCreateAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetDeleteAction;
+import ca.corbett.imageviewer.ui.actions.ImageSetDeleteSourceImageAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetMoveImageAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetRemoveImageAction;
 import ca.corbett.imageviewer.ui.actions.LogConsoleAction;
@@ -20,13 +23,14 @@ import ca.corbett.imageviewer.ui.actions.PreviousImageAction;
 import ca.corbett.imageviewer.ui.actions.QuickMoveEditAction;
 import ca.corbett.imageviewer.ui.actions.ReloadAction;
 import ca.corbett.imageviewer.ui.actions.RenameAction;
+import ca.corbett.imageviewer.ui.actions.ThumbCacheStatsAction;
 import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 
+import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.KeyStroke;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
@@ -54,6 +58,13 @@ import java.util.List;
  */
 public final class MenuManager {
 
+    /**
+     * If any menu actions use an icon, we will unconditionally scale them to this size.
+     * Unlike the toolbar icons, this size is not user-configurable.
+     */
+    public static final int MENU_ICON_SIZE = 18;
+
+    private final ImageViewerExtensionManager extManager;
     private final JMenuBar menuBar;
     private JMenu fileMenu;
     private JMenu editMenu;
@@ -62,21 +73,35 @@ public final class MenuManager {
     private JMenu helpMenu;
     private MainWindow.BrowseMode browseMode;
 
+    /**
+     * Creates and builds the main menu bar using the default browse mode of FILE_SYSTEM.
+     * The result can be retrieved using getMainMenuBar().
+     */
     public MenuManager() {
+        extManager = ImageViewerExtensionManager.getInstance();
         browseMode = MainWindow.BrowseMode.FILE_SYSTEM;
         menuBar = new JMenuBar();
         rebuildAll();
     }
 
+    /**
+     * Clears the menu bar and rebuilds it using the given browse mode.
+     */
     public void setBrowseMode(MainWindow.BrowseMode mode) {
         browseMode = mode;
         rebuildAll();
     }
 
+    /**
+     * Returns the current menu bar without rebuilding it.
+     */
     public JMenuBar getMainMenuBar() {
         return menuBar;
     }
 
+    /**
+     * Forces a clean and rebuild of the menu bar using the current browse mode.
+     */
     public void rebuildAll() {
         rebuildMenuBar();
         rebuildFileMenu();
@@ -86,6 +111,11 @@ public final class MenuManager {
         rebuildHelpMenu();
     }
 
+    /**
+     * Builds and returns a new JPopupMenu for use on the main image panel, based on
+     * the current browse mode. Unlike the main menu, this popup menu is recreated
+     * every time this method is called.
+     */
     public JPopupMenu buildImagePanelPopupMenu() {
         JPopupMenu imagePanelPopupMenu = new JPopupMenu();
 
@@ -105,25 +135,29 @@ public final class MenuManager {
 
         if (browseMode == MainWindow.BrowseMode.FILE_SYSTEM) {
             imagePanelPopupMenu.add(buildImageSetMenu());
-            imagePanelPopupMenu.add(new ImageSetAddAllImagesAction("Add all images in this directory to image set..."));
+            imagePanelPopupMenu.add(new ImageSetAddAllImagesAction());
         }
 
         if (browseMode == MainWindow.BrowseMode.IMAGE_SET) {
-            imagePanelPopupMenu.add(new JMenuItem(new ImageSetBrowseToSourceDirAction("Browse to source dir")));
+            imagePanelPopupMenu.add(new JMenuItem(new ImageSetBrowseToSourceDirAction()));
         }
 
-        imagePanelPopupMenu.add(new JMenuItem(new RenameAction()));
+        JMenuItem renameItem = new JMenuItem(new RenameAction());
+        renameItem.setAccelerator(AppConfig.getInstance().getRenameKeyStroke());
+        imagePanelPopupMenu.add(renameItem);
 
         // Add any menu items from our extensions, if any:
-        List<JMenuItem> extensionItems = ImageViewerExtensionManager.getInstance().getPopupMenuItems(browseMode);
-        for (JMenuItem extensionItem : extensionItems) {
-            imagePanelPopupMenu.add(extensionItem);
+        List<EnhancedAction> extensionActions = extManager.getPopupMenuActions(browseMode);
+        for (EnhancedAction action : extensionActions) {
+            imagePanelPopupMenu.add(buildMenuItem(action));
         }
 
         return imagePanelPopupMenu;
-
     }
 
+    /**
+     * Invoked internally to clean and rebuild the top-level menus.
+     */
     private void rebuildMenuBar() {
         menuBar.removeAll();
 
@@ -136,9 +170,13 @@ public final class MenuManager {
         menuBar.add(editMenu);
 
         // Any extension-provided top-level menu can go in between Edit and View:
-        List<JMenu> extensionMenus = ImageViewerExtensionManager.getInstance().getTopLevelMenus(browseMode);
-        if (!extensionMenus.isEmpty()) {
-            for (JMenu extensionMenu : extensionMenus) {
+        for (String menuName : extManager.getTopLevelMenus(browseMode)) {
+            JMenu extensionMenu = new JMenu(menuName);
+            List<EnhancedAction> actions = extManager.getMenuActions(menuName, browseMode);
+            if (!actions.isEmpty()) {
+                for (EnhancedAction action : actions) {
+                    extensionMenu.add(buildMenuItem(action));
+                }
                 menuBar.add(extensionMenu);
             }
         }
@@ -156,24 +194,32 @@ public final class MenuManager {
         menuBar.add(helpMenu);
     }
 
+    /**
+     * Invoked internally to clean and rebuild the File menu.
+     */
     private void rebuildFileMenu() {
         fileMenu.removeAll();
 
         // Add any items to this list from our extensions, if any:
-        List<JMenuItem> items = ImageViewerExtensionManager.getInstance().getMenuItems("File", browseMode);
-        if (!items.isEmpty()) {
-            for (JMenuItem item : items) {
-                fileMenu.add(item);
+        List<EnhancedAction> actions = extManager.getMenuActions("File", browseMode);
+        if (!actions.isEmpty()) {
+            for (EnhancedAction action : actions) {
+                fileMenu.add(buildMenuItem(action));
             }
             fileMenu.addSeparator();
         }
 
         JMenuItem exitItem = new JMenuItem(new ExitAction());
         exitItem.setMnemonic(KeyEvent.VK_X);
-        exitItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.CTRL_DOWN_MASK));
+        if (AppConfig.getInstance().getExitKeyStroke() != null) {
+            exitItem.setAccelerator(AppConfig.getInstance().getExitKeyStroke());
+        }
         fileMenu.add(exitItem);
     }
 
+    /**
+     * Invoked internally to clean and rebuild the Edit menu.
+     */
     private void rebuildEditMenu() {
         editMenu.removeAll();
 
@@ -189,89 +235,124 @@ public final class MenuManager {
         }
 
         editMenu.addSeparator();
-        editMenu.add(new JMenuItem(new RenameAction()));
+        JMenuItem renameItem = new JMenuItem(new RenameAction());
+        renameItem.setAccelerator(AppConfig.getInstance().getRenameKeyStroke());
+        editMenu.add(renameItem);
 
         // Add any items to this list from our extensions, if any:
-        List<JMenuItem> extensionItems = ImageViewerExtensionManager.getInstance().getMenuItems("Edit", browseMode);
-        for (JMenuItem extensionItem : extensionItems) {
-            editMenu.add(extensionItem);
+        List<EnhancedAction> actions = extManager.getMenuActions("Edit", browseMode);
+        if (!actions.isEmpty()) {
+            for (EnhancedAction action : actions) {
+                editMenu.add(buildMenuItem(action));
+            }
+            editMenu.addSeparator();
         }
-        editMenu.addSeparator();
 
-        editMenu.add(new JMenuItem(new PreferencesAction()));
+        editMenu.add(new JMenuItem(new PreferencesAction(MENU_ICON_SIZE)));
 
     }
 
+    /**
+     * Invoked internally to clean and rebuild the View menu.
+     */
     private void rebuildViewMenu() {
         viewMenu.removeAll();
 
-        JMenuItem item = new JMenuItem(new PreviousImageAction());
+        JMenuItem item = new JMenuItem(new PreviousImageAction(MENU_ICON_SIZE));
         item.setMnemonic(KeyEvent.VK_P);
+        item.setAccelerator(KeyStrokeManager.parseKeyStroke("left")); // can't be unassigned or reassigned
         viewMenu.add(item);
 
-        item = new JMenuItem(new NextImageAction());
+        item = new JMenuItem(new NextImageAction(MENU_ICON_SIZE));
         item.setMnemonic(KeyEvent.VK_N);
+        item.setAccelerator(KeyStrokeManager.parseKeyStroke("right")); // can't be unassigned or reassigned
         viewMenu.add(item);
 
-        item = new JMenuItem(new ReloadAction());
-        item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+        item = new JMenuItem(new ReloadAction(MENU_ICON_SIZE));
+        if (AppConfig.getInstance().getRefreshKeyStroke() != null) {
+            item.setAccelerator(AppConfig.getInstance().getRefreshKeyStroke());
+        }
         viewMenu.add(item);
 
         if (browseMode == MainWindow.BrowseMode.IMAGE_SET) {
-            viewMenu.add(new JMenuItem(new ImageSetBrowseToSourceDirAction("Browse to source dir")));
+            viewMenu.add(new JMenuItem(new ImageSetBrowseToSourceDirAction()));
         }
 
         viewMenu.addSeparator();
 
         // Add any items to this list from our extensions, if any:
-        List<JMenuItem> items = ImageViewerExtensionManager.getInstance().getMenuItems("View", browseMode);
-        if (!items.isEmpty()) {
-            for (JMenuItem extensionItem : items) {
-                viewMenu.add(extensionItem);
+        List<EnhancedAction> actions = extManager.getMenuActions("View", browseMode);
+        if (!actions.isEmpty()) {
+            for (EnhancedAction action : actions) {
+                viewMenu.add(buildMenuItem(action));
             }
             viewMenu.addSeparator();
         }
 
-        item = new JMenuItem(new LogConsoleAction());
-        item.setMnemonic(KeyEvent.VK_L);
-        viewMenu.add(item);
+        // We'll show this even if thumb caching is disabled, since it shows stats
+        // and gives an option to clear the cache:
+        viewMenu.add(new JMenuItem(new ThumbCacheStatsAction()));
     }
 
+    /**
+     * Invoked internally to clean and rebuild the Settings menu.
+     */
     private void rebuildSettingsMenu() {
         settingsMenu.removeAll();
 
         // Note... we don't currently allow extensions to add menu items here, but we could.
         // For now, it's just Application preferences and Manage extensions.
-        JMenuItem prefsItem = new JMenuItem(new PreferencesAction());
+        JMenuItem prefsItem = new JMenuItem(new PreferencesAction(MENU_ICON_SIZE));
         prefsItem.setMnemonic(KeyEvent.VK_P);
         settingsMenu.add(prefsItem);
 
-        JMenuItem extensionsItem = new JMenuItem(new ManageExtensionsAction());
+        JMenuItem extensionsItem = new JMenuItem(new ManageExtensionsAction(MENU_ICON_SIZE));
         extensionsItem.setMnemonic(KeyEvent.VK_E);
         settingsMenu.add(extensionsItem);
     }
 
+    /**
+     * Invoked internally to clean and rebuild the Help menu.
+     */
     private void rebuildHelpMenu() {
         helpMenu.removeAll();
 
         // Add any items to this list from our extensions, if any:
-        List<JMenuItem> items = ImageViewerExtensionManager.getInstance().getMenuItems("Help", browseMode);
-        if (!items.isEmpty()) {
-            for (JMenuItem extensionItem : items) {
-                helpMenu.add(extensionItem);
+        List<EnhancedAction> actions = extManager.getMenuActions("Help", browseMode);
+        if (!actions.isEmpty()) {
+            for (EnhancedAction action : actions) {
+                helpMenu.add(buildMenuItem(action));
             }
             helpMenu.addSeparator();
         }
 
-        JMenuItem aboutItem = new JMenuItem(new AboutAction());
+        // LogConsole used to be under "View", but makes more sense under "Help":
+        JMenuItem item = new JMenuItem(new LogConsoleAction());
+        item.setMnemonic(KeyEvent.VK_L);
+        helpMenu.add(item);
+
+        // About:
+        JMenuItem aboutItem = new JMenuItem(new AboutAction(MENU_ICON_SIZE));
         aboutItem.setMnemonic(KeyEvent.VK_A);
-        aboutItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK));
+        if (AppConfig.getInstance().getAboutKeyStroke() != null) {
+            aboutItem.setAccelerator(AppConfig.getInstance().getAboutKeyStroke());
+        }
         helpMenu.add(aboutItem);
     }
 
+    /**
+     * Invoked internally to build the image movement menu items based on the current browse mode.
+     * In filesystem mode, these options can be quite complex, and include options for moving,
+     * copying, and linking images or directories to pre-configured locations. In image set mode,
+     * the options are much simpler, just allowing moving or copying the current image to another
+     * image set. In filesystem mode, the individual operations of move, copy, and link can all
+     * be enabled or disabled in application settings. Image set operations currently
+     * cannot be disabled.
+     */
     public List<JMenuItem> buildImageMovementMenuItems() {
+        List<JMenuItem> menuList = new ArrayList<>();
+
         if (browseMode == MainWindow.BrowseMode.FILE_SYSTEM) {
-            List<JMenuItem> menuList = new ArrayList<>();
             JMenu moveImageMenu = new JMenu("Quick Move this image...");
             JMenu moveAllImagesMenu = new JMenu("Quick Move all images in this directory...");
             JMenu moveDirMenu = new JMenu("Quick Move this directory...");
@@ -333,25 +414,30 @@ public final class MenuManager {
             }
 
             menuList.add(new JMenuItem(new QuickMoveEditAction()));
-            return menuList;
         }
 
         else {
-            List<JMenuItem> menuList = new ArrayList<>();
-
-            menuList.add(new JMenuItem(new ImageSetMoveImageAction("Move this image to other image set...", true)));
-            menuList.add(new JMenuItem(new ImageSetMoveImageAction("Copy this image to other image set...", false)));
-
-            return menuList;
+            menuList.add(new JMenuItem(new ImageSetMoveImageAction(true)));
+            menuList.add(new JMenuItem(new ImageSetMoveImageAction(false)));
         }
+
+        return menuList;
     }
 
+    /**
+     * Creates and returns a list of "image removal" menu items. What we mean by "removal" depends on the
+     * current browse mode. In filesystem mode, removal means deleting files or directories from disk.
+     * In image set mode, removal means removing the image from the image set, deleting the source image file,
+     * or deleting the entire image set.
+     */
     public List<JMenuItem> buildImageRemovalMenuItems() {
         List<JMenuItem> menuList = new ArrayList<>();
 
         if (browseMode == MainWindow.BrowseMode.FILE_SYSTEM) {
-            menuList.add(
-                    new JMenuItem(new ImageOperationAction("Delete this image", ImageOperation.deleteSingleImage())));
+            JMenuItem deleteItem = new JMenuItem(
+                    new ImageOperationAction("Delete this image", ImageOperation.deleteSingleImage()));
+            deleteItem.setAccelerator(KeyStrokeManager.parseKeyStroke("del")); // can't be unassigned or reassigned
+            menuList.add(deleteItem);
             menuList.add(new JMenuItem(
                     new ImageOperationAction("Delete all images in this directory", ImageOperation.deleteAllImages())));
             menuList.add(
@@ -359,8 +445,11 @@ public final class MenuManager {
         }
 
         else {
-            menuList.add(new JMenuItem(new ImageSetRemoveImageAction("Remove this image from image set")));
-            menuList.add(new JMenuItem(new ImageSetDeleteAction("Delete this image set")));
+            menuList.add(new JMenuItem(new ImageSetRemoveImageAction(MENU_ICON_SIZE)));
+            JMenuItem menuItem = new JMenuItem(new ImageSetDeleteSourceImageAction(MENU_ICON_SIZE));
+            menuItem.setAccelerator(AppConfig.getInstance().getDeleteSourceKeyStroke());
+            menuList.add(menuItem);
+            menuList.add(new JMenuItem(new ImageSetDeleteAction(MENU_ICON_SIZE)));
         }
 
         return menuList;
@@ -381,7 +470,8 @@ public final class MenuManager {
 
     /**
      * Invoked internally to recurse through the given tree node and generate menu items as
-     * appropriate for the given ImageOperation into the given JMenu.
+     * appropriate for the given ImageOperation into the given JMenu. This is only invoked
+     * in filesystem browse mode.
      *
      * @param node    The QuickMoveManager.TreeNode in question
      * @param menu    The JMenu which will receive all menu items.
@@ -411,6 +501,10 @@ public final class MenuManager {
         }
     }
 
+    /**
+     * Invoked internally to recurse through the given tree node and generate menu items
+     * for adding images to image sets. This is only invoked in image set browse mode.
+     */
     private static void buildImageSetMenuRecursive(DefaultMutableTreeNode node, JMenu menu) {
         if (node != null && node.getChildCount() > 0) {
             JMenu subMenu = new JMenu(node.getUserObject().toString());
@@ -422,5 +516,18 @@ public final class MenuManager {
         else if (node != null && (node.getUserObject() instanceof ImageSet)) {
             menu.add(new ImageSetAddImageAction((ImageSet)node.getUserObject()));
         }
+    }
+
+    /**
+     * Invoked internally to build a JMenuItem from an EnhancedAction, scaling its icon
+     * to our MENU_ICON_SIZE if needed. If the given action has no icon, no icon is set.
+     */
+    private JMenuItem buildMenuItem(EnhancedAction action) {
+        JMenuItem item = new JMenuItem(action);
+        if (action.getIcon() != null) {
+            ImageIcon icon = ImageViewerResources.scaleIcon((ImageIcon)action.getIcon(), MENU_ICON_SIZE);
+            item.setIcon(icon);
+        }
+        return item;
     }
 }

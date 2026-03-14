@@ -7,16 +7,16 @@ import ca.corbett.extras.dirtree.DirTreeListener;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.ImageUtil;
+import ca.corbett.extras.io.KeyStrokeManager;
 import ca.corbett.extras.logging.LogConsole;
+import ca.corbett.extras.properties.KeyStrokeProperty;
 import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.ImageOperationHandler;
-import ca.corbett.imageviewer.KeyboardManager;
 import ca.corbett.imageviewer.LogConsoleManager;
 import ca.corbett.imageviewer.MenuManager;
 import ca.corbett.imageviewer.QuickMoveManager;
 import ca.corbett.imageviewer.ToolBarManager;
 import ca.corbett.imageviewer.Version;
-import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.actions.ReloadUIAction;
 import ca.corbett.imageviewer.ui.imagesets.ImageSet;
@@ -30,21 +30,18 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
@@ -59,6 +56,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static ca.corbett.imageviewer.extensions.ImageViewerExtension.ExtraPanelPosition;
 
 /**
  * Represents the main window for the application.
@@ -92,7 +91,9 @@ public final class MainWindow extends JFrame implements UIReloadable {
     private final ImageSetManager imageSetManager;
     private final MenuManager menuManager;
     private JToolBar toolBar;
+    private StatusPanel statusPanel;
     private UpdateManager updateManager;
+    private KeyStrokeManager keyStrokeManager;
 
     private BrowseMode browseMode;
     private JTabbedPane imgSrcTabPane;
@@ -104,8 +105,6 @@ public final class MainWindow extends JFrame implements UIReloadable {
     private final Map<BrowseMode, ThumbContainerPanel> thumbContainerPanelMap;
     private ImagePanel imagePanel;
     private ImagePanelConfig imagePanelProperties;
-    private JLabel statusLabel1;
-    private JLabel statusLabel2;
     private final Map<BrowseMode, JSplitPane> sideSplitPaneMap;
     private JSplitPane mainSplitPane;
 
@@ -152,7 +151,8 @@ public final class MainWindow extends JFrame implements UIReloadable {
             instance.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             instance.setTitle(Version.APPLICATION_NAME);
             instance.initComponents();
-            KeyboardManager.addGlobalKeyListener(instance);
+            instance.keyStrokeManager = new KeyStrokeManager(instance);
+            instance.configureKeyStrokes();
 
             instance.addWindowListener(new WindowAdapter() {
                 /**
@@ -184,6 +184,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
             LogConsoleManager.setCustomTheme();
 
             instance.imageSetManager.load();
+            ThumbCacheManager.emitWarningIfNecessary(); // starts a background thread to check cache size
 
             ReloadUIAction.getInstance().registerReloadable(instance);
         }
@@ -350,6 +351,40 @@ public final class MainWindow extends JFrame implements UIReloadable {
     }
 
     /**
+     * Returns the numeric (0-based) index of the currently selected thumbnail,
+     * or -1 if nothing is currently selected.
+     *
+     * @return The numeric (0-based) index of the currently selected thumbnail, or -1 if nothing is currently selected.
+     */
+    public int getThumbnailSelectionIndex() {
+        ThumbContainerPanel thumbContainer = thumbContainerPanelMap.get(getBrowseMode());
+        return thumbContainer == null ? -1 : thumbContainer.getSelectionIndex();
+    }
+
+    /**
+     * Returns the count of thumbnails in the currently-visible thumbnail container panel.
+     * Note that this count includes thumbnails that have not yet been loaded!
+     * The count may be zero if the current directory or image set is empty.
+     *
+     * @return The count of thumbnails in the currently-visible thumbnail container panel, or 0 if empty.
+     */
+    public int getThumbnailCount() {
+        ThumbContainerPanel thumbContainer = thumbContainerPanelMap.get(getBrowseMode());
+        return thumbContainer == null ? 0 : thumbContainer.getCount();
+    }
+
+    /**
+     * Selects the first thumbnail in the currently-visible thumbnail container panel.
+     * Does nothing if there are no thumbnails loaded.
+     */
+    public void selectFirstThumbnail() {
+        ThumbContainerPanel thumbContainer = thumbContainerPanelMap.get(getBrowseMode());
+        if (thumbContainer != null) {
+            thumbContainer.selectAtIndex(0);
+        }
+    }
+
+    /**
      * Kludge alert - quick access extension needs this to force the quick access
      * panel to be visible from the configure quick access destinations dialog.
      * TODO this seems very clunky and there must be a better way to do this.
@@ -381,7 +416,8 @@ public final class MainWindow extends JFrame implements UIReloadable {
         setSize(MIN_WIDTH, MIN_HEIGHT);
         setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
 
-        dirTree = DirTree.createDirTree();
+        dirTree = new DirTree();
+        dirTree.setShowHidden(AppConfig.getInstance().getShowHiddenDirectories());
         dirTree.setMinimumSize(new Dimension(180, 100));
         dirTree.setPreferredSize(new Dimension(180, 200));
         dirTree.addDirTreeListener(dirTreeChangeListener);
@@ -416,7 +452,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
         imagePanel = new ImagePanel(imagePanelProperties);
 
         imageTabPane = new ToggleableTabbedPane();
-        imageTabPane.addTab("Image", buildImagePanelWrapperPanel());
+        imageTabPane.addTab("Image", buildImagePanelWrapperPanel(imagePanel));
 
         // See if extensions have any image tab panes for us:
         List<JPanel> imageTabs = ImageViewerExtensionManager.getInstance().getImageTabPanels();
@@ -439,18 +475,7 @@ public final class MainWindow extends JFrame implements UIReloadable {
         setLayout(new BorderLayout());
         add(mainSplitPane, BorderLayout.CENTER);
 
-        JPanel statusPanel = new JPanel();
-        statusPanel.setLayout(new BorderLayout());
-        statusLabel1 = new JLabel("Ready.");
-        statusLabel2 = new JLabel("");
-        JPanel wrapper = new JPanel();
-        wrapper.setLayout(new FlowLayout(FlowLayout.LEFT));
-        wrapper.add(statusLabel1);
-        statusPanel.add(wrapper, BorderLayout.CENTER);
-        wrapper = new JPanel();
-        wrapper.setLayout(new FlowLayout(FlowLayout.RIGHT));
-        wrapper.add(statusLabel2);
-        statusPanel.add(wrapper, BorderLayout.EAST);
+        statusPanel = new StatusPanel();
         add(statusPanel, BorderLayout.SOUTH);
 
         toolBar = ToolBarManager.buildToolBar();
@@ -555,6 +580,28 @@ public final class MainWindow extends JFrame implements UIReloadable {
     }
 
     /**
+     * Registers to receive ThumbContainerPanelEvents from all thumbnail container panels,
+     * regardless of browse mode. This is a convenience method for extensions that want to
+     * listen to thumbnail selection events but don't care about browse mode.
+     */
+    public void addThumbContainerPanelListener(ThumbContainerPanelListener listener) {
+        for (ThumbContainerPanel panel : thumbContainerPanelMap.values()) {
+            panel.addListener(listener);
+        }
+    }
+
+    /**
+     * Stops listening for ThumbContainerPanelEvents from all thumbnail container panels.
+     * This is a convenience method for extensions that want to listen to thumbnail selection events
+     * but don't care about browse mode.
+     */
+    public void removeThumbContainerPanelListener(ThumbContainerPanelListener listener) {
+        for (ThumbContainerPanel panel : thumbContainerPanelMap.values()) {
+            panel.removeListener(listener);
+        }
+    }
+
+    /**
      * Internal method to load our UI state.
      */
     private void loadUIState() {
@@ -580,9 +627,14 @@ public final class MainWindow extends JFrame implements UIReloadable {
         }
         dirTree.selectAndScrollTo(effectiveStartupDir); // okay if null
 
-        setImageBackgroundColor(UIManager.getDefaults().getColor("ColorPalette.primaryBackground"));
-        setZoomFactorIncrement(prefs.getImagePanelZoomIncrement());
-        setAutoBestFit(prefs.getImagePanelAutoBestFit());
+        // Don't go through our setters as they will each apply the properties immediately.
+        // We can cut down on churn by updating the imagePanelProperties directly, then applying it once.
+        imagePanelProperties.setZoomFactorIncrement(prefs.getImagePanelZoomIncrement());
+        imagePanelProperties.setDisplayMode(prefs.getImagePanelAutoBestFit()
+                                                    ? ImagePanelConfig.DisplayMode.BEST_FIT
+                                                    : ImagePanelConfig.DisplayMode.NONE);
+        reloadColors(false);
+        imagePanel.applyProperties(imagePanelProperties);
     }
 
     /**
@@ -597,11 +649,12 @@ public final class MainWindow extends JFrame implements UIReloadable {
         prefs.setMainSplitPanePosition(mainSplitPane.getDividerLocation());
         prefs.setMainWindowWidth(this.getWidth());
         prefs.setMainWindowHeight(this.getHeight());
+        prefs.setShowHiddenDirectories(dirTree.getShowHidden());
 
         // Only save lock dir and current dir if we were NOT given a startup
-        // directory on the command line. Otherwise our settings were transient.
+        // directory on the command line. Otherwise, our settings were transient.
         if (startupDir == null) {
-            prefs.setLockDirectory(dirTree.getRootDir());
+            prefs.setLockDirectory(dirTree.getLockDir());
             prefs.setStartupDirectory(dirTree.getCurrentDir());
         }
 
@@ -651,13 +704,16 @@ public final class MainWindow extends JFrame implements UIReloadable {
         toolBar = ToolBarManager.buildToolBar();
         add(toolBar, BorderLayout.PAGE_START);
 
+        // Ditto for image set panel toolbar:
+        imageSetPanel.rebuildToolbar();
+
         // Build up our various menus:
         rebuildMenus();
         ImageViewerExtensionManager.getInstance().quickMoveTreeChanged(); // TODO why do we call this here?
 
         // Rebuild the image tab pane:
         imageTabPane.removeAll();
-        imageTabPane.addTab("Image", buildImagePanelWrapperPanel());
+        imageTabPane.addTab("Image", buildImagePanelWrapperPanel(imagePanel));
         // See if extensions have any image tab panes for us:
         List<JPanel> imageTabs = ImageViewerExtensionManager.getInstance().getImageTabPanels();
         if (!imageTabs.isEmpty()) {
@@ -675,7 +731,42 @@ public final class MainWindow extends JFrame implements UIReloadable {
             imageTabPane.setTabHeaderVisible(false);
         }
 
+        // Re-initialize keyboard shortcuts:
+        configureKeyStrokes();
+
+        // Re-set image panel properties that may have changed.
+        // Don't go through our setters as they will each apply the properties immediately.
+        // We can cut down on churn by updating the imagePanelProperties directly, then applying it once.
+        imagePanelProperties.setZoomFactorIncrement(AppConfig.getInstance().getImagePanelZoomIncrement());
+        imagePanelProperties.setDisplayMode(AppConfig.getInstance().getImagePanelAutoBestFit()
+                                                    ? ImagePanelConfig.DisplayMode.BEST_FIT
+                                                    : ImagePanelConfig.DisplayMode.NONE);
+        reloadColors(false);
+        imagePanel.applyProperties(imagePanelProperties);
+
         reload(true);
+    }
+
+    private void reloadColors() {
+        reloadColors(true);
+    }
+
+    private void reloadColors(boolean applyImmediately) {
+        AppConfig conf = AppConfig.getInstance();
+        dirTree.setBackground(conf.getUnselectedBackground());
+        if (dirTree.getTreeCellRenderer() instanceof DefaultTreeCellRenderer renderer) {
+            renderer.setBackgroundNonSelectionColor(conf.getUnselectedBackground());
+            renderer.setTextNonSelectionColor(conf.getUnselectedForeground());
+            renderer.setBackgroundSelectionColor(conf.getSelectedBackground());
+            renderer.setTextSelectionColor(conf.getSelectedForeground());
+            renderer.setBackground(conf.getUnselectedBackground());
+        }
+        imagePanelProperties.setBgColor(conf.getDefaultBackground());
+        thumbContainerPanelMap.get(BrowseMode.FILE_SYSTEM).setBackground(conf.getDefaultBackground());
+        thumbContainerPanelMap.get(BrowseMode.IMAGE_SET).setBackground(conf.getDefaultBackground());
+        if (applyImmediately) {
+            imagePanel.applyProperties(imagePanelProperties);
+        }
     }
 
     /**
@@ -718,19 +809,28 @@ public final class MainWindow extends JFrame implements UIReloadable {
         updateStatusBar();
     }
 
-    private JPanel buildImagePanelWrapperPanel() {
+    /**
+     * Builds a wrapper panel for the given ImagePanel, complete with all extension-supplied
+     * extra components in surrounding positions.
+     * <p>
+     * <b>Implementation note:</b> This method is public because some extensions
+     * (for example, ext-iv-fullscreen) need to also be able to do this. Better to
+     * share this helper method than to force extensions to reinvent the wheel.
+     * </p>
+     *
+     * @param imagePanel The ImagePanel to wrap.
+     * @return A JPanel containing the given ImagePanel and any extra extension-supplied components.
+     */
+    public static JPanel buildImagePanelWrapperPanel(JComponent imagePanel) {
         JPanel imagePanelWrapperPanel = new JPanel();
         imagePanelWrapperPanel.setLayout(new BorderLayout());
 
         // Add extra panels, if any are supplied by our extensions:
-        JComponent westComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
-                ImageViewerExtension.ExtraPanelPosition.Left);
-        JComponent eastComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
-                ImageViewerExtension.ExtraPanelPosition.Right);
-        JComponent northComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
-                ImageViewerExtension.ExtraPanelPosition.Top);
-        JComponent southComponent = ImageViewerExtensionManager.getInstance().getExtraPanelComponent(
-                ImageViewerExtension.ExtraPanelPosition.Bottom);
+        ImageViewerExtensionManager extManager = ImageViewerExtensionManager.getInstance();
+        JComponent westComponent = buildComponentTabPane(extManager.getExtraPanelComponent(ExtraPanelPosition.Left));
+        JComponent eastComponent = buildComponentTabPane(extManager.getExtraPanelComponent(ExtraPanelPosition.Right));
+        JComponent northComponent = buildComponentTabPane(extManager.getExtraPanelComponent(ExtraPanelPosition.Top));
+        JComponent southComponent = buildComponentTabPane(extManager.getExtraPanelComponent(ExtraPanelPosition.Bottom));
         if (westComponent != null) {
             imagePanelWrapperPanel.add(westComponent, BorderLayout.WEST);
         }
@@ -748,12 +848,45 @@ public final class MainWindow extends JFrame implements UIReloadable {
         return imagePanelWrapperPanel;
     }
 
-    public void setImageBackgroundColor(Color color) {
-        imagePanelProperties.setBgColor(color);
-        thumbContainerPanelMap.get(BrowseMode.FILE_SYSTEM).setBackground(color);
-        thumbContainerPanelMap.get(BrowseMode.IMAGE_SET).setBackground(color);
-        imagePanel.applyProperties(imagePanelProperties);
-        ImageViewerExtensionManager.getInstance().imagePanelBackgroundChanged(color);
+    /**
+     * Builds a tabbed pane wrapper for the given list of components.
+     * If the list is empty or null, will return null.
+     * If the list only has one element, the tab controls will be hidden.
+     * Otherwise, each component will get its own tab, and the tab name will be taken from the
+     * component's name property if it has one, or a default numeric name if it doesn't.
+     * <p>
+     * <b>Implementation note:</b> This method is public because some extensions
+     * (for example, ext-iv-fullscreen) need to also be able to do this. Better to
+     * share this helper method than to force extensions to reinvent the wheel.
+     * </p>
+     *
+     * @param components The list of components to wrap.
+     * @return A ToggleableTabbedPane containing the given components, or null if none were given.
+     */
+    public static ToggleableTabbedPane buildComponentTabPane(List<JComponent> components) {
+        // If we got nothing, we give nothing:
+        if (components == null || components.isEmpty()) {
+            return null;
+        }
+
+        // Build a tab for each component:
+        ToggleableTabbedPane tabPane = new ToggleableTabbedPane();
+        int tabIndex = 1;
+        for (JComponent component : components) {
+            String name = component.getName();
+            if (name == null || name.isBlank()) {
+                name = "Tab " + tabIndex; // cheesy default numeric tab name if the component doesn't have one specified
+            }
+            tabPane.add(name, component);
+            tabIndex++;
+        }
+
+        // If there's only one tab, hide the tab header as it's not needed:
+        if (components.size() == 1) {
+            tabPane.setTabHeaderVisible(false);
+        }
+
+        return tabPane;
     }
 
     public void setZoomFactorIncrement(double increment) {
@@ -762,7 +895,12 @@ public final class MainWindow extends JFrame implements UIReloadable {
     }
 
     public void setAutoBestFit(boolean bestFit) {
-        imagePanelProperties.setDisplayMode(ImagePanelConfig.DisplayMode.BEST_FIT);
+        if (bestFit) {
+            imagePanelProperties.setDisplayMode(ImagePanelConfig.DisplayMode.BEST_FIT);
+        }
+        else {
+            imagePanelProperties.setDisplayMode(ImagePanelConfig.DisplayMode.NONE);
+        }
         imagePanel.applyProperties(imagePanelProperties);
     }
 
@@ -823,6 +961,20 @@ public final class MainWindow extends JFrame implements UIReloadable {
                                  imagePanel.getImageIcon());
     }
 
+    private void configureKeyStrokes() {
+        keyStrokeManager.clear();
+
+        for (KeyStrokeProperty prop : AppConfig.getInstance().getKeyStrokeProperties()) {
+            // If there's no Action attached, or if there is no keystroke assigned to it, skip it:
+            if (prop.getAction() == null || prop.getKeyStroke() == null) {
+                continue;
+            }
+            
+            // Register it! This will update the shortcut attached to our menu items as well:
+            keyStrokeManager.registerHandler(prop.getKeyStroke(), prop.getAction());
+        }
+    }
+
     /**
      * Updates the status label with details about the currently selected image.
      */
@@ -848,18 +1000,8 @@ public final class MainWindow extends JFrame implements UIReloadable {
             status1 += ", " + format.format(new java.util.Date(srcFile.lastModified()));
         }
 
-        statusLabel1.setText(status1);
-        statusLabel2.setText(status2);
-
-        final JPanel panel = (JPanel)statusLabel1.getParent();
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                panel.invalidate();
-                panel.revalidate();
-                panel.repaint();
-            }
-        });
+        statusPanel.setLeftText(status1);
+        statusPanel.setRightText(status2);
     }
 
     /**
@@ -872,8 +1014,8 @@ public final class MainWindow extends JFrame implements UIReloadable {
         // Select it in the tree without triggering a change event:
         dirTree.removeDirTreeListener(dirTreeChangeListener);
         if (selectedDir != null) {
-            dirTree.reload(selectedDir); // TODO: https://github.com/scorbo2/swing-extras/issues/123
-            //dirTree.selectAndScrollTo(selectedDir);
+            dirTree.selectAndScrollTo(selectedDir);
+            dirTree.reload(); // TODO: https://github.com/scorbo2/swing-extras/issues/123
         }
 
         dirTree.addDirTreeListener(dirTreeChangeListener);
@@ -943,8 +1085,17 @@ public final class MainWindow extends JFrame implements UIReloadable {
     private static class DirTreeChangeListener implements DirTreeListener {
 
         @Override
+        public boolean selectionWillChange(DirTree source, File newSelectedDir) {
+            return true; // default allow all changes
+        }
+
+        @Override
         public void selectionChanged(DirTree source, File selectedDir) {
             MainWindow.getInstance().setDirectory(selectedDir);
+        }
+
+        @Override
+        public void showHiddenFilesChanged(DirTree source, boolean showHiddenFiles) {
         }
 
         @Override
@@ -953,6 +1104,11 @@ public final class MainWindow extends JFrame implements UIReloadable {
 
         @Override
         public void treeUnlocked(DirTree source) {
+        }
+
+        @Override
+        public void fileDoubleClicked(DirTree source, File clickedFile) {
+            // Ignored - we don't show files in our DirTree
         }
     }
 

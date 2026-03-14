@@ -1,8 +1,9 @@
-package ca.corbett.imageviewer.extensions.builtin;
+package ca.corbett.imageviewer.ui;
 
 import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.io.FileSystemUtil;
 import ca.corbett.imageviewer.AppConfig;
+import ca.corbett.imageviewer.ImageOperation;
 import ca.corbett.imageviewer.Version;
 import org.apache.commons.io.FileUtils;
 
@@ -17,63 +18,70 @@ import java.util.logging.Logger;
  * Represents a cache on disk of thumbnail images. Provides methods for adding,
  * updating, or removing items in the cache, as well as clearing it.
  * <p>
- * The cache is kept in the USER_SETTINGS_DIR/thumbnails directory, and the
+ * The cache is kept in the SETTINGS_DIR/thumbnails directory, and the
  * directory hierarchy matches the file system, almost like a chroot situation.
  * For example:
  * </p>
  * <blockquote>
- * USER_SETTINGS_DIR/thumbnails/some/path/image_thumb32.jpg
+ * SETTINGS_DIR/thumbnails/some/path/image_thumb32.jpg
  * </blockquote>
  * <p>
  * The above represents the 32x32 thumbnail for /some/path/image.jpg.
  * </p>
  * <p>
- * Caching can be enabled or disabled for the entire application via the extension
- * manager dialog, by just disabling this extension. Disabling the extension does not
- * clear the cache dir, so re-enabling it later will allow the use of whatever
- * thumbnails were already cached before it was disabled. A separate action is available
- * to allow clearing the thumbnail cache.
+ *     Caching can be enabled or disabled in the application preferences
+ *     dialog. Disabling caching does not clear the cache dir, so re-enabling it
+ *     later will allow the use of whatever thumbnails were already cached
+ *     before it was disabled.
+ * </p>
+ * <p>
+ *     <b>Note:</b> Disabling thumbnail caching in preferences will only
+ *     prevent us from adding new thumbnails to the cache. Existing cached
+ *     thumbnails will still be returned by get() if they exist.
  * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 1.1
  */
-final class ThumbCacheManager {
+public final class ThumbCacheManager {
 
-    private static final File CACHE_DIR = new File(Version.SETTINGS_DIR, "thumbnails");
+    public static final File CACHE_DIR = new File(Version.SETTINGS_DIR, "thumbnails");
     private static final Logger logger = Logger.getLogger(ThumbCacheManager.class.getName());
 
     static {
         CACHE_DIR.mkdirs();
     }
 
+    /**
+     * An immutable data class to represent thumbnail cache statistics.
+     */
     public static class CacheStats {
-        int thumbnailCount;
-        int fileCount;
-        long totalSize;
+        private final int thumbnailCount;
+        private final int fileCount;
+        private final long totalSize;
+
+        public CacheStats(int thumbCount, int fileCount, long totalSize) {
+            this.thumbnailCount = thumbCount;
+            this.fileCount = fileCount;
+            this.totalSize = totalSize;
+        }
+
+        public int getThumbnailCount() {
+            return thumbnailCount;
+        }
+
+        public int getFileCount() {
+            return fileCount;
+        }
+
+        public long getTotalSize() {
+            return totalSize;
+        }
 
         @Override
         public String toString() {
-            return thumbnailCount + " thumbnails in " + fileCount + " files, " + getPrintableSize(
-                    totalSize) + " total.";
-        }
-    }
-
-    public static String getPrintableSize(long size) {
-        String[] units = {"bytes", "KB", "MB", "GB", "TB", "PB"};
-        int unitIndex = 0;
-        double sizeDouble = size;
-
-        while (sizeDouble >= 1024 && unitIndex < units.length - 1) {
-            sizeDouble /= 1024.0;
-            unitIndex++;
-        }
-
-        if (unitIndex == 0) {
-            return String.format("%d %s", (long)sizeDouble, units[unitIndex]);
-        }
-        else {
-            return String.format("%.1f %s", sizeDouble, units[unitIndex]);
+            return thumbnailCount + " thumbnails in " + fileCount + " files, "
+                    + FileSystemUtil.getPrintableSize(totalSize) + " total.";
         }
     }
 
@@ -82,19 +90,20 @@ final class ThumbCacheManager {
 
     /**
      * Creates and returns a CacheStats object describing current cache statistics.
-     * This may take a while to execute depending on cache size;
+     * This may take a while to execute depending on cache size, so you likely want
+     * to invoke this method from a worker thread.
      *
      * @return A populated CacheStats object.
      */
     public static CacheStats gatherCacheStats() {
-        CacheStats stats = new CacheStats();
         List<File> list = FileSystemUtil.findFiles(CACHE_DIR, true, "jpg");
-        stats.fileCount = list.size();
-        stats.thumbnailCount = list.size() / AppConfig.ThumbSize.values().length;
+        int fileCount = list.size();
+        int thumbnailCount = list.size() / AppConfig.ThumbSize.values().length;
+        long totalSize = 0;
         for (File f : list) {
-            stats.totalSize += f.length();
+            totalSize += f.length();
         }
-        return stats;
+        return new CacheStats(thumbnailCount, fileCount, totalSize);
     }
 
     /**
@@ -142,12 +151,19 @@ final class ThumbCacheManager {
      * Note that a thumbnail will be pregenerated at each supported thumbnail size.
      * Rather than throw an exception on I/O error, the method simply returns false.
      * Thumbnails are a fire-and-forget situation. All errors will be logged here.
+     * <p>
+     *     Does nothing if thumbnail caching is disabled in preferences.
+     * </p>
      *
      * @param srcFile  The File from which srcImage was loaded.
      * @param srcImage If you have already loaded an image from srcFile, supply it here.
      * @return Returns true if all went well, or false if images couldn't be stored.
      */
     public static boolean add(File srcFile, BufferedImage srcImage) {
+        if (!AppConfig.getInstance().isThumbCacheEnabled()) {
+            return true;
+        }
+
         for (AppConfig.ThumbSize size : AppConfig.ThumbSize.values()) {
             File thumbFile = generateThumbnailPath(srcFile, size.getDimensions());
             logger.log(Level.FINE, "Generating thumbnail for {0} in {1}",
@@ -181,6 +197,31 @@ final class ThumbCacheManager {
     }
 
     /**
+     * Invoked after an image operation has taken place to update the thumbnail cache
+     * accordingly.
+     *
+     * @param opType   The type of operation that was performed.
+     * @param srcFile  The source file of the operation.
+     * @param destFile The new location of the source file, if applicable.
+     */
+    public static void postImageOperation(ImageOperation.Type opType, File srcFile, File destFile) {
+        switch (opType) {
+            case COPY:
+            case SYMLINK:
+                copy(srcFile, destFile);
+                break;
+
+            case MOVE:
+                move(srcFile, destFile);
+                break;
+
+            case DELETE:
+                remove(srcFile);
+                break;
+        }
+    }
+
+    /**
      * Removes all thumbnails for the given srcFile if any were present.
      *
      * @param srcFile The source image in question.
@@ -203,6 +244,48 @@ final class ThumbCacheManager {
      */
     public static void copy(File srcFile, File destFile) {
         copy(srcFile, destFile, false);
+    }
+
+    /**
+     * If the thumbnail cache size exceeds the configured warning threshold, emit a log warning
+     * about it. The user can then manually empty the cache if they wish,
+     * or change the threshold in preferences.
+     * <p>
+     * If the thumbnail cache is disabled in preferences, or if the
+     * warning threshold is set to 0, then this method does nothing.
+     * </p>
+     */
+    public static void emitWarningIfNecessary() {
+        if (!AppConfig.getInstance().isThumbCacheEnabled()) {
+            return; // Don't warn if caching is disabled.
+        }
+        final long threshold = AppConfig.getInstance().getThumbCacheSizeWarningThreshold();
+        if (threshold <= 0) {
+            return; // 0 means "don't warn me about this"
+        }
+
+        // Fire off a background thread for this, so we don't block the UI:
+        new Thread(() -> {
+            try {
+                CacheStats stats = gatherCacheStats();
+                if (stats.getTotalSize() > threshold) {
+                    logger.warning("Thumbnail cache size of "
+                                           + FileSystemUtil.getPrintableSize(stats.getTotalSize())
+                                           + " exceeds configured warning threshold of "
+                                           + FileSystemUtil.getPrintableSize(threshold)
+                                           + ". You can clear the cache in the cache stats dialog.");
+                }
+                else {
+                    logger.log(Level.INFO,
+                               "Thumbnail cache size of {0} is within configured warning threshold of {1}.",
+                               new Object[]{FileSystemUtil.getPrintableSize(stats.getTotalSize()),
+                                       FileSystemUtil.getPrintableSize(threshold)});
+                }
+            }
+            catch (Exception e) {
+                logger.log(Level.SEVERE, "Unable to check thumbnail cache size against warning threshold.", e);
+            }
+        }, "ThumbCacheWarningCheck").start();
     }
 
     /**
@@ -339,14 +422,5 @@ final class ThumbCacheManager {
      */
     private static String generateThumbnailFilename(File file, int size) {
         return file.getName() + "_" + size + ".jpg";
-
-        // The old flawed approach:
-        //String originalName = file.getName();
-        //if (!originalName.contains(".")) {
-        //  return originalName + "_" + size + ".jpg";
-        //}
-        //String newName = originalName.substring(0, originalName.lastIndexOf("."));
-        //return newName + "_" + size + ".jpg";
     }
-
 }

@@ -1,15 +1,18 @@
 package ca.corbett.imageviewer.extensions.builtin;
 
 import ca.corbett.extensions.AppExtensionInfo;
+import ca.corbett.extras.EnhancedAction;
 import ca.corbett.extras.properties.AbstractProperty;
+import ca.corbett.extras.properties.KeyStrokeProperty;
+import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.Version;
 import ca.corbett.imageviewer.extensions.ImageViewerExtension;
 import ca.corbett.imageviewer.ui.MainWindow;
 
-import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,6 +23,12 @@ import java.util.List;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public class RepeatUndoExtension extends ImageViewerExtension {
+
+    private static final String REPEAT_PROP = AppConfig.KEYSTROKE_PREFIX + "Repeat / Undo.RepeatHotkey";
+    private static final String UNDO_PROP = AppConfig.KEYSTROKE_PREFIX + "Repeat / Undo.UndoHotkey";
+
+    private static final RepeatAction repeatAction = new RepeatAction();
+    private static final UndoAction undoAction = new UndoAction();
 
     private final AppExtensionInfo extInfo;
 
@@ -50,28 +59,36 @@ public class RepeatUndoExtension extends ImageViewerExtension {
 
     @Override
     protected List<AbstractProperty> createConfigProperties() {
-        return List.of();
+        List<AbstractProperty> props = new ArrayList<>();
+
+        KeyStrokeProperty prop = new KeyStrokeProperty(REPEAT_PROP,
+                                                       "Repeat last action:",
+                                                       KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK),
+                                                       repeatAction);
+        prop.setAllowBlank(true);
+        prop.setReservedKeyStrokes(AppConfig.RESERVED_KEYSTROKES);
+        props.add(prop);
+
+        prop = new KeyStrokeProperty(UNDO_PROP,
+                                     "Undo last action:",
+                                     KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK),
+                                     undoAction);
+        prop.setAllowBlank(true);
+        prop.setReservedKeyStrokes(AppConfig.RESERVED_KEYSTROKES);
+        props.add(prop);
+
+        return props;
     }
 
     @Override
-    public List<JMenuItem> getMenuItems(String topLevelMenu, MainWindow.BrowseMode browseMode) {
-        return "Edit".equals(topLevelMenu) ? List.of(buildRepeatMenuItem(), buildUndoMenuItem()) : null;
+    public List<EnhancedAction> getMenuActions(String topLevelMenu, MainWindow.BrowseMode browseMode) {
+        return "Edit".equals(topLevelMenu) ?
+                List.of(repeatAction, undoAction)
+                : null;
     }
 
     @Override
-    public List<JMenuItem> getPopupMenuItems(MainWindow.BrowseMode browseMode) {
-        return List.of(buildRepeatMenuItem(), buildUndoMenuItem());
-    }
-
-    private JMenuItem buildRepeatMenuItem() {
-        JMenuItem menuItem = new JMenuItem(new RepeatAction());
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK));
-        return menuItem;
-    }
-
-    private JMenuItem buildUndoMenuItem() {
-        JMenuItem menuItem = new JMenuItem(new UndoAction());
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
-        return menuItem;
+    public List<EnhancedAction> getPopupMenuActions(MainWindow.BrowseMode browseMode) {
+        return List.of(repeatAction, undoAction);
     }
 }

@@ -1,6 +1,7 @@
 package ca.corbett.imageviewer.ui.imagesets;
 
-import ca.corbett.extras.image.ImageUtil;
+import ca.corbett.extras.EnhancedAction;
+import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.ToolBarManager;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
@@ -10,7 +11,6 @@ import ca.corbett.imageviewer.ui.actions.ImageSetLoadAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetRenameAction;
 import ca.corbett.imageviewer.ui.actions.ImageSetSaveAction;
 
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -22,11 +22,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -44,6 +41,7 @@ public class ImageSetPanel extends JPanel {
     private static final Logger logger = Logger.getLogger(ImageSetPanel.class.getName());
 
     private final ImageSetTree imageSetTree;
+    private JToolBar toolBar;
 
     public ImageSetPanel() {
         imageSetTree = new ImageSetTree();
@@ -54,8 +52,17 @@ public class ImageSetPanel extends JPanel {
             }
         });
         setLayout(new BorderLayout());
-        add(buildToolbar(), BorderLayout.NORTH);
+        toolBar = buildToolbar();
+        add(toolBar, BorderLayout.NORTH);
         add(new JScrollPane(imageSetTree.getTree()), BorderLayout.CENTER);
+    }
+
+    public void rebuildToolbar() {
+        remove(toolBar);
+        toolBar = buildToolbar();
+        add(toolBar, BorderLayout.NORTH);
+        revalidate();
+        repaint();
     }
 
     public List<DefaultMutableTreeNode> getTopLevelNodes() {
@@ -95,53 +102,32 @@ public class ImageSetPanel extends JPanel {
     }
 
     private JToolBar buildToolbar() {
+        int toolbarSize = AppConfig.getInstance().getMiniToolbarIconSize()
+                + AppConfig.getInstance().getMiniToolbarIconMargin();
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
         JPanel wrapper = new JPanel();
         wrapper.setBackground(UIManager.getDefaults().getColor("Button.background"));
         wrapper.setLayout(new FlowLayout(FlowLayout.LEFT, 4, 4));
-        wrapper.setPreferredSize(new Dimension(500, 28));
+        wrapper.setPreferredSize(new Dimension(500, toolbarSize + 8));
 
-        try {
-            wrapper.add(ToolBarManager.buildButton(
-                    loadIconImage("icon-document-edit.png"),
-                    "Edit image set",
-                    new ImageSetEditAction("Edit image set"), 22));
+        wrapper.add(ToolBarManager.buildMiniToolbarButton(new ImageSetEditAction()));
+        wrapper.add(ToolBarManager.buildMiniToolbarButton(new ImageSetRenameAction()));
+        wrapper.add(ToolBarManager.buildMiniToolbarButton(new ImageSetDeleteAction()));
+        wrapper.add(new JLabel(" "));
 
-            wrapper.add(ToolBarManager.buildButton(
-                    loadIconImage("icon-document-upload.png"),
-                    "Rename/move this image set",
-                    new ImageSetRenameAction("Rename/move this image set"), 22));
-
-            wrapper.add(ToolBarManager.buildButton(
-                    loadIconImage("icon-x.png"),
-                    "Delete this image set",
-                    new ImageSetDeleteAction("Delete this image set"), 22));
-
-            wrapper.add(new JLabel(" "));
-
-            // Allow extensions to insert their own buttons here:
-            List<JButton> extButtons = ImageViewerExtensionManager.getInstance().getImageSetToolBarButtons();
-            if (!extButtons.isEmpty()) {
-                for (JButton btn : extButtons) {
-                    wrapper.add(btn);
-                }
-                wrapper.add(new JLabel(" "));
+        // Allow extensions to insert their own buttons here:
+        List<EnhancedAction> extActions = ImageViewerExtensionManager.getInstance().getImageSetToolBarActions();
+        if (!extActions.isEmpty()) {
+            for (EnhancedAction action : extActions) {
+                wrapper.add(ToolBarManager.buildMiniToolbarButton(action));
             }
-
-            wrapper.add(ToolBarManager.buildButton(
-                    loadIconImage("icon-reboot.png"),
-                    "Discard changes and reload all image sets",
-                    new ImageSetLoadAction("Discard changes and reload all image sets", true), 22));
-
-            wrapper.add(ToolBarManager.buildButton(
-                    loadIconImage("icon-save.png"),
-                    "Save changes",
-                    new ImageSetSaveAction("Save changes"), 22));
+            wrapper.add(new JLabel(" "));
         }
-        catch (IOException ioe) {
-            logger.log(Level.SEVERE, "Error loading icon image: " + ioe.getMessage(), ioe);
-        }
+
+        wrapper.add(ToolBarManager.buildMiniToolbarButton(new ImageSetLoadAction(true)));
+
+        wrapper.add(ToolBarManager.buildMiniToolbarButton(new ImageSetSaveAction()));
 
         toolbar.add(wrapper);
         return toolbar;
@@ -154,16 +140,5 @@ public class ImageSetPanel extends JPanel {
 
         // Passing null is allowed here, it will clear the thumb panel:
         MainWindow.getInstance().setImageSet(getSelectedImageSet().orElse(null));
-    }
-
-    /**
-     * Invoked internally to load an icon image from resources, scale it if needed, and return it.
-     */
-    public static BufferedImage loadIconImage(String resourceName) throws IOException {
-        final int iconSize = 18;
-        return ImageUtil.loadFromResource(MainWindow.class,
-                                          "/ca/corbett/imageviewer/images/" + resourceName,
-                                          iconSize,
-                                          iconSize);
     }
 }

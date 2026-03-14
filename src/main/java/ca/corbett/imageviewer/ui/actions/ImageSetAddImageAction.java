@@ -1,10 +1,10 @@
 package ca.corbett.imageviewer.ui.actions;
 
+import ca.corbett.extras.EnhancedAction;
 import ca.corbett.imageviewer.ui.ImageInstance;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 
-import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.Optional;
@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 2.2
  */
-public class ImageSetAddImageAction extends AbstractAction {
+public class ImageSetAddImageAction extends EnhancedAction {
 
     private static final Logger log = Logger.getLogger(ImageSetAddImageAction.class.getName());
 

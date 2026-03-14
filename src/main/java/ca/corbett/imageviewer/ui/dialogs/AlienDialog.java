@@ -45,14 +45,13 @@ import java.util.logging.Logger;
 public final class AlienDialog extends JDialog {
 
     private static final Logger logger = Logger.getLogger(AlienDialog.class.getName());
-    public static final String DARWIN_METADATA_FILENAME = ".00darwin-metadata"; // TODO wtf is this doing here
 
     private static final long VIEW_AS_TEXT_MAX_FILE_SIZE = 256 * 1024; // 256KB arbitrary default
 
     private MessageUtil messageUtil;
     private static AlienDialog instance;
-    private JList alienList;
-    private DefaultListModel listModel;
+    private JList<String> alienList;
+    private DefaultListModel<String> listModel;
     private File directory;
     private List<File> files;
     private long viewAsTextMaxFileSize = VIEW_AS_TEXT_MAX_FILE_SIZE;
@@ -122,12 +121,7 @@ public final class AlienDialog extends JDialog {
      * @param list the list of File objects representing aliens.
      */
     private void setAlienList(List<File> list) {
-        files = new ArrayList<>();
-        for (File f : list) {
-            if (!f.getName().equals(DARWIN_METADATA_FILENAME)) {
-                files.add(f);
-            }
-        }
+        files = new ArrayList<>(list);
         listModel.clear();
         for (File file : files) {
             String prettySize = FileUtils.byteCountToDisplaySize(file.length());
@@ -135,7 +129,7 @@ public final class AlienDialog extends JDialog {
         }
 
         // As a convenience, if we have at least one file in the list, select the first one:
-        if (files.size() > 0) {
+        if (!files.isEmpty()) {
             alienList.setSelectedIndex(0);
         }
     }

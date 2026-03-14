@@ -1,8 +1,9 @@
 package ca.corbett.imageviewer.extensions;
 
 import ca.corbett.extensions.ExtensionManager;
-import ca.corbett.extras.dirtree.DirTree;
+import ca.corbett.extras.EnhancedAction;
 import ca.corbett.extras.logging.LogConsoleStyle;
+import ca.corbett.extras.properties.KeyStrokeProperty;
 import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.ImageOperation;
 import ca.corbett.imageviewer.Version;
@@ -11,13 +12,8 @@ import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.ThumbPanel;
 
 import javax.swing.AbstractAction;
-import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import java.awt.Color;
-import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
@@ -55,7 +51,6 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     public void loadAll() {
         // Built-in extensions:
         addExtension(new ca.corbett.imageviewer.extensions.builtin.ImageInfoExtension(), true);
-        addExtension(new ca.corbett.imageviewer.extensions.builtin.ThumbCacheExtension(), true);
         addExtension(new ca.corbett.imageviewer.extensions.builtin.StatisticsExtension(), true);
         addExtension(new ca.corbett.imageviewer.extensions.builtin.RepeatUndoExtension(), true);
 
@@ -69,6 +64,23 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
         catch (LinkageError le) {
             logger.log(Level.SEVERE, "One or more extensions could not be loaded.", le);
         }
+    }
+
+    /**
+     * Returns all KeyStrokeProperty instances supplied by enabled extensions.
+     * Extensions can supply KeyStrokeProperty instances as part of their usual
+     * configuration properties. We have a separate getter for them here as a
+     * convenience when registering keyboard shortcuts with our KeyStrokeManager.
+     * Properties from currently-disabled extensions will not be included.
+     *
+     * @return A List of KeyStrokeProperty instances supplied by enabled extensions.
+     */
+    public List<KeyStrokeProperty> getKeyStrokeProperties() {
+        return getAllEnabledExtensionProperties()
+                .stream()
+                .filter(p -> p instanceof KeyStrokeProperty)
+                .map(p -> (KeyStrokeProperty)p)
+                .toList();
     }
 
     /**
@@ -129,17 +141,18 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     }
 
     /**
-     * Interrogates extensions to see if they have JMenuItems that they want to add
-     * to one of our built-in top-level menus.
+     * Interrogates extensions to see if they have menu actions that they want to add
+     * to one the named top-level menu.
      *
-     * @param topLevelMenu The name of the top-level menu: File, Edit, View, or Help.
+     * @param topLevelMenu The String name of the top-level menu being built: eg. File, Edit, View, Help, or any
+     *                     custom top-level menu added by an extension.
      * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
-     * @return A list of 0 or more menu items supplied by enabled extensions.
+     * @return A list of 0 or more EnhancedActions supplied by enabled extensions.
      */
-    public List<JMenuItem> getMenuItems(String topLevelMenu, MainWindow.BrowseMode browseMode) {
-        List<JMenuItem> list = new ArrayList<>();
+    public List<EnhancedAction> getMenuActions(String topLevelMenu, MainWindow.BrowseMode browseMode) {
+        List<EnhancedAction> list = new ArrayList<>();
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            List<JMenuItem> toAdd = extension.getMenuItems(topLevelMenu, browseMode);
+            List<EnhancedAction> toAdd = extension.getMenuActions(topLevelMenu, browseMode);
             if (toAdd != null) {
                 list.addAll(toAdd);
             }
@@ -149,15 +162,17 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
 
     /**
      * Interrogates extensions to see if they have any top-level menus that they want
-     * to add to the MainWindow's main menu.
+     * to add to the MainWindow's main menu. Every name that is returned here will be
+     * added as a top-level menu. It will also be supplied to getMenuActions() calls when
+     * building that menu.
      *
      * @param browseMode Whether we're currently browsing from the file system or from an ImageSet.
-     * @return A list of 0 or more JMenus supplied by enabled extensions.
+     * @return a List of zero or more top-level menu names supplied by enabled extensions.
      */
-    public List<JMenu> getTopLevelMenus(MainWindow.BrowseMode browseMode) {
-        List<JMenu> list = new ArrayList<>();
+    public List<String> getTopLevelMenus(MainWindow.BrowseMode browseMode) {
+        List<String> list = new ArrayList<>();
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            List<JMenu> toAdd = extension.getTopLevelMenus(browseMode);
+            List<String> toAdd = extension.getTopLevelMenus(browseMode);
             if (toAdd != null) {
                 list.addAll(toAdd);
             }
@@ -166,15 +181,15 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     }
 
     /**
-     * Interrogates extensions to see if they have any menu items to add to the
+     * Interrogates extensions to see if they have any menu actions to add to the
      * image popup menu.
      *
-     * @return A list of 0 or more menu items supplied by enabled extensions.
+     * @return A list of 0 or more EnhancedActions supplied by enabled extensions.
      */
-    public List<JMenuItem> getPopupMenuItems(MainWindow.BrowseMode browseMode) {
-        List<JMenuItem> list = new ArrayList<>();
+    public List<EnhancedAction> getPopupMenuActions(MainWindow.BrowseMode browseMode) {
+        List<EnhancedAction> list = new ArrayList<>();
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            List<JMenuItem> toAdd = extension.getPopupMenuItems(browseMode);
+            List<EnhancedAction> toAdd = extension.getPopupMenuActions(browseMode);
             if (toAdd != null) {
                 list.addAll(toAdd);
             }
@@ -183,14 +198,14 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     }
 
     /**
-     * Interrogates extensions to see if they have any toolbar buttons to add to the main toolbar.
+     * Interrogates extensions to see if they have any actions to add to the main toolbar.
      *
-     * @return A list of 0 or more buttons supplied by enabled extensions.
+     * @return A list of 0 or more EnhancedActions supplied by enabled extensions.
      */
-    public List<JButton> getMainToolBarButtons() {
-        List<JButton> list = new ArrayList<>();
+    public List<EnhancedAction> getMainToolBarActions() {
+        List<EnhancedAction> list = new ArrayList<>();
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            List<JButton> toAdd = extension.getMainToolBarButtons();
+            List<EnhancedAction> toAdd = extension.getMainToolBarActions();
             if (toAdd != null) {
                 list.addAll(toAdd);
             }
@@ -199,50 +214,19 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     }
 
     /**
-     * Interrogates extensions to see if they have any toolbar buttons to add to the image set panel toolbar.
+     * Interrogates extensions to see if they have any actions to add to the image set panel toolbar.
      *
-     * @return A list of 0 or more buttons supplied by enabled extensions.
+     * @return A list of 0 or more EnhancedActions supplied by enabled extensions.
      */
-    public List<JButton> getImageSetToolBarButtons() {
-        List<JButton> list = new ArrayList<>();
+    public List<EnhancedAction> getImageSetToolBarActions() {
+        List<EnhancedAction> list = new ArrayList<>();
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            List<JButton> toAdd = extension.getImageSetToolBarButtons();
+            List<EnhancedAction> toAdd = extension.getImageSetToolBarActions();
             if (toAdd != null) {
                 list.addAll(toAdd);
             }
         }
         return list;
-    }
-
-    /**
-     * Gives all enabled extensions a chance to handle the given keyboard shortcut.
-     *
-     * @param e The KeyEvent in question.
-     * @return true if any extension reports that it handled the event
-     */
-    public boolean handleKeyboardShortcut(KeyEvent e) {
-        boolean wasHandled = false;
-        for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            wasHandled = wasHandled || extension.handleKeyboardShortcut(e); // we could stop if one returns true...
-        }
-        return wasHandled;
-    }
-
-    /**
-     * Gives all extensions a chance to override the default DirTree instance creation
-     * for the MainWindow.The first extension to return a non-null value here
-     * is what will be used. If all extensions return null, the default instance is used.
-     *
-     * @return A DirTree instance, or null.
-     */
-    public DirTree buildDirTree() {
-        for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            DirTree dirTree = extension.buildDirTree();
-            if (dirTree != null) {
-                return dirTree;
-            }
-        }
-        return null;
     }
 
     /**
@@ -376,7 +360,7 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
 
     /**
      * Invoked when the application is trying to decide what type of file it's looking
-     * at, and therefore what to do with it. ImageViewer works with three broad types of files:
+     * at, and therefore what to do with it. ImageViewer works with four broad types of files:
      * <ol>
      *     <li><b>Images</b> - any file in a supported image format</li>
      *     <li><b>Companion files</b> - not images, but files that nonetheless belong together
@@ -384,8 +368,11 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
      *     the image or contains additional information about the image. Extensions can
      *     register support for companion files. Out of the box (i.e. without extensions),
      *     ImageViewer does not recognize any file as a companion file.</li>
+     *     <li><b>Known files</b> - extensions can store extra files (configuration, metadata,
+     *     whatever) in an image directory, and regard those files as "known". These files are
+     *     ignored for file-based image operations.</li>
      *     <li><b>Aliens</b> - an alien file is any file that is not positively identified
-     *     either as a supported image type or as a companion file.</li>
+     *     either as a supported image type, a companion file, or a "known" file.</li>
      * </ol>
      * If an extension wishes to consider a given File as a companion file, it can return
      * true here. The default return is false, indicating that the extension does not recognize
@@ -427,26 +414,59 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     }
 
     /**
+     * Given a candidate non-image file, ask extensions if they "know" this file.
+     * Known files are not the same as companion files! Companion files are associated
+     * with individual images, whereas known files are associated with the directory as a whole.
+     * These files will therefore NOT be included with image operations (except for operations
+     * that move or copy the entire directory). But, they will also not be marked as "alien" files.
+     * This causes ImageViewer to just ignore them - they do not appear in the application's UI.
+     *
+     * @param candidateFile The file in question.
+     * @return true if any extension recognizes the file, false otherwise (default false).
+     */
+    public boolean isKnownFile(File candidateFile) {
+        // We'll hard-code one application-level "known" file, at least
+        // until Darwin has its own ImageViewer extension...
+        if (".00darwin-metadata".equals(candidateFile.getName())) {
+            return true;
+        }
+
+        // For everything else, we'll defer to our enabled extensions:
+        for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
+            if (extension.isKnownFile(candidateFile)) {
+                return true; // first extension that says yes, we're done
+            }
+        }
+        return false;
+    }
+
+    /**
      * Invoked when the application is building the main ImagePanel display - there are four
-     * extra components that can go around the main image panel, indicated by the
-     * ExtraPanelPosition value of TOP, RIGHT, BOTTOM, or LEFT. The first extension that returns
-     * a non-null component for each of these positions will be allowed to use that area to
-     * display extra information or controls. It is recommended that extensions expose a config
-     * property to allow users to select where they want that extension to show up, to help
-     * mitigate conflicts with other extensions. For example, I set extension A to use the LEFT
-     * position, and set extension B to use the RIGHT position.
+     * positions for extra components that can go around the main image panel, indicated by the
+     * ExtraPanelPosition value of TOP, RIGHT, BOTTOM, or LEFT. Each loaded and enabled extension
+     * will be queried to see if they have an extra component to offer for each position.
+     * This method will return a List of all extension-supplied components for the given position.
+     * The caller can decide what to do in the case where more than one is returned - either pick
+     * the first in the list, or display all of them in a tabbed pane.
+     * <p>
+     * It is recommended that extensions expose a config property to allow users to select where they want
+     * their extra component to show up, to help mitigate conflicts with other extensions.
+     * For example, I set extension A to use the LEFT position, and set extension B to use the RIGHT position.
+     * That way they can coexist on screen at the same time with no conflicts.
+     * </p>
      *
      * @param position LEFT, TOP, RIGHT, or BOTTOM, relative to the main ImagePanel.
-     * @return Any JComponent, or null for none.
+     * @return A List of JComponent instances. May be empty. May contain more than one!
      */
-    public JComponent getExtraPanelComponent(ImageViewerExtension.ExtraPanelPosition position) {
+    public List<JComponent> getExtraPanelComponent(ImageViewerExtension.ExtraPanelPosition position) {
+        List<JComponent> extraComponents = new ArrayList<>();
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
             JComponent component = extension.getExtraPanelComponent(position);
             if (component != null) {
-                return component; // return the first one we find for this position
+                extraComponents.add(component);
             }
         }
-        return null;
+        return extraComponents;
     }
 
     /**
@@ -475,19 +495,6 @@ public class ImageViewerExtensionManager extends ExtensionManager<ImageViewerExt
     public void quickMoveTreeChanged() {
         for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
             extension.quickMoveTreeChanged();
-        }
-    }
-
-    /**
-     * An informational message that will be sent to all extensions when the image panel
-     * background color changes.Extensions that supply an extra panel around the main image
-     * panel may want to react to this by changing their own background colour to match.
-     *
-     * @param newColor The new background color.
-     */
-    public void imagePanelBackgroundChanged(Color newColor) {
-        for (ImageViewerExtension extension : getEnabledLoadedExtensions()) {
-            extension.imagePanelBackgroundChanged(newColor);
         }
     }
 

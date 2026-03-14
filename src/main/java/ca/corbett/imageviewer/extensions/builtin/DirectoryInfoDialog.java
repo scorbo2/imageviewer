@@ -1,5 +1,6 @@
 package ca.corbett.imageviewer.extensions.builtin;
 
+import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.io.FileSystemUtil;
 import ca.corbett.extras.progress.MultiProgressDialog;
 import ca.corbett.extras.progress.SimpleProgressWorker;
@@ -8,7 +9,6 @@ import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
-import ca.corbett.imageviewer.ui.ThumbContainerPanel;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -154,22 +154,18 @@ public class DirectoryInfoDialog extends JDialog {
                     File candidate = allFiles.get(i);
 
                     // Figure out what it is and how big it is:
-                    if (ThumbContainerPanel.isImageFile(candidate)) {
+                    if (ImageUtil.isImageFile(candidate)) { // it's an image, we're fine
                         imageCount++;
                         imageSizeTotal += candidate.length();
-                    } else if (extManager.isCompanionFile(candidate)) {
+                    }
+                    else if (extManager.isCompanionFile(candidate)) { // companion files are also fine
                         companionCount++;
                         companionSizeTotal += candidate.length();
-                    } else {
-
-                        // We have a ridiculous special case for "alien excluded files", which
-                        // basically just get ignored as though they don't exist.
-                        // One day I will remove that entire concept from this code...
-                        // But until then, count all remaining files that AREN'T excluded as aliens:
-                        if (!ThumbContainerPanel.isAlienExcludedFile(candidate)) {
-                            alienCount++;
-                            alienSizeTotal += candidate.length();
-                        }
+                    }
+                    else if (!extManager.isKnownFile(candidate)) { // ignore known files
+                        // If we get here, we don't know what it is, so count it as an "alien" file:
+                        alienCount++;
+                        alienSizeTotal += candidate.length();
                     }
 
                     // Update progress

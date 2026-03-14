@@ -1,8 +1,8 @@
 package ca.corbett.imageviewer.extensions.builtin;
 
+import ca.corbett.extras.EnhancedAction;
 import ca.corbett.imageviewer.ImageOperationHandler;
 
-import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 
 /**
@@ -11,7 +11,7 @@ import java.awt.event.ActionEvent;
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
-public class RepeatAction extends AbstractAction {
+public class RepeatAction extends EnhancedAction {
 
     public RepeatAction() {
         super("Repeat last action");
@@ -21,5 +21,4 @@ public class RepeatAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         ImageOperationHandler.repeatLastOperation();
     }
-
 }

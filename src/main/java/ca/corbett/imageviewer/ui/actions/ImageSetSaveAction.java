@@ -1,8 +1,11 @@
 package ca.corbett.imageviewer.ui.actions;
 
+import ca.corbett.extras.EnhancedAction;
+import ca.corbett.imageviewer.AppConfig;
+import ca.corbett.imageviewer.ImageViewerResources;
 import ca.corbett.imageviewer.ui.MainWindow;
 
-import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import java.awt.event.ActionEvent;
 
 /**
@@ -11,10 +14,18 @@ import java.awt.event.ActionEvent;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 2.2
  */
-public class ImageSetSaveAction extends AbstractAction {
+public class ImageSetSaveAction extends EnhancedAction {
 
-    public ImageSetSaveAction(String name) {
-        super(name);
+    private static final String NAME = "Save changes";
+
+    public ImageSetSaveAction() {
+        this(AppConfig.getInstance().getMiniToolbarIconSize());
+    }
+
+    public ImageSetSaveAction(int iconSize) {
+        super(NAME);
+        setTooltip(NAME);
+        setIcon(new ImageIcon(ImageViewerResources.getIconSave(iconSize)));
     }
 
     @Override

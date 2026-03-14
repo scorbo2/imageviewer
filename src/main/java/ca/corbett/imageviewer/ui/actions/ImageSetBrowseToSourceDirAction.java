@@ -1,9 +1,9 @@
 package ca.corbett.imageviewer.ui.actions;
 
+import ca.corbett.extras.EnhancedAction;
 import ca.corbett.imageviewer.ui.ImageInstance;
 import ca.corbett.imageviewer.ui.MainWindow;
 
-import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 import java.io.File;
 
@@ -14,17 +14,20 @@ import java.io.File;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 2.2
  */
-public class ImageSetBrowseToSourceDirAction extends AbstractAction {
+public class ImageSetBrowseToSourceDirAction extends EnhancedAction {
 
-    public ImageSetBrowseToSourceDirAction(String name) {
-        super(name);
+    private static final String NAME = "Browse to source dir";
+
+    public ImageSetBrowseToSourceDirAction() {
+        super(NAME);
+        setTooltip(NAME);
     }
 
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
         ImageInstance currentImage = MainWindow.getInstance().getSelectedImage();
         if (currentImage.isEmpty()) {
-            MainWindow.getInstance().showMessageDialog("Browse to source dir", "No image selected.");
+            MainWindow.getInstance().showMessageDialog(NAME, "No image selected.");
             return;
         }
         File file = currentImage.getImageFile();

@@ -1,10 +1,13 @@
 package ca.corbett.imageviewer.ui.actions;
 
+import ca.corbett.extras.EnhancedAction;
+import ca.corbett.imageviewer.AppConfig;
+import ca.corbett.imageviewer.ImageViewerResources;
 import ca.corbett.imageviewer.ui.MainWindow;
 import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 import ca.corbett.imageviewer.ui.imagesets.ImageSetEditDialog;
 
-import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import java.awt.event.ActionEvent;
 import java.util.Optional;
 
@@ -14,14 +17,18 @@ import java.util.Optional;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since ImageViewer 2.2
  */
-public class ImageSetEditAction extends AbstractAction {
+public class ImageSetEditAction extends EnhancedAction {
+
+    private static final String NAME = "Edit image set";
 
     public ImageSetEditAction() {
-        this("Edit favorites list");
+        this(AppConfig.getInstance().getMiniToolbarIconSize());
     }
 
-    public ImageSetEditAction(String name) {
-        super(name);
+    public ImageSetEditAction(int iconSize) {
+        super(NAME);
+        setTooltip(NAME);
+        setIcon(new ImageIcon(ImageViewerResources.getIconImageSetEdit(iconSize)));
     }
 
     @Override

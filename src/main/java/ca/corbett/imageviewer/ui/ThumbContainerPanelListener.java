@@ -17,27 +17,27 @@ public interface ThumbContainerPanelListener {
      * @param source        The ThumbContainerPanel that is firing this event.
      * @param selectedPanel The ThumbPanel that was selected.
      */
-    public void thumbnailSelected(ThumbContainerPanel source, ThumbPanel selectedPanel);
+    void thumbnailSelected(ThumbContainerPanel source, ThumbPanel selectedPanel);
 
     /**
      * Fired when the selection within the container has been cleared.
      *
      * @param source The ThumbContainerPanel that is firing this event.
      */
-    public void selectionCleared(ThumbContainerPanel source);
+    void selectionCleared(ThumbContainerPanel source);
 
     /**
      * Fired when the thumb container panel is starting to load more images.
      *
      * @param source The ThumbContainerPanel that is firing this event.
      */
-    public void loadStarting(ThumbContainerPanel source);
+    void loadStarting(ThumbContainerPanel source);
 
     /**
      * Fired when the thumb container panel has finished loading images.
      *
      * @param source The ThumbContainerPanel that is firing this event.
      */
-    public void loadCompleted(ThumbContainerPanel source);
+    void loadCompleted(ThumbContainerPanel source);
 
 }

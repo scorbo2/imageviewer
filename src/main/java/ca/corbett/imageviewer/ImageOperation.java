@@ -80,7 +80,7 @@ public class ImageOperation {
         this.destination = destination;
 
         if (op == null || payload == null) {
-            throw new RuntimeException("Attempted to create a null ImageOperation.");
+            throw new IllegalArgumentException("Attempted to create a null ImageOperation.");
         }
     }
 

@@ -4,6 +4,7 @@ import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
+import ca.corbett.imageviewer.ui.ThumbCacheManager;
 import ca.corbett.imageviewer.ui.ThumbContainerPanel;
 
 import javax.swing.ProgressMonitor;
@@ -127,10 +128,21 @@ public final class ThumbLoaderThread implements Runnable {
                 monitor.setProgress(i);
                 int thumbSize = AppConfig.getInstance().getThumbnailSize();
 
-                // Give extensions a chance to return a thumbnail for this image:
-                thumbImage = ImageViewerExtensionManager.getInstance().getThumbnail(file, thumbSize);
+                // If we have a cached thumbnail for this image, use it:
+                thumbImage = ThumbCacheManager.get(file, thumbSize);
 
-                // Generate if nothing came back:
+                // Otherwise, give extensions a chance to return a thumbnail for this image:
+                if (thumbImage == null) {
+                    thumbImage = ImageViewerExtensionManager.getInstance().getThumbnail(file, thumbSize);
+                }
+
+                // If still nothing, give ThumbCacheManager a chance to generate it now:
+                if (thumbImage == null) {
+                    ThumbCacheManager.add(file); // may generate nothing if caching is disabled
+                    thumbImage = ThumbCacheManager.get(file, thumbSize);
+                }
+
+                // If we STILL have no thumbnail, generate one the old-fashioned way:
                 if (thumbImage == null) {
                     BufferedImage srcImage = ImageUtil.loadImage(file);
                     if (srcImage != null) {

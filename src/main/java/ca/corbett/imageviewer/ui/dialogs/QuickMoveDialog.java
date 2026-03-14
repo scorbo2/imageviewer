@@ -137,7 +137,7 @@ public class QuickMoveDialog extends JDialog {
         panel.add(scrollPane, constraints);
 
         JButton button = new JButton("Add...");
-        final int BUTTON_WIDTH = 110;
+        final int BUTTON_WIDTH = 125;
         button.setPreferredSize(new Dimension(BUTTON_WIDTH, 26));
         button.setMinimumSize(new Dimension(BUTTON_WIDTH, 26));
         constraints = new GridBagConstraints();

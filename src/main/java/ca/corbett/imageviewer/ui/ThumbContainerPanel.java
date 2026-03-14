@@ -1,11 +1,14 @@
 package ca.corbett.imageviewer.ui;
 
+import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.io.FileSystemUtil;
+import ca.corbett.extras.progress.MultiProgressDialog;
 import ca.corbett.imageviewer.AppConfig;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.dialogs.AlienDialog;
 import ca.corbett.imageviewer.ui.imagesets.ImageSet;
 import ca.corbett.imageviewer.ui.layout.WrapLayout;
+import ca.corbett.imageviewer.ui.threads.DirectoryBrowseThread;
 import ca.corbett.imageviewer.ui.threads.ThumbLoaderThread;
 
 import javax.swing.BorderFactory;
@@ -35,24 +38,12 @@ import java.util.List;
  */
 public final class ThumbContainerPanel extends JPanel {
 
-    /**
-     * A file will be considered a valid image if its filename ends with any
-     * extension in this list.
-     */
-    public static final List<String> imageExtensions;
-
-    /**
-     * A file will be considered an "alien" file UNLESS its filename ends with
-     * any extension in this list. Note this list might not be the same as
-     * the imageExtensions list, because reasons.
-     */
-    private static final List<String> alienExclusionExtensions;
-
     private final MainWindow.BrowseMode browseMode;
     private final List<ThumbContainerPanelListener> listeners;
     private List<File> imageFileList;
     private List<File> alienFileList;
     private File currentDir;
+    private DirectoryBrowseThread browseThread;
     private final List<ThumbPanel> loadedThumbPanels;
     private int selectedPanelIndex;
     private int loadOffset;
@@ -71,24 +62,6 @@ public final class ThumbContainerPanel extends JPanel {
     private static final int INFO_PANEL_WIDTH = 120;
     private static final int INFO_PANEL_HEIGHT = 77;
 
-    /*
-     * Statically create the list of allowable image extensions
-     * and alien exclusion extensions.
-     */
-    static {
-        imageExtensions = new ArrayList<>();
-        imageExtensions.add("gif");
-        imageExtensions.add("jpg");
-        imageExtensions.add("jpeg");
-        imageExtensions.add("png");
-        imageExtensions.add("tiff");
-        imageExtensions.add("bmp");
-
-        alienExclusionExtensions = new ArrayList<>();
-        alienExclusionExtensions.addAll(imageExtensions);
-        alienExclusionExtensions.add(AlienDialog.DARWIN_METADATA_FILENAME.replace(".", ""));
-    }
-
     /**
      * Constructor is private to force factory method access.
      */
@@ -96,6 +69,7 @@ public final class ThumbContainerPanel extends JPanel {
         alienFileList = new ArrayList<>();
         listeners = new ArrayList<>();
         loadedThumbPanels = new ArrayList<>();
+        browseThread = null;
         selectedPanelIndex = -1;
         thumbWidth = thumbHeight = AppConfig.getInstance().getThumbnailSize();
         this.browseMode = browseMode;
@@ -116,18 +90,6 @@ public final class ThumbContainerPanel extends JPanel {
      */
     public MainWindow.BrowseMode getBrowseMode() {
         return browseMode;
-    }
-
-    /**
-     * Returns the list of allowable image extensions. Implementation note: a copy of the
-     * list is returned to prevent client modification.
-     *
-     * @return A static list of allowable image extensions.
-     */
-    public static List<String> getImageExtensions() {
-        List<String> copy = new ArrayList<>();
-        copy.addAll(imageExtensions);
-        return copy;
     }
 
     /**
@@ -217,7 +179,7 @@ public final class ThumbContainerPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 AlienDialog.getInstance().setDirectory(currentDir);
                 AlienDialog.getInstance().setVisible(true);
-                alienFileList = findAlienFiles(currentDir);
+                alienFileList = findAlienFiles(currentDir); // refreshes after dialog, user may have deleted some.
                 addAlienControl(); // will hide if no longer needed.
             }
 
@@ -274,16 +236,13 @@ public final class ThumbContainerPanel extends JPanel {
         revalidate();
         repaint();
         for (ThumbPanel pn : loadedThumbPanels) {
-            pn.getThumbImage().flush();
+            pn.dispose();
         }
         loadedThumbPanels.clear();
         selectedPanelIndex = -1;
         fireSelectionClearedEvent();
 
-        imageFileList = fileList;
-        if (imageFileList == null) {
-            imageFileList = new ArrayList<>();
-        }
+        imageFileList = fileList == null ? new ArrayList<>() : new ArrayList<>(fileList);
 
         // Note that we don't clear alienFileList here, because that list
         // likely hasn't changed. (we haven't changed directories).
@@ -302,11 +261,32 @@ public final class ThumbContainerPanel extends JPanel {
     public void setDirectory(File dir) {
         currentDir = dir;
         if (dir == null) {
-            clear();
             return;
         }
-        setImageList(FileSystemUtil.findFiles(dir, false, imageExtensions));
-        alienFileList = findAlienFiles(dir);
+        clear(); // nuke any stale data.
+
+        // If we're already browsing, stop that thread before starting a new one:
+        if (browseThread != null) {
+            browseThread.stop();
+        }
+
+        // Browse this directory in a worker thread, so we don't block the UI for large directories.
+        browseThread = new DirectoryBrowseThread(dir, (thread, images, aliens) -> {
+            if (thread != browseThread) {
+                // User might be clicking around super fast.
+                // Ignore this callback if it's from an old thread that we already replaced with a new one.
+                return;
+            }
+
+            // This callback is invoked on the EDT, so we're good to update the UI:
+            alienFileList = aliens; // update this first as it's needed by setImageList() (indirectly, via loadMore)
+            setImageList(images);
+            browseThread = null;
+        });
+        MultiProgressDialog dialog = new MultiProgressDialog(MainWindow.getInstance(), "Scanning...");
+        dialog.setInitialShowDelayMS(500); // don't show the dialog for very fast searches
+        dialog.setFormatString("%m"); // Just show the progress message, not the step count. (step count is unknown)
+        dialog.runWorker(browseThread, true);
     }
 
     public void setImageSet(ImageSet imageSet) {
@@ -555,6 +535,7 @@ public final class ThumbContainerPanel extends JPanel {
         // Scroll to make this panel visible if needed:
         selectedPanelIndex = index;
         ThumbPanel thumbPanel = loadedThumbPanels.get(selectedPanelIndex);
+        setSelectedThumb(thumbPanel);
         ThumbContainerPanel containerPanel = (ThumbContainerPanel)thumbPanel.getParent();
         containerPanel.scrollRectToVisible(thumbPanel.getBounds());
 
@@ -712,51 +693,20 @@ public final class ThumbContainerPanel extends JPanel {
     }
 
     /**
-     * I hate that these static utility methods live in a UI class.
-     * <a href="https://github.com/scorbo2/imageviewer/issues/66">Issue 66</a>
-     * will move these to a better location, but it will be an extension-breaking change,
-     * so I don't want to do it until version 3.0.
+     * Returns a list of all "alien" files in the given directory.
+     * An "alien" file is any file that is not an image file, not a "companion"
+     * file, and not a "known" file.
+     *
+     * @param dir The directory to scan.
+     * @return A list of all alien files in the given directory.
      */
-    public static boolean isImageFile(File file) {
-        String name = file.getName().toLowerCase();
-        for (String ext : imageExtensions) {
-            if (name.endsWith("." + ext)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * I hate that these static utility methods live in a UI class.
-     * <a href="https://github.com/scorbo2/imageviewer/issues/66">Issue 66</a>
-     * will move these to a better location, but it will be an extension-breaking change,
-     * so I don't want to do it until version 3.0.
-     */
-    public static boolean isAlienExcludedFile(File file) {
-        String name = file.getName().toLowerCase();
-        for (String ext : alienExclusionExtensions) {
-            if (name.endsWith("." + ext)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public static List<File> findAlienFiles(File dir) {
-        List<File> aliens = FileSystemUtil.findFilesExcluding(dir, false, alienExclusionExtensions);
-        List<File> listToReturn = new ArrayList<>();
-
-        for (File f : aliens) {
-
-            // Ask all our extensions if they recognize this file:
-            boolean isCompanion = ImageViewerExtensionManager.getInstance().isCompanionFile(f);
-            if (!isCompanion) {
-                listToReturn.add(f);
-            }
-        }
-
-        return listToReturn;
+        ImageViewerExtensionManager extManager = ImageViewerExtensionManager.getInstance();
+        return FileSystemUtil.findFiles(dir, false)
+                             .stream()
+                             .filter(f -> !ImageUtil.isImageFile(f))
+                             .filter(f -> !extManager.isCompanionFile(f))
+                             .filter(f -> !extManager.isKnownFile(f))
+                             .toList();
     }
-
 }
