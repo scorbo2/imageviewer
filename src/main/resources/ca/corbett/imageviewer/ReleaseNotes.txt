@@ -1,7 +1,7 @@
 ImageViewer Release Notes
 Author: Steve Corbett
 
-Version 3.0 [TODO] - Major release with breaking API changes
+Version 3.0 [2026-03-13] - Major release with breaking API changes
   #114 - Optional log warning when thumb cache gets too big
   #112 - Improve UI performance when browsing large directories
   #108 - Add helper methods for extensions to access the thumb panel

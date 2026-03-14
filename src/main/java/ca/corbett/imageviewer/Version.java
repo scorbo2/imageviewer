@@ -82,7 +82,7 @@ public final class Version {
     static {
         aboutInfo = new AboutInfo();
         aboutInfo.applicationName = APPLICATION_NAME;
-        aboutInfo.applicationVersion = VERSION + "-SNAPSHOT"; // TODO remove -SNAPSHOT for releases
+        aboutInfo.applicationVersion = VERSION;
         aboutInfo.copyright = COPYRIGHT;
         aboutInfo.license = LICENSE;
         aboutInfo.projectUrl = PROJECT_URL;
