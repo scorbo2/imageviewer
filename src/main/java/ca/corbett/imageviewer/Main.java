@@ -40,6 +40,9 @@ public class Main {
             }
         }
 
+        // For those pesky unchecked exceptions (this ensures they get logged):
+        Thread.setDefaultUncaughtExceptionHandler(new FallbackExceptionHandler());
+
         // You can specify a directory on the command line to open at startup.
         // You can also specify a fully-qualified image file, in which case we'll open
         // its containing directory. Extra arguments beyond the first are ignored.

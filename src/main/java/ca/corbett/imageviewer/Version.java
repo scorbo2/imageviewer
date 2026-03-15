@@ -22,7 +22,7 @@ public final class Version {
     public static final int VERSION_MAJOR = 3;
 
     /** The minor (patch) version. **/
-    public static final int VERSION_MINOR = 0;
+    public static final int VERSION_MINOR = 1;
 
     /** A user-friendly version string in the form "MAJOR.MINOR" (example: "1.0"). **/
     public static final String VERSION = VERSION_MAJOR + "." + VERSION_MINOR;
@@ -31,7 +31,7 @@ public final class Version {
     public static final String APPLICATION_NAME = "ImageViewer";
 
     public static final String NAME = APPLICATION_NAME + " " + VERSION;
-    public static String COPYRIGHT = "Copyright © 2017-2025 Steve Corbett";
+    public static String COPYRIGHT = "Copyright © 2017-2026 Steve Corbett";
 
     /**
      * The directory where ImageViewer was installed -

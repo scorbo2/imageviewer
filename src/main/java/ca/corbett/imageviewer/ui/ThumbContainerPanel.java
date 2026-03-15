@@ -29,6 +29,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A container to show a list of ThumbPanel instances.
@@ -707,6 +708,6 @@ public final class ThumbContainerPanel extends JPanel {
                              .filter(f -> !ImageUtil.isImageFile(f))
                              .filter(f -> !extManager.isCompanionFile(f))
                              .filter(f -> !extManager.isKnownFile(f))
-                             .toList();
+                             .collect(Collectors.toCollection(ArrayList::new));
     }
 }
