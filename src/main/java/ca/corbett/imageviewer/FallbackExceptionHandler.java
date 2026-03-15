@@ -10,6 +10,7 @@ import java.util.logging.Logger;
  * runtime exception effectively kill the app with nothing in the log.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ * @since ImageViewer 3.1
  */
 public class FallbackExceptionHandler implements Thread.UncaughtExceptionHandler {
 
