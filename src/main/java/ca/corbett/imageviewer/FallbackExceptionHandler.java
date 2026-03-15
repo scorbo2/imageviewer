@@ -18,6 +18,5 @@ public class FallbackExceptionHandler implements Thread.UncaughtExceptionHandler
     @Override
     public void uncaughtException(Thread t, Throwable e) {
         log.log(Level.SEVERE, "Uncaught exception in thread " + t.getName() + ": " + e.getMessage(), e);
-        e.printStackTrace(); // this is the one place where printStackTrace() is acceptable :)
     }
 }
