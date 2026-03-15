@@ -702,11 +702,12 @@ public final class ThumbContainerPanel extends JPanel {
      */
     public static List<File> findAlienFiles(File dir) {
         ImageViewerExtensionManager extManager = ImageViewerExtensionManager.getInstance();
-        return FileSystemUtil.findFiles(dir, false)
-                             .stream()
-                             .filter(f -> !ImageUtil.isImageFile(f))
-                             .filter(f -> !extManager.isCompanionFile(f))
-                             .filter(f -> !extManager.isKnownFile(f))
-                             .toList();
+        List<File> unmodifiableList = FileSystemUtil.findFiles(dir, false)
+                                                    .stream()
+                                                    .filter(f -> !ImageUtil.isImageFile(f))
+                                                    .filter(f -> !extManager.isCompanionFile(f))
+                                                    .filter(f -> !extManager.isKnownFile(f))
+                                                    .toList();
+        return new ArrayList<>(unmodifiableList); // return a mutable list!
     }
 }
