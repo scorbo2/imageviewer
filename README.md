@@ -17,7 +17,7 @@ the installer script to install the application:
 
 - [http://www.corbett.ca/apps/ImageViewer-3.2.tar.gz](http://www.corbett.ca/apps/ImageViewer-3.2.tar.gz)
 - Size: 20MB
-- SHA-256: `a6d41433fe0e42ea6fc6afd3c7010afd58ddb483e5f27f2f91a6e7d947a43aca`
+- SHA-256: `2e6c4b6a770cc8ef56a6125a47f89bc1d7fdf7a678c3c276797019ec26f2bf19`
 
 Alternatively, you can clone this repo and build it with Maven (Java 17 or higher required):
 
