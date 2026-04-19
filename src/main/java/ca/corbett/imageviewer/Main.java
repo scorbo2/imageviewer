@@ -1,5 +1,6 @@
 package ca.corbett.imageviewer;
 
+import ca.corbett.extras.FallbackExceptionHandler;
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.imageviewer.extensions.ImageViewerExtensionManager;
 import ca.corbett.imageviewer.ui.MainWindow;
@@ -41,7 +42,7 @@ public class Main {
         }
 
         // For those pesky unchecked exceptions (this ensures they get logged):
-        Thread.setDefaultUncaughtExceptionHandler(new FallbackExceptionHandler());
+        FallbackExceptionHandler.register();
 
         // You can specify a directory on the command line to open at startup.
         // You can also specify a fully-qualified image file, in which case we'll open
